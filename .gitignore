@@ -1,0 +1,15 @@
+# Cấu hình môi trường cục bộ
+.env
+.env.*
+!.env.example
+
+# File tạm của hệ điều hành và trình soạn thảo
+.DS_Store
+Thumbs.db
+Desktop.ini
+~$*
+*.tmp
+*.swp
+
+# Nhật ký chạy ứng dụng
+*.log
