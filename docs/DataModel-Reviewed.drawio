@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="complete" name="Data Model">
+    <mxGraphModel grid="1" gridSize="10" page="1" pageScale="1" pageWidth="2060" pageHeight="2020">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="heading" value="Data Model" style="text;html=0;strokeColor=none;fillColor=none;fontFamily=Arial;fontSize=28;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="45" y="10" width="1000" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="users" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry x="830" y="70" width="400" height="238" as="geometry"/>
+        </mxCell>
+        <mxCell id="users_title" value="users" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="users">
+          <mxGeometry x="0" y="0" width="400" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="users_attr" value="PK user_id: BIGINT&#10;full_name: VARCHAR(100)&#10;UQ email: VARCHAR(254)&#10;password_hash: TEXT&#10;role: VARCHAR(10)&#10;status: VARCHAR(10)&#10;created_at: TIMESTAMPTZ&#10;updated_at: TIMESTAMPTZ" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="users">
+          <mxGeometry x="0" y="38" width="400" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="questions" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry x="50" y="560" width="400" height="215" as="geometry"/>
+        </mxCell>
+        <mxCell id="questions_title" value="questions" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="questions">
+          <mxGeometry x="0" y="0" width="400" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="questions_attr" value="PK question_id: BIGINT&#10;FK teacher_id: BIGINT&#10;content: TEXT?&#10;question_type: VARCHAR(20)&#10;status: VARCHAR(10)&#10;created_at: TIMESTAMPTZ&#10;updated_at: TIMESTAMPTZ" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="questions">
+          <mxGeometry x="0" y="38" width="400" height="177" as="geometry"/>
+        </mxCell>
+        <mxCell id="exams" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry x="830" y="500" width="400" height="307" as="geometry"/>
+        </mxCell>
+        <mxCell id="exams_title" value="exams" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="exams">
+          <mxGeometry x="0" y="0" width="400" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="exams_attr" value="PK exam_id: BIGINT&#10;FK teacher_id: BIGINT&#10;title: VARCHAR(200)&#10;description: TEXT?&#10;status: VARCHAR(10)&#10;duration_minutes: INTEGER?&#10;opens_at: TIMESTAMPTZ?&#10;closes_at: TIMESTAMPTZ?&#10;results_published: BOOLEAN = false&#10;created_at: TIMESTAMPTZ&#10;updated_at: TIMESTAMPTZ" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="exams">
+          <mxGeometry x="0" y="38" width="400" height="269" as="geometry"/>
+        </mxCell>
+        <mxCell id="answer_options" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry x="50" y="1100" width="400" height="215" as="geometry"/>
+        </mxCell>
+        <mxCell id="answer_options_title" value="answer_options" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="answer_options">
+          <mxGeometry x="0" y="0" width="400" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="answer_options_attr" value="PK option_id: BIGINT&#10;FK question_id: BIGINT&#10;content: TEXT&#10;display_order: INTEGER&#10;is_correct: BOOLEAN = false&#10;UQ (question_id, display_order)&#10;UQ (question_id, option_id)" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="answer_options">
+          <mxGeometry x="0" y="38" width="400" height="177" as="geometry"/>
+        </mxCell>
+        <mxCell id="exam_questions" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry x="830" y="1000" width="400" height="192" as="geometry"/>
+        </mxCell>
+        <mxCell id="exam_questions_title" value="exam_questions" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="exam_questions">
+          <mxGeometry x="0" y="0" width="400" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="exam_questions_attr" value="PK, FK exam_id: BIGINT&#10;PK, FK question_id: BIGINT&#10;position: INTEGER &gt; 0&#10;points: NUMERIC(12,2) &gt; 0&#10;PK (exam_id, question_id)&#10;UQ (exam_id, position)" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="exam_questions">
+          <mxGeometry x="0" y="38" width="400" height="154" as="geometry"/>
+        </mxCell>
+        <mxCell id="exam_participants" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry x="1610" y="500" width="400" height="169" as="geometry"/>
+        </mxCell>
+        <mxCell id="exam_participants_title" value="exam_participants" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="exam_participants">
+          <mxGeometry x="0" y="0" width="400" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="exam_participants_attr" value="PK, FK exam_id: BIGINT&#10;PK, FK student_id: BIGINT&#10;assigned_at: TIMESTAMPTZ&#10;is_active: BOOLEAN = true&#10;PK (exam_id, student_id)" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="exam_participants">
+          <mxGeometry x="0" y="38" width="400" height="131" as="geometry"/>
+        </mxCell>
+        <mxCell id="submission_answers" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry x="830" y="1440" width="400" height="261" as="geometry"/>
+        </mxCell>
+        <mxCell id="submission_answers_title" value="submission_answers" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="submission_answers">
+          <mxGeometry x="0" y="0" width="400" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="submission_answers_attr" value="PK, FK submission_id: BIGINT&#10;FK exam_id: BIGINT&#10;PK, FK question_id: BIGINT&#10;FK selected_option_id: BIGINT?&#10;saved_at: TIMESTAMPTZ&#10;PK (submission_id, question_id)&#10;FK (submission_id, exam_id)&#10;FK (exam_id, question_id)&#10;FK (question_id, selected_option_id)" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="submission_answers">
+          <mxGeometry x="0" y="38" width="400" height="223" as="geometry"/>
+        </mxCell>
+        <mxCell id="submissions" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry x="1610" y="1300" width="400" height="353" as="geometry"/>
+        </mxCell>
+        <mxCell id="submissions_title" value="submissions" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="submissions">
+          <mxGeometry x="0" y="0" width="400" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="submissions_attr" value="PK submission_id: BIGINT&#10;FK exam_id: BIGINT&#10;FK student_id: BIGINT&#10;attempt_no: INTEGER = 1&#10;status: VARCHAR(15)&#10;started_at: TIMESTAMPTZ&#10;deadline_at: TIMESTAMPTZ?&#10;last_saved_at: TIMESTAMPTZ?&#10;submitted_at: TIMESTAMPTZ?&#10;version: INTEGER &gt;= 0&#10;UQ (exam_id, student_id)&#10;UQ (submission_id, exam_id)&#10;CHECK (attempt_no = 1)" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="submissions">
+          <mxGeometry x="0" y="38" width="400" height="315" as="geometry"/>
+        </mxCell>
+        <mxCell id="results" value="" style="group;" vertex="1" parent="1">
+          <mxGeometry x="1610" y="1740" width="400" height="215" as="geometry"/>
+        </mxCell>
+        <mxCell id="results_title" value="results" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="results">
+          <mxGeometry x="0" y="0" width="400" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="results_attr" value="PK result_id: BIGINT&#10;FK, UQ submission_id: BIGINT&#10;score: NUMERIC(12,2)&#10;max_score: NUMERIC(12,2)&#10;correct_count: INTEGER&#10;total_questions: INTEGER&#10;graded_at: TIMESTAMPTZ" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="results">
+          <mxGeometry x="0" y="38" width="400" height="177" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge0" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.015047021943573782;exitY=1.0;exitPerimeter=0;entryX=0.9380877742946708;entryY=0.0;entryPerimeter=0;" edge="1" parent="1" source="users" target="questions">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge1" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.5;exitY=1.0;exitPerimeter=0;entryX=0.5;entryY=0.0;entryPerimeter=0;" edge="1" parent="1" source="users" target="exams">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge2" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=1.0;exitY=0.9260935143288085;exitPerimeter=0;entryX=0.0833754740834388;entryY=0.0;entryPerimeter=0;" edge="1" parent="1" source="users" target="exam_participants">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge3" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.5;exitY=1.0;exitPerimeter=0;entryX=0.5;entryY=0.0;entryPerimeter=0;" edge="1" parent="1" source="questions" target="answer_options">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge4" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.9892065344224037;exitY=1.0;exitPerimeter=0;entryX=0.06312718786464416;entryY=0.0;entryPerimeter=0;" edge="1" parent="1" source="questions" target="exam_questions">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge5" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.5;exitY=1.0;exitPerimeter=0;entryX=0.5;entryY=0.0;entryPerimeter=0;" edge="1" parent="1" source="exams" target="exam_questions">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge6" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=1.0;exitY=0.44237033324981195;exitPerimeter=0;entryX=0.0;entryY=0.6046882111970872;entryPerimeter=0;" edge="1" parent="1" source="exams" target="exam_participants">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge7" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.5;exitY=1.0;exitPerimeter=0;entryX=0.5;entryY=0.0;entryPerimeter=0;" edge="1" parent="1" source="exam_participants" target="submissions">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge8" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.0;exitY=0.5682792184208617;exitPerimeter=0;entryX=1.0;entryY=0.4076530111012866;entryPerimeter=0;" edge="1" parent="1" source="submissions" target="submission_answers">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge9" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.5;exitY=1.0;exitPerimeter=0;entryX=0.5;entryY=0.0;entryPerimeter=0;" edge="1" parent="1" source="exam_questions" target="submission_answers">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge10" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=1.0;exitY=0.9329159212880144;exitPerimeter=0;entryX=0.0;entryY=0.1433834364868847;entryPerimeter=0;" edge="1" parent="1" source="answer_options" target="submission_answers">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge11" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.5;exitY=1.0;exitPerimeter=0;entryX=0.5;entryY=0.0;entryPerimeter=0;" edge="1" parent="1" source="submissions" target="results">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
