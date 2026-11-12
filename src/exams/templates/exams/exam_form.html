@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>{% if is_edit %}Chỉnh sửa đề nháp{% else %}Tạo đề thi nháp{% endif %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">{% if is_edit %}S3-11: Chỉnh sửa đề nháp{% else %}S3-11: Tạo đề thi nháp mới{% endif %}</h5>
+            {% if is_edit %}
+                <span class="badge bg-warning text-dark">{{ exam.get_status_display }}</span>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Tên đề thi</label>
+                    {{ form.title }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Mô tả / Hướng dẫn</label>
+                    {{ form.description }}
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Thời gian (phút)</label>
+                        {{ form.duration_minutes }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Điểm đạt</label>
+                        {{ form.pass_score }}
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between mt-3">
+                    <a href="{% url 'exam_list' %}" class="btn btn-secondary">Quay lại</a>
+                    <button type="submit" class="btn btn-success">Lưu bản nháp</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

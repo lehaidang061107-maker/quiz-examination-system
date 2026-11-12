@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách đề thi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Danh sách đề thi của tôi</h3>
+        <a href="{% url 'exam_create_draft' %}" class="btn btn-primary">+ Tạo đề nháp mới</a>
+    </div>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    <div class="card shadow-sm">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Tên đề thi</th>
+                    <th>Thời gian</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exam in exams %}
+                <tr>
+                    <td>{{ exam.title }}</td>
+                    <td>{{ exam.duration_minutes }} phút</td>
+                    <td><span class="badge bg-secondary">{{ exam.get_status_display }}</span></td>
+                    <td>
+                        <a href="{% url 'exam_edit_draft' exam.id %}" class="btn btn-sm btn-warning">Sửa nháp</a>
+                        <a href="{% url 'exam_manage_participants' exam.id %}" class="btn btn-sm btn-info">Thí sinh</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center py-4">Chưa có đề thi nào.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
