@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký tài khoản - Quiz Examination System</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f4f8;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        /* Phần tiêu đề hệ thống ở trên đầu */
+        .brand-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .brand-header h1 {
+            color: #1976d2;
+            font-size: 24px;
+            margin: 0 0 5px 0;
+            font-weight: 700;
+        }
+        .brand-header p {
+            color: #666;
+            font-size: 14px;
+            margin: 0;
+        }
+        /* Khung thẻ đăng ký */
+        .register-card {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+        }
+        .register-card h2 {
+            text-align: center;
+            color: #1976d2;
+            margin-bottom: 5px;
+            font-size: 20px;
+        }
+        .register-subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .form-group input {
+            width: icon;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-submit:hover {
+            background-color: #115293;
+        }
+    </style>
+</head>
+<body>
+    <!-- Tiêu đề hệ thống xuất hiện ở trên đầu -->
+    <div class="brand-header">
+        <h1>Quiz Examination System</h1>
+        <p>Hệ thống thi trắc nghiệm</p>
+    </div>
+
+    <!-- Khung form đăng ký -->
+    <div class="register-card">
+        <h2>Đăng ký tài khoản Student</h2>
+        <p class="register-subtitle">Vui lòng nhập thông tin để tiếp tục</p>
+        
+        <!-- Hiển thị thông báo flash nếu có -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="padding: 10px; margin-bottom: 15px; border-radius: 4px; font-size: 14px; background-color: {% if category == 'success' %}#d4edda{% else %}#f8d7da{% endif %}; color: {% if category == 'success' %}#155724{% else %}#721c24{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <div class="form-group">
+                <label for="fullname">Họ và tên</label>
+                <input type="text" id="fullname" name="fullname" required placeholder="Nhập họ tên của bạn">
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required placeholder="Nhập email của bạn">
+            </div>
+            <div class="form-group">
+                <label for="password">Mật khẩu</label>
+                <input type="password" id="password" name="password" required placeholder="Nhập mật khẩu">
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Xác nhận mật khẩu</label>
+                <input type="password" id="confirm_password" name="confirm_password" required placeholder="Nhập lại mật khẩu">
+            </div>
+            <button type="submit" class="btn-submit">Đăng Ký</button>
+        </form>
+    </div>
+</body>
+</html>
