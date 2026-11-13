@@ -13,3 +13,9 @@ Desktop.ini
 
 # Nhật ký chạy ứng dụng
 *.log
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
