@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý tài khoản - Quiz Examination System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f3f6f9;
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        /* Top Navbar */
+        .topbar {
+            background-color: #2563eb;
+            color: #ffffff;
+            height: 56px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .topbar-brand {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+        .topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 13px;
+        }
+        .topbar-user a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        .topbar-user a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        /* Main Layout */
+        .layout-container {
+            display: flex;
+            flex: 1;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            background-color: #111c2d;
+            color: #cbd5e1;
+            padding: 20px 12px;
+            flex-shrink: 0;
+        }
+        .sidebar-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+            padding: 0 12px 10px 12px;
+            letter-spacing: 0.8px;
+        }
+        .sidebar-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .sidebar-menu a {
+            display: block;
+            padding: 10px 14px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .sidebar-menu a:hover {
+            background-color: #1e293b;
+            color: #ffffff;
+        }
+        .sidebar-menu a.active {
+            background-color: #2563eb;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* Content Area */
+        .main-content {
+            flex: 1;
+            padding: 24px 32px;
+            overflow-x: auto;
+        }
+        .content-card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 24px 28px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .page-header {
+            margin-bottom: 18px;
+        }
+        .page-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+        .page-header p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            padding: 4px 12px;
+            margin-bottom: 14px;
+            gap: 12px;
+        }
+        .filter-bar input[type="text"] {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 8px 4px;
+            font-size: 13.5px;
+            color: #1e293b;
+            outline: none;
+        }
+        .filter-divider {
+            width: 1px;
+            height: 20px;
+            background-color: #cbd5e1;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: #64748b;
+        }
+        .filter-group select {
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            outline: none;
+            padding: 6px 4px;
+        }
+
+        /* Action Row */
+        .action-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 16px;
+        }
+        .btn-primary {
+            background-color: #2563eb;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* Data Table */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        thead th {
+            background-color: #eff6ff;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 12px 16px;
+            border-bottom: 1px solid #dbeafe;
+        }
+        tbody td {
+            padding: 14px 16px;
+            font-size: 13.5px;
+            color: #334155;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        tbody tr:hover {
+            background-color: #f8fafc;
+        }
+        .user-name {
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-green {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+        .badge-red {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Table Action Links */
+        .action-links {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .action-link {
+            background: none;
+            border: none;
+            color: #475569;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 0;
+        }
+        .action-link:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+        .action-link.danger:hover {
+            color: #dc2626;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            margin-top: 18px;
+            font-size: 13px;
+        }
+        .page-btn {
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            color: #334155;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+        .page-btn.active {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+        }
+
+        /* Flash Alert */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13.5px;
+            font-weight: 500;
+        }
+        .alert-success {
+            background-color: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        .alert-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal-box {
+            background-color: #ffffff;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 440px;
+            padding: 28px 32px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+        .modal-box h2 {
+            font-size: 19px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+        .modal-box p.modal-desc {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 13.5px;
+            color: #0f172a;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #2563eb;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 28px;
+        }
+        .btn-cancel {
+            background-color: #ffffff;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-cancel:hover {
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <header class="topbar">
+        <div class="topbar-brand">Quiz Examination System</div>
+        <div class="topbar-user">
+            <span>{{ session.get('fullname', 'Admin') }} &#9662;</span>
+            <a href="{{ url_for('main.logout') }}">Đăng xuất</a>
+        </div>
+    </header>
+
+    <div class="layout-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-label">ADMIN</div>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('main.admin_dashboard') }}">Trang chủ</a></li>
+                <li><a href="{{ url_for('main.admin_user_management') }}" class="active">Quản lý tài khoản</a></li>
+                <li><a href="#">Cấu hình hệ thống</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert {% if category == 'success' %}alert-success{% else %}alert-error{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="content-card">
+                <div class="page-header">
+                    <h1>Quản lý tài khoản</h1>
+                    <p>Tìm kiếm, thêm và cập nhật tài khoản</p>
+                </div>
+
+                <!-- Search & Filter Bar -->
+                <form method="GET" action="{{ url_for('main.admin_user_management') }}" class="filter-bar" id="filterForm">
+                    <input type="text" name="q" placeholder="Tìm theo họ tên hoặc email..." value="{{ search_query }}" onchange="this.form.submit()">
+                    
+                    <div class="filter-divider"></div>
+                    
+                    <div class="filter-group">
+                        <span>Vai trò:</span>
+                        <select name="role" onchange="this.form.submit()">
+                            <option value="" {% if not role_filter %}selected{% endif %}>Tất cả &#9662;</option>
+                            <option value="Student" {% if role_filter == 'Student' %}selected{% endif %}>Student</option>
+                            <option value="Teacher" {% if role_filter == 'Teacher' %}selected{% endif %}>Teacher</option>
+                            <option value="Admin" {% if role_filter == 'Admin' %}selected{% endif %}>Admin</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-divider"></div>
+
+                    <div class="filter-group">
+                        <span>Trạng thái:</span>
+                        <select name="status" onchange="this.form.submit()">
+                            <option value="" {% if not status_filter %}selected{% endif %}>Tất cả &#9662;</option>
+                            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Hoạt động</option>
+                            <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Tạm khóa</option>
+                        </select>
+                    </div>
+                </form>
+
+                <!-- Add Button -->
+                <div class="action-row">
+                    <button type="button" class="btn-primary" onclick="openAddModal()">+ Thêm tài khoản</button>
+                </div>
+
+                <!-- Users Table -->
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Họ và tên</th>
+                                <th>Email</th>
+                                <th>Vai trò</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                            <tr>
+                                <td class="user-name">{{ u.fullname }}</td>
+                                <td>{{ u.email }}</td>
+                                <td>
+                                    <span class="badge badge-green">{{ u.role }}</span>
+                                </td>
+                                <td>
+                                    {% if u.status == 'active' %}
+                                        <span class="badge badge-green">Hoạt động</span>
+                                    {% else %}
+                                        <span class="badge badge-red">Tạm khóa</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-links">
+                                        <button type="button" class="action-link" onclick="openEditModal('{{ u.id }}', '{{ u.fullname }}', '{{ u.role }}', '{{ u.status }}')">Sửa</button>
+                                        <span style="color: #cbd5e1;">|</span>
+                                        <form method="POST" action="{{ url_for('main.admin_edit_user', user_id=u.id) }}" style="display:inline;" onsubmit="return confirm('Xác nhận thay đổi trạng thái tài khoản {{ u.fullname }}? Phiên hiện tại của người dùng này sẽ bị thu hồi.');">
+                                            <input type="hidden" name="fullname" value="{{ u.fullname }}">
+                                            <input type="hidden" name="role" value="{{ u.role }}">
+                                            {% if u.status == 'active' %}
+                                                <input type="hidden" name="status" value="inactive">
+                                                <button type="submit" class="action-link danger">Khóa</button>
+                                            {% else %}
+                                                <input type="hidden" name="status" value="active">
+                                                <button type="submit" class="action-link">Mở lại</button>
+                                            {% endif %}
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">
+                                    Không tìm thấy tài khoản nào phù hợp.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                <div class="pagination">
+                    {% for p in range(1, total_pages + 1) %}
+                        <a href="{{ url_for('main.admin_user_management', page=p, q=search_query, role=role_filter, status=status_filter) }}" 
+                           class="page-btn {% if p == current_page %}active{% endif %}">
+                            {{ p }}
+                        </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal 06: Thêm tài khoản mới -->
+    <div id="addModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>Thêm tài khoản mới</h2>
+            <p class="modal-desc">Nhập thông tin để tạo tài khoản trong hệ thống</p>
+            
+            <form method="POST" action="{{ url_for('main.admin_add_user') }}">
+                <div class="form-group">
+                    <label>Họ và tên</label>
+                    <input type="text" name="fullname" placeholder="Nhập họ và tên..." required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" placeholder="Nhập email..." required>
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu tạm thời</label>
+                    <input type="password" name="password" placeholder="Nhập mật khẩu tạm thời..." required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>Vai trò</label>
+                    <select name="role" required>
+                        <option value="Student">Student</option>
+                        <option value="Teacher">Teacher</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+                <input type="hidden" name="status" value="active">
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeAddModal()">Hủy</button>
+                    <button type="submit" class="btn-primary">Tạo tài khoản</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Sửa tài khoản -->
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>Cập nhật tài khoản</h2>
+            <p class="modal-desc">Chỉnh sửa thông tin hoặc phân quyền (phiên cũ sẽ tự động thu hồi)</p>
+            
+            <form id="editForm" method="POST">
+                <div class="form-group">
+                    <label>Họ và tên</label>
+                    <input type="text" id="editFullname" name="fullname" required>
+                </div>
+                <div class="form-group">
+                    <label>Vai trò</label>
+                    <select id="editRole" name="role">
+                        <option value="Student">Student</option>
+                        <option value="Teacher">Teacher</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Trạng thái</label>
+                    <select id="editStatus" name="status">
+                        <option value="active">Hoạt động</option>
+                        <option value="inactive">Tạm khóa</option>
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Hủy</button>
+                    <button type="submit" class="btn-primary">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openAddModal() {
+            document.getElementById('addModal').classList.add('show');
+        }
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('show');
+        }
+        function openEditModal(id, fullname, role, status) {
+            document.getElementById('editForm').action = '/admin/users/edit/' + id;
+            document.getElementById('editFullname').value = fullname;
+            document.getElementById('editRole').value = role;
+            document.getElementById('editStatus').value = status;
+            document.getElementById('editModal').classList.add('show');
+        }
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('show');
+        }
+
+        // Đóng modal khi click ra vùng tối bên ngoài
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html>

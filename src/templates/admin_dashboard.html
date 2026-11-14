@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ - Quiz Examination System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f3f6f9;
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        /* Top Navbar */
+        .topbar {
+            background-color: #2563eb;
+            color: #ffffff;
+            height: 56px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .topbar-brand {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+        .topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 13px;
+        }
+        .topbar-user a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        .topbar-user a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        /* Main Layout */
+        .layout-container {
+            display: flex;
+            flex: 1;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            background-color: #111c2d;
+            color: #cbd5e1;
+            padding: 20px 12px;
+            flex-shrink: 0;
+        }
+        .sidebar-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+            padding: 0 12px 10px 12px;
+            letter-spacing: 0.8px;
+        }
+        .sidebar-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .sidebar-menu a {
+            display: block;
+            padding: 10px 14px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .sidebar-menu a:hover {
+            background-color: #1e293b;
+            color: #ffffff;
+        }
+        .sidebar-menu a.active {
+            background-color: #2563eb;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* Content Area */
+        .main-content {
+            flex: 1;
+            padding: 24px 32px;
+            overflow-x: auto;
+        }
+        .content-card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 24px 28px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .page-header {
+            margin-bottom: 24px;
+        }
+        .page-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+        .page-header p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        /* Dashboard Stat Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .stat-card {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #2563eb;
+        }
+        .stat-card.success {
+            border-left-color: #16a34a;
+        }
+        .stat-card.warning {
+            border-left-color: #ca8a04;
+        }
+        .stat-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .stat-card.success .stat-value {
+            color: #16a34a;
+        }
+        .stat-card.warning .stat-value {
+            color: #ca8a04;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <div class="topbar">
+        <div class="topbar-brand">Quiz Examination System</div>
+        <div class="topbar-user">
+            <span>{{ session.get('fullname', 'duythai') }}</span>
+            <a href="/logout">Đăng xuất</a>
+        </div>
+    </div>
+
+    <!-- Main Layout Container -->
+    <div class="layout-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-label">Admin</div>
+            <ul class="sidebar-menu">
+                <li><a href="/admin/dashboard" class="active">Trang chủ</a></li>
+                <li><a href="/admin/users">Quản lý tài khoản</a></li>
+                <li><a href="#">Cấu hình hệ thống</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-card">
+                <div class="page-header">
+                    <h1>Trang chủ</h1>
+                    <p>Tổng quan hoạt động hệ thống</p>
+                </div>
+
+                <!-- Thẻ thống kê lấy dữ liệu từ SQLite -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">Tổng số tài khoản</div>
+                        <div class="stat-value">{{ total_users }}</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-title">Đang hoạt động</div>
+                        <div class="stat-value">{{ active_users }}</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-title">Chờ xử lý / Khóa</div>
+                        <div class="stat-value">{{ pending_users }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
