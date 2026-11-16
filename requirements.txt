@@ -1,9 +1,12 @@
 alembic==1.20.1
+asgiref==3.13.0
+Django==5.2.19
 Mako==1.4.3
 MarkupSafe==3.0.4
 psycopg==3.3.9
 psycopg-binary==3.3.9
 python-dotenv==1.2.4
 SQLAlchemy==2.0.57
+sqlparse==0.6.1
 typing_extensions==4.16.0
 Werkzeug==3.1.9
