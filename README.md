@@ -1,39 +1,48 @@
 # Quiz Examination System
 
-Dự án hệ thống thi trắc nghiệm của nhóm 04 trong môn Công nghệ phần mềm.
-Giảng viên chuẩn bị đề, sinh viên làm bài và xem kết quả, quản trị viên quản lý tài khoản.
+Hệ thống thi trắc nghiệm của nhóm 04, môn Công nghệ phần mềm. Admin quản lý tài khoản,
+giảng viên tạo câu hỏi và đề thi, sinh viên làm bài và xem kết quả.
 
-## Hiện tại đã có gì?
+**Hiện có:** tài liệu đặc tả và thiết kế; database 9 bảng kèm dữ liệu mẫu và kiểm thử; khung website Django.
+**Chưa có:** các chức năng của website. Công nghệ: Python + Django + PostgreSQL.
 
-- Tài liệu đặc tả, sơ đồ dữ liệu và bản thiết kế giao diện.
-- PostgreSQL với migration tạo đủ 9 bảng và dữ liệu mẫu cho task **S3-21**.
-- Kiểm thử database và hướng dẫn chạy, xem dữ liệu, quay lui khi cần.
+## Chạy website
 
-Website đăng nhập và làm bài chưa được triển khai. Theo tổng quan giai đoạn 3,
-định hướng là **Python + Flask + PostgreSQL**. Một số tài liệu kế hoạch cũ vẫn ghi
-Django + SQLite; khi triển khai tiếp cần đối chiếu với tài liệu giai đoạn 3.
+Làm trước phần "Lần đầu cài" trong [database/README.md](database/README.md) (cài thư viện,
+điền `.env`, tạo bảng và dữ liệu mẫu). `.env` cần có `SECRET_KEY`, `DEBUG=True`,
+`ALLOWED_HOSTS=localhost,127.0.0.1` (xem mẫu ở `.env.example`). Sau đó:
 
-## Bắt đầu từ đâu?
+```bash
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+docker compose up -d --wait db
+cd src
+python manage.py runserver
+```
 
-| Bạn muốn làm gì? | Đọc ở đâu? |
+Mở http://127.0.0.1:8000/health/ — thấy `{"status": "ok", "database": "ok"}` là chạy đúng.
+
+Kiểm thử: trong thư mục `src`, chạy `python manage.py test`; cuối kết quả có `OK` là đạt.
+
+## Muốn làm gì thì đọc đâu
+
+| Muốn | Đọc |
 | --- | --- |
-| Cài và chạy database, xem bằng Beekeeper/DBeaver | [Hướng dẫn database cho người mới](database/README.md) |
-| Biết tài khoản và dữ liệu demo | [Dữ liệu mẫu](database/seeds/README.md) |
-| Xem phần database đã được kiểm tra ra sao | [Kết quả kiểm thử](database/VERIFICATION.md) |
-| Biết cách làm việc qua Git và Jira | [Quy trình thành viên](MEMBER_WORKFLOW.md) |
-| Đọc yêu cầu môn học | [Guidelines](GUIDELINES.md) |
-| Xem kế hoạch nhóm | [Kế hoạch dự án](PROJECT_PLAN.md) |
+| Biết công nghệ và quy tắc viết code | [TECH_STACK.md](TECH_STACK.md) |
+| Cài và chạy database, xem bằng Beekeeper/DBeaver | [database/README.md](database/README.md) |
+| Tài khoản và dữ liệu demo | [database/seeds/README.md](database/seeds/README.md) |
+| Kết quả kiểm tra database | [database/VERIFICATION.md](database/VERIFICATION.md) |
+| Quy trình Git và Jira | [MEMBER_WORKFLOW.md](MEMBER_WORKFLOW.md) |
+| Kế hoạch các giai đoạn | [PROJECT_PLAN.md](PROJECT_PLAN.md) |
+| Yêu cầu môn học | [GUIDELINES.md](GUIDELINES.md) |
 
-## Các thư mục chính
+## Các thư mục
 
-| Thư mục | Nội dung |
+| Thư mục | Chứa gì |
 | --- | --- |
-| `docs/` | Đặc tả Word, mô hình dữ liệu, sơ đồ lớp, thiết kế giao diện |
-| `database/migrations/` | Các phiên bản tạo/cập nhật bảng |
-| `database/seeds/` | Lệnh tạo dữ liệu mẫu |
-| `tests/integration/` | Kiểm thử trực tiếp với PostgreSQL |
-| `src/` | Nơi triển khai mã nguồn ứng dụng tiếp theo |
+| `docs/` | Tài liệu đặc tả (Word), sơ đồ dữ liệu, sơ đồ lớp, thiết kế giao diện |
+| `database/` | Hướng dẫn chạy database, dữ liệu mẫu, kết quả kiểm tra |
+| `src/` | Mã nguồn website: `config/` (cấu hình, kiểm thử chung) và các app `accounts`, `questions`, `exams`, `attempts`, `results` (mỗi app có bảng và migration riêng) |
+| `tests/` | Kiểm thử hệ thống (dùng ở giai đoạn 4) |
 
-Cấu trúc bảng bám mục 6 trong tài liệu đặc tả và `docs/DataModel-Reviewed.drawio`.
-Thông tin kết nối riêng của mỗi máy nằm trong `.env`; chỉ đưa `.env.example`
-lên Git, không đưa mật khẩu thật lên repository.
+Cấu trúc bảng theo mục 6 tài liệu đặc tả và `docs/DataModel-Reviewed.drawio`.
+Mật khẩu và thông tin kết nối riêng của mỗi máy để trong `.env`; chỉ đưa `.env.example` lên GitHub.

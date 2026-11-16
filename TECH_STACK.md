@@ -1,60 +1,60 @@
-# Công nghệ và công cụ đã thống nhất
+# Công nghệ sử dụng
 
-Tài liệu này ghi lại lựa chọn công nghệ của nhóm 5 người cho Quiz Examination System. Đây là quyết định để triển khai; ứng dụng hiện chưa được xây dựng.
+Website viết bằng **Python + Django**, dữ liệu lưu trong **PostgreSQL**.
+Cả nhóm dùng chung bộ này; không tự chọn công nghệ khác (ví dụ Flask, SQLite).
+Mục ghi **(chờ xác nhận)** là đề xuất, nhóm cần đồng ý trước khi áp dụng.
 
-## 1. Bộ công nghệ đã chốt
+## 1. Dùng gì cho việc gì
 
-| Hạng mục | Lựa chọn | Sử dụng trong dự án |
+| Việc | Dùng | Ghi chú |
 | --- | --- | --- |
-| Loại ứng dụng | Web | Người dùng truy cập bằng trình duyệt. |
-| Ngôn ngữ backend | Python | Viết xử lý nghiệp vụ. |
-| Framework | Django | Xử lý request, dữ liệu, form và các luồng chức năng. |
-| Giao diện | Django Templates + HTML/CSS + Bootstrap | Dựng các trang giao diện trong cùng ứng dụng Django. |
-| Tương tác trên trình duyệt | JavaScript cơ bản | Hỗ trợ tương tác như đồng hồ đếm ngược và xác nhận nộp bài khi chức năng đó thuộc phạm vi. |
-| Đăng nhập | Django Authentication, dùng session | Tận dụng cơ chế tài khoản, đăng nhập và đăng xuất của Django. |
-| Phân quyền | Django Groups / Permissions và kiểm tra quyền phía server | Thiết lập quyền Admin, Teacher, Student theo yêu cầu đã thống nhất. |
-| Truy cập dữ liệu | Django ORM và migrations | Định nghĩa model, truy vấn và quản lý thay đổi cấu trúc dữ liệu. |
-| Cơ sở dữ liệu bản đầu | SQLite | Phát triển cục bộ và demo nhỏ. |
-| Kiểm thử tự động | Django TestCase và test client | Kiểm tra nghiệp vụ, truy cập dữ liệu và các luồng request / response. |
+| Ngôn ngữ | Python 3.12 – 3.14 | Các bản Django 5.2 hỗ trợ |
+| Khung website | Django 5.2 (bản hỗ trợ dài hạn, tới 4/2028) | Ghi bản cụ thể trong `requirements.txt`, hiện là `Django==5.2.19` |
+| Giao diện | Django Templates + Bootstrap 5 | Làm theo bản Figma trong `docs/` |
+| Lưu dữ liệu | PostgreSQL 17, chạy bằng Docker | [Hướng dẫn](database/README.md). Không dùng SQLite, kể cả khi test |
+| Tạo/sửa bảng | Django migrations | Chạy `makemigrations`, đọc lại file sinh ra; không sửa migration đã merge |
+| Tài khoản | Model `accounts.User` riêng, đăng nhập bằng email, lưu ở bảng `users` | Phải có trước lần `migrate` đầu tiên |
+| Đăng nhập, phiên | Có sẵn của Django, phiên lưu trong database | Tự đăng xuất sau 30 phút không hoạt động; tài khoản bị khóa mất phiên ngay |
+| Khóa tạm khi nhập sai | Tự viết | Sai 5 lần liên tiếp thì khóa 15 phút; khác với Admin khóa tài khoản |
+| Mật khẩu | Mã hóa có sẵn của Django | Ít nhất 8 ký tự, có cả chữ và số |
+| Chống giả mạo form (CSRF) | Có sẵn của Django | Mọi form gửi đi có `{% csrf_token %}` |
+| Tự nộp bài khi hết giờ | Lệnh chạy nền `python manage.py run_worker`, kiểm tra mỗi 5 giây **(chờ xác nhận)** | Khóa từng bài khi xử lý để không nộp/chấm trùng |
+| Kiểm thử | `python manage.py test` | Django tự tạo database thử riêng, không đụng dữ liệu thật |
+| Cấu hình bí mật | File `.env` trên máy mình (mẫu: `.env.example`) | `SECRET_KEY`, mật khẩu không viết trong code, không đưa lên GitHub |
 
-**Cách tổ chức đã chọn:** một ứng dụng Django, giao diện và backend trong cùng dự án. Thiết kế chi tiết sẽ dựa trên cấu trúc Model–View–Template (MVT) của Django và được mô tả ở giai đoạn 2.
+## 2. Code chia thành các phần
 
-Các phần dự kiến để chia công việc:
-
-| Phần | Trách nhiệm dự kiến |
+| Phần (app) | Lo việc gì |
 | --- | --- |
-| `accounts` | Tài khoản và phân quyền. |
-| `questions` | Ngân hàng câu hỏi và đáp án. |
-| `exams` | Tạo và quản lý đề thi. |
-| `submissions` | Làm bài, nộp bài, chấm điểm và kết quả. |
+| `config` | Cấu hình chung, đường dẫn gốc, trang `/health` kiểm tra website còn chạy |
+| `accounts` | Đăng ký Student, đăng nhập/đăng xuất, khóa tạm, Admin quản lý tài khoản |
+| `questions` | Ngân hàng câu hỏi và phương án |
+| `exams` | Tạo đề, phát hành đề, giao đề cho sinh viên |
+| `attempts` | Làm bài, tự lưu đáp án, nộp bài, tự nộp khi hết giờ |
+| `results` | Chấm điểm, công bố và xem kết quả |
 
-Đây là định hướng chia module; tên app, model và giao tiếp cụ thể sẽ được hoàn thiện trong [thiết kế kiến trúc](docs/02-design/01-architecture.md).
+Mỗi phần có `urls.py` riêng và phải được khai báo trong `config/urls.py`, nếu không trang sẽ báo 404.
+Trong mỗi phần: `views.py` nhận yêu cầu và kiểm tra quyền → `services.py` xử lý nghiệp vụ (tính điểm,
+khóa tài khoản…) → `models.py` lưu dữ liệu **(chờ xác nhận)**.
 
-## 2. Công cụ làm việc theo tài liệu nhóm hiện có
+## 3. Quy tắc bắt buộc khi viết code
 
-| Công việc | Công cụ / định dạng |
+- Tên bảng, cột đúng như mô hình dữ liệu đã duyệt (ví dụ `users.user_id`, `full_name`, `password_hash`).
+- Trạng thái viết HOA: `ADMIN`/`TEACHER`/`STUDENT`; `ACTIVE`/`LOCKED`/`DELETED`; `DRAFT`/`PUBLISHED`/`CLOSED`/`ARCHIVED`; `IN_PROGRESS`/`SUBMITTED`/`GRADED`.
+- Không cho xóa dữ liệu đang được bài thi dùng (khóa ngoại `PROTECT`), để giữ lịch sử.
+- Lưu giờ chuẩn quốc tế (UTC), hiển thị giờ Việt Nam.
+- Email bỏ khoảng trắng, đổi chữ thường trước khi lưu.
+- Kiểm tra quyền ở phía máy chủ; ẩn nút trên giao diện là chưa đủ.
+- Không chèn dữ liệu người dùng nhập vào JavaScript trong HTML (`onclick="...{{ }}..."`), tránh bị chèn mã độc.
+- Ràng buộc Django không viết được (khóa ngoại nhiều cột, chặn `NaN`, trigger `updated_at`) để trong file `0002_db_rules.py` của từng app.
+- Database đã tự chặn dữ liệu trùng, liên kết sai, giá trị không hợp lệ. Code website **phải tự kiểm tra** thêm:
+  không khóa Admin cuối cùng; câu hỏi kích hoạt phải có ≥ 2 phương án và đúng 1 đáp án đúng; không sửa đề đã
+  phát hành; hạn nộp và tự nộp; chấm đúng điểm; chỉ công bố điểm khi đủ điều kiện.
+
+## 4. Việc chưa quyết định
+
+| Việc | Cần quyết định gì |
 | --- | --- |
-| Quản lý phiên bản | Git; làm việc qua branch và Pull Request theo [MEMBER_WORKFLOW.md](MEMBER_WORKFLOW.md). |
-| Theo dõi công việc và lỗi | Jira. |
-| Vẽ DFD, Use Case, Class Diagram và mô hình dữ liệu | diagrams.net / draw.io; giữ file nguồn `.drawio` và xuất ảnh / PDF. |
-| Soạn và tổng hợp báo cáo | Microsoft Word (`.docx`); xuất PDF khi cần bàn giao. |
-| Lưu nội dung làm việc trong repo | Markdown (`.md`). |
-| Danh sách test case và lỗi | Mẫu CSV trong `docs/04-testing/`, có thể mở bằng Excel. |
-
-Nơi lưu từng phần và trách nhiệm TV1–TV5 nằm trong [hướng dẫn tổ chức tài liệu](docs/README.md) và [kế hoạch dự án](PROJECT_PLAN.md).
-
-## 3. Những điểm chưa chốt
-
-- **Phiên bản:** chọn bộ Python, Django, Bootstrap và các thư viện tương thích khi dựng ứng dụng; ghi cố định phiên bản để các máy dùng thống nhất.
-- **Phạm vi nghiệp vụ:** chức năng, quy tắc thi, cách tính điểm, số lần thi và thời điểm công bố kết quả vẫn cần hoàn thiện trong giai đoạn 1. Chốt công nghệ không thay thế việc chốt yêu cầu.
-- **Cơ sở dữ liệu khi triển khai thi đồng thời:** SQLite được chọn cho bản đầu / demo nhỏ. Nếu mục tiêu có nhiều thí sinh thi đồng thời, nhóm sẽ đánh giá PostgreSQL và chốt môi trường kiểm thử tương ứng trước khi triển khai phần đó.
-- **Bàn giao / triển khai:** chưa chốt hosting, tên miền hoặc Docker.
-- **Thiết kế giao diện:** chưa chốt công cụ wireframe / mockup; có thể chọn khi TV3 bắt đầu phần này.
-- **Kiến trúc trong báo cáo môn học:** đối chiếu cách tổ chức Django với kiến trúc / mẫu thiết kế đã học, hoàn thiện lý do lựa chọn ở giai đoạn 2.
-
-## 4. Cách triển khai với AI hỗ trợ
-
-- Làm theo từng chức năng và FR / Use Case đã chốt, hoàn thành một luồng có giao diện, xử lý và lưu dữ liệu trước khi chuyển việc tiếp theo.
-- Nêu rõ Django Templates, Bootstrap, model liên quan và tiêu chí nghiệm thu trong yêu cầu gửi AI.
-- Người nhận task đọc lại mã nguồn, chạy thử, viết / chạy kiểm thử phù hợp và gửi Pull Request để thành viên khác rà soát.
-- Với phân quyền, chấm điểm, nộp bài và giới hạn giờ, kiểm tra kết quả ở phía server; giao diện chỉ hỗ trợ thao tác và hiển thị.
+| Đưa website lên mạng | Chỉ demo trên máy cá nhân, hay thuê máy chủ để truy cập qua Internet |
+| Thử tải | Cách kiểm tra website chịu được 500 sinh viên thi cùng lúc như đặc tả yêu cầu |
+| Sao lưu | Cách sao lưu dữ liệu hằng ngày và khôi phục khi có sự cố |
