@@ -8,8 +8,8 @@ Mục ghi **(chờ xác nhận)** là đề xuất, nhóm cần đồng ý trư�
 
 | Việc | Dùng | Ghi chú |
 | --- | --- | --- |
-| Ngôn ngữ | Python 3.12 trở lên | |
-| Khung website | Django | Phiên bản ghi cố định trong `requirements.txt` |
+| Ngôn ngữ | Python 3.12 – 3.14 | Các bản Django 5.2 hỗ trợ |
+| Khung website | Django 5.2 (bản hỗ trợ dài hạn, tới 4/2028) | Ghi bản cụ thể trong `requirements.txt`, hiện là `Django==5.2.19` |
 | Giao diện | Django Templates + Bootstrap 5 | Làm theo bản Figma trong `docs/` |
 | Lưu dữ liệu | PostgreSQL 17, chạy bằng Docker | [Hướng dẫn](database/README.md). Không dùng SQLite, kể cả khi test |
 | Tạo/sửa bảng | Django migrations | Chạy `makemigrations`, đọc lại file sinh ra; không sửa migration đã merge |
@@ -51,7 +51,6 @@ khóa tài khoản…) → `models.py` lưu dữ liệu **(chờ xác nhận)**.
 
 | Việc | Cần quyết định gì |
 | --- | --- |
-| Phiên bản Django | Cả nhóm dùng chung bản nào (ví dụ 5.2 hoặc 6.1) |
 | Đưa website lên mạng | Chỉ demo trên máy cá nhân, hay thuê máy chủ để truy cập qua Internet |
 | Thử tải | Cách kiểm tra website chịu được 500 sinh viên thi cùng lúc như đặc tả yêu cầu |
 | Sao lưu | Cách sao lưu dữ liệu hằng ngày và khôi phục khi có sự cố |

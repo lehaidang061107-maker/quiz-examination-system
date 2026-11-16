@@ -63,7 +63,7 @@ file database: *.db, *.sqlite3
 __pycache__/, .venv/
 ```
 
-Khi thêm thư viện, **thêm dòng** vào `requirements.txt` với phiên bản cố định (ví dụ `Django==6.1.3`).
+Khi thêm thư viện, **thêm dòng** vào `requirements.txt` với phiên bản cố định (ví dụ `Django==5.2.19`).
 Không chạy `pip freeze > requirements.txt` vì lệnh này ghi đè thư viện của người khác;
 trên Windows PowerShell còn lưu file thành UTF-16.
 
