@@ -1,48 +1,13 @@
-# Kết quả kiểm tra task S3-21
+# Kết quả kiểm tra database
 
-> Kết quả dưới đây là của bản Alembic (`0001`). Sau khi chuyển schema sang Django migrations,
-> báo cáo này sẽ được chạy lại và cập nhật; 37 tình huống dữ liệu sai được giữ nguyên.
+**Đạt 8/8 bài kiểm tra.** Thử nhập 37 kiểu dữ liệu sai, database đều chặn lại đúng.
 
-**Kết quả: 8/8 bài kiểm thử đạt.** Một bài có thêm 37 tình huống nhập dữ liệu sai;
-tất cả đều bị database từ chối đúng như mong đợi.
+Đã kiểm tra:
+- Tạo được đủ 9 bảng, xóa đi rồi tạo lại được.
+- Không cho lưu dữ liệu trùng hoặc sai (vai trò lạ, điểm âm, thời gian ngược…).
+- Mỗi sinh viên chỉ có một lượt làm và một kết quả cho mỗi đề.
+- Tạo dữ liệu mẫu nhiều lần không bị trùng; mật khẩu được mã hóa; điểm mẫu tính đúng.
 
-Ghi nhận ngày **12/11/2026** trên macOS, Python 3.14.2 và PostgreSQL 17.11 qua Docker.
-Phiên bản database: `0001 (head)`. Lần chạy đã ghi nhận mất 1.335 giây.
+Muốn tự kiểm tra lại: làm theo mục "Kiểm tra" trong [hướng dẫn database](README.md).
 
-## Đã kiểm tra những gì?
-
-| Nội dung | Kết quả |
-| --- | --- |
-| Tạo database từ đầu bằng migration | Đủ 9 bảng nghiệp vụ và bảng theo dõi phiên bản |
-| Quay lui rồi tạo lại | Xóa được bảng/hàm tự cập nhật thời gian, sau đó tạo và nạp mẫu lại được |
-| Dữ liệu sai hoặc trùng | Chặn email trùng/chưa chuẩn hóa, trạng thái/vai trò sai, nội dung rỗng, điểm/thời gian/số câu không hợp lệ |
-| Liên kết giữa các bảng | Chặn tham chiếu không tồn tại, sai đề/câu/phương án và xóa dữ liệu đang được tham chiếu |
-| Một lượt và một kết quả | Chặn lượt, câu trả lời và kết quả bị trùng |
-| Trường được để trống | Cho phép bỏ chọn đáp án, câu nháp chưa có nội dung và đề không giới hạn thời lượng/lịch |
-| Chạy lại dữ liệu mẫu | Không thêm dòng hoặc đổi dữ liệu/mật khẩu đã có |
-| Mật khẩu và điểm demo | Mật khẩu băm kiểm tra được; điểm, tổng điểm và số câu khớp phép tính từ đáp án |
-| Thời gian cập nhật và chỉ mục | Tự cập nhật `updated_at` trên 3 bảng; có các chỉ mục hỗ trợ tra cứu |
-
-Ngoài ra, đã kiểm tra xuất SQL để xem trước migration/rollback, định dạng thay đổi
-Git và việc Git bỏ qua `.env`/`.venv`.
-
-## Tự chạy lại
-
-Mở Docker Desktop. Tại thư mục gốc dự án, chạy:
-
-```bash
-source .venv/bin/activate
-docker compose up -d --wait db
-python -m unittest discover -s tests/integration -v
-```
-
-Cuối màn hình phải có `Ran 8 tests` và `OK`. Chi tiết nằm ở
-`tests/integration/test_database.py`.
-
-Test chạy trong khu vực tạm, không xóa bảng ứng dụng trong `public`. Sau lần kiểm
-tra đã ghi nhận, khu vực tạm được dọn và dữ liệu demo vẫn đủ như bảng số lượng
-trong [hướng dẫn dữ liệu mẫu](seeds/README.md).
-
-Báo cáo này xác nhận phần database. Website, phân quyền, phát hành đề, nộp/chấm bài,
-công bố điểm và tải 500 sinh viên cần được kiểm tra ở các task ứng dụng tiếp theo.
-Xem [hướng dẫn chạy và phạm vi bàn giao](README.md).
+Chưa kiểm tra: website, phân quyền, nộp bài, chấm điểm, chịu tải nhiều người thi cùng lúc.
