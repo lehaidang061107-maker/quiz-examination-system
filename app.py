@@ -1,11 +1,9 @@
-from flask import Flask
-from src.routes import main_bp
+# app.py
+from src import create_app
+import os
 
-app = Flask(__name__, template_folder='src/templates')
-app.secret_key = 'quiz_examination_secret_key'  # Khóa bảo mật cho session và flash message
-
-# Đăng ký Blueprint
-app.register_blueprint(main_bp)
+app = create_app()
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    port = int(os.getenv("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
