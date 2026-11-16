@@ -8,27 +8,20 @@ giảng viên tạo câu hỏi và đề thi, sinh viên làm bài và xem kết
 
 ## Chạy website
 
-Làm trước phần "Lần đầu cài" trong [database/README.md](database/README.md). Sau đó:
-
-1. Mở file `.env`, thêm 3 dòng (xem mẫu ở `.env.example`):
-   `SECRET_KEY=` (chuỗi bí mật, tạo bằng `python -c "import secrets; print(secrets.token_urlsafe(50))"`),
-   `DEBUG=True`, `ALLOWED_HOSTS=localhost,127.0.0.1`.
-2. Chạy:
+Làm trước phần "Lần đầu cài" trong [database/README.md](database/README.md) (cài thư viện,
+điền `.env`, tạo bảng và dữ liệu mẫu). `.env` cần có `SECRET_KEY`, `DEBUG=True`,
+`ALLOWED_HOSTS=localhost,127.0.0.1` (xem mẫu ở `.env.example`). Sau đó:
 
 ```bash
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
 docker compose up -d --wait db
 cd src
 python manage.py runserver
 ```
 
-3. Mở http://127.0.0.1:8000/health/ — thấy `{"status": "ok", "database": "ok"}` là chạy đúng.
+Mở http://127.0.0.1:8000/health/ — thấy `{"status": "ok", "database": "ok"}` là chạy đúng.
 
 Kiểm thử: trong thư mục `src`, chạy `python manage.py test`; cuối kết quả có `OK` là đạt.
-
-> **Chưa chạy `python manage.py migrate`.** Bảng tài khoản riêng của dự án sẽ có khi chuyển
-> database sang Django; migrate trước sẽ tạo sai bảng tài khoản và phải làm lại.
 
 ## Muốn làm gì thì đọc đâu
 
@@ -47,9 +40,9 @@ Kiểm thử: trong thư mục `src`, chạy `python manage.py test`; cuối k�
 | Thư mục | Chứa gì |
 | --- | --- |
 | `docs/` | Tài liệu đặc tả (Word), sơ đồ dữ liệu, sơ đồ lớp, thiết kế giao diện |
-| `database/` | Tạo bảng, dữ liệu mẫu, hướng dẫn database |
-| `tests/` | Kiểm thử |
-| `src/` | Mã nguồn website: `config/` (cấu hình) và các app `accounts`, `questions`, `exams`, `attempts`, `results` |
+| `database/` | Hướng dẫn chạy database, dữ liệu mẫu, kết quả kiểm tra |
+| `src/` | Mã nguồn website: `config/` (cấu hình, kiểm thử chung) và các app `accounts`, `questions`, `exams`, `attempts`, `results` (mỗi app có bảng và migration riêng) |
+| `tests/` | Kiểm thử hệ thống (dùng ở giai đoạn 4) |
 
 Cấu trúc bảng theo mục 6 tài liệu đặc tả và `docs/DataModel-Reviewed.drawio`.
 Mật khẩu và thông tin kết nối riêng của mỗi máy để trong `.env`; chỉ đưa `.env.example` lên GitHub.

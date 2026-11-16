@@ -6,12 +6,16 @@ Chỉ dùng trên database của máy mình hoặc máy demo.
 Tạo bằng lệnh (sau khi đã cài database theo [hướng dẫn](../README.md)):
 
 ```bash
-python database/seeds/seed_demo.py
+cd src
+python manage.py seed_demo
 ```
+
+Code của lệnh nằm ở `src/accounts/management/commands/seed_demo.py`.
 
 ## Tài khoản mẫu
 
-Mật khẩu cả 4 tài khoản là `DEMO_PASSWORD` trong file `.env` (khác mật khẩu database), được lưu dạng mã hóa.
+Mật khẩu cả 4 tài khoản là `DEMO_PASSWORD` trong file `.env` (ít nhất 8 ký tự, có cả chữ và số,
+khác mật khẩu database), được lưu dạng mã hóa. Đăng nhập bằng email.
 
 | Vai trò | Email |
 | --- | --- |
