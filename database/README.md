@@ -1,5 +1,10 @@
 # Chạy và xem database của dự án
 
+> **Sắp thay đổi:** nhóm đã chốt Django (xem [TECH_STACK.md](../TECH_STACK.md)). 9 bảng dưới đây
+> sẽ được chuyển từ Alembic sang Django migrations. Cho tới khi PR chuyển schema được merge,
+> các lệnh Alembic trong file này vẫn dùng bình thường. Docker, `.env` và kết nối
+> Beekeeper/DBeaver giữ nguyên sau khi chuyển. Không tạo thêm migration Alembic mới.
+
 Database là nơi lưu dữ liệu của hệ thống thi trắc nghiệm. Task **S3-21** đã có
 9 bảng, dữ liệu mẫu, lệnh tạo/quay lui bảng và kiểm thử. Website đăng nhập, làm bài
 sẽ được xây dựng ở các task khác.

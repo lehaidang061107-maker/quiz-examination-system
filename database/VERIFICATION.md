@@ -1,5 +1,8 @@
 # Kết quả kiểm tra task S3-21
 
+> Kết quả dưới đây là của bản Alembic (`0001`). Sau khi chuyển schema sang Django migrations,
+> báo cáo này sẽ được chạy lại và cập nhật; 37 tình huống dữ liệu sai được giữ nguyên.
+
 **Kết quả: 8/8 bài kiểm thử đạt.** Một bài có thêm 37 tình huống nhập dữ liệu sai;
 tất cả đều bị database từ chối đúng như mong đợi.
 
