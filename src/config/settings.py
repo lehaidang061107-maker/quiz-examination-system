@@ -81,12 +81,16 @@ DATABASES = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Mật khẩu ít nhất 8 ký tự (đặc tả). Kiểm tra "có cả chữ và số" thêm ở app accounts.
+# Tài khoản riêng của dự án: bảng users, đăng nhập bằng email.
+AUTH_USER_MODEL = "accounts.User"
+
+# Mật khẩu ít nhất 8 ký tự, có cả chữ và số (đặc tả).
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {"NAME": "accounts.validators.LetterAndDigitValidator"},
 ]
 
 # Phiên lưu trong database, tự hết hạn sau 30 phút không hoạt động (NFR-SEC-01, NFR-SEC-08).
