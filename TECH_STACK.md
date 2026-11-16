@@ -46,6 +46,10 @@ khóa tài khoản…) → `models.py` lưu dữ liệu **(chờ xác nhận)**.
 - Email bỏ khoảng trắng, đổi chữ thường trước khi lưu.
 - Kiểm tra quyền ở phía máy chủ; ẩn nút trên giao diện là chưa đủ.
 - Không chèn dữ liệu người dùng nhập vào JavaScript trong HTML (`onclick="...{{ }}..."`), tránh bị chèn mã độc.
+- Ràng buộc Django không viết được (khóa ngoại nhiều cột, chặn `NaN`, trigger `updated_at`) để trong file `0002_db_rules.py` của từng app.
+- Database đã tự chặn dữ liệu trùng, liên kết sai, giá trị không hợp lệ. Code website **phải tự kiểm tra** thêm:
+  không khóa Admin cuối cùng; câu hỏi kích hoạt phải có ≥ 2 phương án và đúng 1 đáp án đúng; không sửa đề đã
+  phát hành; hạn nộp và tự nộp; chấm đúng điểm; chỉ công bố điểm khi đủ điều kiện.
 
 ## 4. Việc chưa quyết định
 
