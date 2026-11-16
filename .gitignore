@@ -19,3 +19,8 @@ Desktop.ini
 __pycache__/
 *.py[cod]
 .pytest_cache/
+
+# Database cục bộ: dự án dùng PostgreSQL, không đưa file database lên Git
+*.db
+*.sqlite
+*.sqlite3
