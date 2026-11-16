@@ -7,13 +7,13 @@ Kế hoạch này dành cho **nhóm 5 người**, triển khai bốn giai đoạ
 | Hạng mục | Trạng thái / thông tin |
 | --- | --- |
 | Số lượng thành viên | 5 người |
-| Tên thành viên | Điền tên tương ứng TV1–TV5 ở mục 3; phân công giai đoạn 1 theo nội dung nhóm đã soạn |
-| Phạm vi chức năng và vai trò người dùng | Chốt trong giai đoạn 1 |
-| Ngôn ngữ, framework, giao diện | Đã chốt Python + Django + Django Templates + Bootstrap; xem [TECH_STACK.md](TECH_STACK.md) |
-| Cơ sở dữ liệu và kiểm thử | SQLite cho bản đầu / demo nhỏ; Django ORM, Django TestCase và test client |
-| Phiên bản công nghệ và triển khai | Thống nhất khi dựng ứng dụng; môi trường thi đồng thời cần đánh giá database riêng |
-| Kiến trúc / mẫu thiết kế đã học sẽ áp dụng | Đã chọn một ứng dụng Django theo MVT; hoàn thiện thiết kế và đối chiếu kiến thức môn học ở giai đoạn 2 |
-| Ngưỡng chất lượng và môi trường kiểm thử | Xác định từ yêu cầu phi chức năng, chốt trước triển khai |
+| Tên thành viên | Điền tên tương ứng TV1–TV5 ở mục 3 **(cần bổ sung)** |
+| Phạm vi chức năng và vai trò người dùng | Đã chốt trong tài liệu đặc tả (`docs/Requirement Specification & Design Document.docx`) |
+| Ngôn ngữ, framework, giao diện | Python + Django + Django Templates + Bootstrap; chi tiết trong [TECH_STACK.md](TECH_STACK.md) |
+| Cơ sở dữ liệu và kiểm thử | PostgreSQL 17 + Django migrations (chuyển từ Alembic của S3-21); kiểm thử bằng Django `TestCase` trên PostgreSQL |
+| Phiên bản công nghệ và triển khai | Phiên bản ghi cố định trong `requirements.txt`; hosting chưa chốt |
+| Kiến trúc / mẫu thiết kế đã học sẽ áp dụng | MVT của Django thêm lớp service cho quy tắc nghiệp vụ; xem [TECH_STACK.md](TECH_STACK.md) mục 2 |
+| Ngưỡng chất lượng và môi trường kiểm thử | Theo NFR trong tài liệu đặc tả (ví dụ NFR-PER-01: 500 Student đồng thời); môi trường đo chưa chốt |
 
 ## 2. Lộ trình tổng quan
 
@@ -42,7 +42,7 @@ Phân công này không cố định vai trò cho toàn dự án. Các vai trò 
 
 Thực hiện luồng task, branch và Pull Request theo [MEMBER_WORKFLOW.md](MEMBER_WORKFLOW.md). Chia các đầu việc dưới đây thành Jira task nhỏ, có người phụ trách, người rà soát, phụ thuộc và tiêu chí nghiệm thu cụ thể.
 
-File khởi đầu và vị trí lưu sản phẩm của từng thành viên được liệt kê trong [hướng dẫn tổ chức tài liệu](docs/README.md).
+Tài liệu và sơ đồ của nhóm được lưu trong thư mục [`docs/`](docs/).
 
 ## 4. Giai đoạn 1 — Phân tích và đặc tả yêu cầu
 
@@ -147,7 +147,7 @@ Các câu hỏi trên dùng để khảo sát, không mặc định tất cả c
 | P2-02 | Mô tả trạng thái giao diện: dữ liệu trống, nhập sai, tải dữ liệu, thành công và lỗi khi phù hợp. | Interface Design Description. | Thiết kế |
 | P2-03 | Chọn kiến trúc hoặc mẫu thiết kế phù hợp đã học; nêu lý do và trách nhiệm từng thành phần. | Sơ đồ và mô tả kiến trúc. | Thiết kế + lập trình |
 | P2-04 | Thiết kế mô hình dữ liệu; xác định bảng, thuộc tính, kiểu dữ liệu, khóa chính, khóa ngoại, ràng buộc và quan hệ khi áp dụng. | Data Model, sơ đồ quan hệ và mô tả dữ liệu. | Thiết kế |
-| P2-05 | Cụ thể hóa [bộ công nghệ đã chốt](TECH_STACK.md): phiên bản, cấu trúc Django, giao tiếp giữa các thành phần và môi trường chạy. | Phiên bản thống nhất, cấu trúc dự kiến và đặc tả giao tiếp phù hợp kiến trúc. | Lập trình + thiết kế |
+| P2-05 | Cụ thể hóa [bộ công nghệ đã chốt](TECH_STACK.md): phiên bản, cấu trúc Django app, giao tiếp giữa các thành phần và môi trường chạy. | Phiên bản thống nhất, cấu trúc dự kiến và đặc tả giao tiếp phù hợp kiến trúc. | Lập trình + thiết kế |
 | P2-06 | Cập nhật Class Diagram theo thiết kế; kiểm tra khả năng truy vết từ yêu cầu tới màn hình và dữ liệu. | Bộ sơ đồ cập nhật và bảng liên kết yêu cầu – thiết kế. | Phân tích nghiệp vụ + thiết kế |
 | P2-07 | Hoàn thiện tài liệu đủ bảy phần theo [GUIDELINES.md](GUIDELINES.md); rà soát và chia task triển khai. | Bộ tài liệu M2 và backlog triển khai. | Cả nhóm, PM điều phối |
 
@@ -174,6 +174,8 @@ Các câu hỏi trên dùng để khảo sát, không mặc định tất cả c
 | P3-06 | Chạy thử các luồng chính, chuẩn bị dữ liệu kiểm thử và bản ứng dụng cho giai đoạn 4. | Bản M3, hướng dẫn chạy và danh sách lỗi còn mở. | Lập trình + kiểm thử |
 
 Với chức năng chấm điểm hoặc giới hạn thời gian, nếu thuộc phạm vi, ưu tiên kiểm thử quy tắc tính điểm và các tình huống nộp bài / hết giờ ngay trong giai đoạn này.
+
+> Ghi chú: tài liệu giai đoạn 1–2 đã bàn giao trong `docs/`. Nhóm cần rà lại và đánh dấu các checklist M1, M2 ở trên cho khớp thực tế.
 
 **Tiêu chí hoàn thành M3:**
 

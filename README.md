@@ -9,9 +9,9 @@ Giảng viên chuẩn bị đề, sinh viên làm bài và xem kết quả, qu�
 - PostgreSQL với migration tạo đủ 9 bảng và dữ liệu mẫu cho task **S3-21**.
 - Kiểm thử database và hướng dẫn chạy, xem dữ liệu, quay lui khi cần.
 
-Website đăng nhập và làm bài chưa được triển khai. Theo tổng quan giai đoạn 3,
-định hướng là **Python + Flask + PostgreSQL**. Một số tài liệu kế hoạch cũ vẫn ghi
-Django + SQLite; khi triển khai tiếp cần đối chiếu với tài liệu giai đoạn 3.
+Website đăng nhập và làm bài chưa được triển khai. Công nghệ của giai đoạn 3 là
+**Python + Django + PostgreSQL**; xem [TECH_STACK.md](TECH_STACK.md) trước khi bắt đầu code.
+Schema hiện viết bằng Alembic (S3-21) và sẽ được chuyển sang Django migrations.
 
 ## Bắt đầu từ đâu?
 
@@ -20,6 +20,7 @@ Django + SQLite; khi triển khai tiếp cần đối chiếu với tài liệu 
 | Cài và chạy database, xem bằng Beekeeper/DBeaver | [Hướng dẫn database cho người mới](database/README.md) |
 | Biết tài khoản và dữ liệu demo | [Dữ liệu mẫu](database/seeds/README.md) |
 | Xem phần database đã được kiểm tra ra sao | [Kết quả kiểm thử](database/VERIFICATION.md) |
+| Biết công nghệ và cấu trúc mã nguồn | [Công nghệ đã thống nhất](TECH_STACK.md) |
 | Biết cách làm việc qua Git và Jira | [Quy trình thành viên](MEMBER_WORKFLOW.md) |
 | Đọc yêu cầu môn học | [Guidelines](GUIDELINES.md) |
 | Xem kế hoạch nhóm | [Kế hoạch dự án](PROJECT_PLAN.md) |
