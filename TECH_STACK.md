@@ -47,12 +47,11 @@ khóa tài khoản…) → `models.py` lưu dữ liệu **(chờ xác nhận)**.
 - Kiểm tra quyền ở phía máy chủ; ẩn nút trên giao diện là chưa đủ.
 - Không chèn dữ liệu người dùng nhập vào JavaScript trong HTML (`onclick="...{{ }}..."`), tránh bị chèn mã độc.
 
-## 4. Chuyển database hiện có sang Django
+## 4. Việc chưa quyết định
 
-9 bảng hiện tạo bằng Alembic sẽ được viết lại thành Django ngay sau khi dựng xong khung website:
-lệnh tạo dữ liệu mẫu thành `python manage.py seed_demo`; 37 tình huống kiểm tra dữ liệu sai giữ nguyên.
-Docker, `.env` và kết nối Beekeeper không đổi. Trong lúc chờ, không ai tạo thêm bảng mới.
-
-## 5. Chưa chốt
-
-Phiên bản Django cụ thể; nơi đưa website lên mạng; cách đo khi 500 sinh viên thi cùng lúc; cách sao lưu dữ liệu hằng ngày.
+| Việc | Cần quyết định gì |
+| --- | --- |
+| Phiên bản Django | Cả nhóm dùng chung bản nào (ví dụ 5.2 hoặc 6.1) |
+| Đưa website lên mạng | Chỉ demo trên máy cá nhân, hay thuê máy chủ để truy cập qua Internet |
+| Thử tải | Cách kiểm tra website chịu được 500 sinh viên thi cùng lúc như đặc tả yêu cầu |
+| Sao lưu | Cách sao lưu dữ liệu hằng ngày và khôi phục khi có sự cố |
