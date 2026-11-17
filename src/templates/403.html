@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Không có quyền{% endblock %}
+{% block page_title %}Không có quyền truy cập{% endblock %}
+{% block page_subtitle %}Mã lỗi 403{% endblock %}
+{% block auth_title %}Không có quyền truy cập{% endblock %}
+
+{% block content %}{% include "partials/error_body.html" with message="Bạn không có quyền truy cập trang này." %}{% endblock %}
+{% block auth_content %}{% include "partials/error_body.html" with message="Bạn không có quyền truy cập trang này." %}{% endblock %}

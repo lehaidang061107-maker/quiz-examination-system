@@ -77,6 +77,65 @@ python manage.py migrate
 
 Commit file migration cùng với model. Không sửa migration đã merge, không `CREATE TABLE` trong code.
 
+### Viết một trang (MVC)
+
+Kiến trúc MVC xem [TECH_STACK.md](TECH_STACK.md). Một trang gồm 3 phần:
+
+**1. `views.py` (Controller):** kiểm tra quyền, gọi phương thức Model, báo kết quả bằng `messages`.
+
+```python
+from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.shortcuts import redirect, render
+
+from accounts.decorators import role_required
+from accounts.models import Role
+
+
+@role_required(Role.TEACHER)                   # BẮT BUỘC: sai vai trò -> 403, chưa đăng nhập -> trang Đăng nhập
+def publish_exam(request, exam_id):
+    teacher = request.user.as_role()            # lớp Teacher theo sơ đồ lớp
+    exam = teacher.manage_exam(exam_id)         # đề của người khác -> 403 tự động
+    if request.method == "POST":
+        try:
+            exam.publish()                      # quy tắc nghiệp vụ nằm trong Model
+            messages.success(request, "Đã phát hành đề thi.")
+            return redirect("exams:list")
+        except ValidationError as error:
+            for text in error.messages:         # thông báo tiếng Việt có sẵn trong Model
+                messages.error(request, text)
+    return render(request, "exams/publish.html", {"exam": exam})
+```
+
+**2. `templates/<app>/<trang>.html` (View):** kế thừa layout chung, chỉ điền các block.
+
+```html
+{% extends "base.html" %}
+{% block title %}Phát hành đề{% endblock %}
+{% block page_title %}Phát hành đề thi{% endblock %}
+{% block page_subtitle %}{{ exam.title }}{% endblock %}
+{% block page_actions %}<a class="btn btn-outline-secondary" href="{% url 'exams:list' %}">Quay lại</a>{% endblock %}
+{% block content %}
+  <form method="post">{% csrf_token %}
+    <button class="btn btn-primary">Phát hành</button>
+  </form>
+{% endblock %}
+```
+
+Trang chưa đăng nhập (Đăng nhập, Đăng ký) dùng các block `auth_title`, `auth_subtitle`, `auth_content`.
+Thông báo `messages`, thanh trên, menu trái đã có sẵn trong `base.html`, không viết lại.
+
+**3. `urls.py`:** đặt `name=` đúng như menu trong `src/config/navigation.py` (ví dụ `questions:list`,
+`exams:list`, `accounts:login`, `accounts:logout`). Đúng tên thì menu tự hiện link; chưa có thì hiện mờ "Sắp có".
+
+Quy tắc:
+
+- Mọi view cần đăng nhập đều có `@role_required(...)`. Ẩn nút trên giao diện là chưa đủ.
+- Không tính toán nghiệp vụ trong view hay template; thiếu phương thức thì thêm vào Model (báo PM để cập nhật sơ đồ lớp).
+- Form gửi dữ liệu dùng `method="post"` và `{% csrf_token %}`.
+- Test quyền: vai trò khác mở thẳng URL phải nhận 403 (xem mẫu `src/config/tests/test_layout.py`).
+- Trước khi có trang Đăng nhập (S3-03), thử giao diện bằng unit test với `self.client.force_login(user)`.
+
 ---
 
 ## 4. Test

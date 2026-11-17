@@ -1,0 +1,55 @@
+/* Giao diện chung theo bản Figma (docs/Quiz-Examination-System-UI-Figma-Import).
+   Trang riêng chỉ dùng class Bootstrap; màu và khung chung sửa ở đây. */
+:root {
+  --qes-topbar: #2465b1;
+  --qes-sidebar: #102944;
+  --qes-sidebar-text: #c6d5e5;
+  --qes-sidebar-label: #a9c5e2;
+  --qes-primary: #286cc4;
+  --qes-page: #f5f7fa;
+  --qes-text: #33445a;
+  --qes-muted: #54677f;
+  --qes-success: #16834e;
+  --qes-success-bg: #e6f5ed;
+  --bs-primary: #286cc4;
+  --bs-primary-rgb: 40, 108, 196;
+  --bs-body-font-family: "Inter", Arial, sans-serif;
+  --bs-body-color: #33445a;
+}
+
+body { background: var(--qes-page); min-height: 100vh; }
+
+.btn-primary { --bs-btn-bg: var(--qes-primary); --bs-btn-border-color: var(--qes-primary);
+  --bs-btn-hover-bg: #1f5aa6; --bs-btn-hover-border-color: #1f5aa6; }
+
+/* Thanh trên */
+.qes-topbar { background: var(--qes-topbar); height: 56px; }
+.qes-topbar .navbar-brand { font-weight: 700; color: #fff; }
+.qes-topbar .nav-link, .qes-topbar .btn-link { color: #fff; text-decoration: none; font-size: .9rem; }
+
+/* Thanh bên trái */
+/* !important: Bootstrap offcanvas-lg tự đặt nền trong suốt ở màn hình lớn */
+.qes-sidebar { background: var(--qes-sidebar) !important; width: 196px; flex-shrink: 0; }
+@media (min-width: 992px) { .qes-sidebar { min-height: calc(100vh - 56px); } }
+.qes-sidebar .qes-role { color: var(--qes-sidebar-label); font-size: .75rem; font-weight: 700; letter-spacing: .04em; }
+.qes-sidebar .nav-link { color: var(--qes-sidebar-text); border-radius: 6px; padding: .45rem .75rem; font-size: .9rem; }
+.qes-sidebar .nav-link:hover { color: #fff; background: rgba(255, 255, 255, .06); }
+.qes-sidebar .nav-link.active { color: #fff; background: var(--qes-primary); }
+.qes-sidebar .nav-link.disabled { color: #6f84a0; }
+.qes-sidebar .qes-soon { font-size: .7rem; opacity: .8; }
+
+/* Khung nội dung */
+.qes-card { background: #fff; border: 1px solid #e3e9f1; border-radius: 8px; }
+.qes-subtitle { color: var(--qes-muted); font-size: .9rem; }
+
+/* Thẻ số liệu trên Trang chủ: viền màu bên trái */
+.qes-stat { border-left: 4px solid var(--qes-primary); }
+.qes-stats > :nth-child(3n+2) .qes-stat { border-left-color: #f0a030; }
+.qes-stats > :nth-child(3n+3) .qes-stat { border-left-color: var(--qes-success); }
+
+/* Nhãn trạng thái (Hoạt động, Đang mở...) */
+.badge-qes-success { background: var(--qes-success-bg); color: var(--qes-success); }
+
+/* Trang không đăng nhập (Đăng nhập, Đăng ký) */
+.qes-auth { background: #eef4fc; }
+.qes-auth .qes-brand { color: #1a5794; font-weight: 700; }

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Không tìm thấy trang{% endblock %}
+{% block page_title %}Không tìm thấy trang{% endblock %}
+{% block page_subtitle %}Mã lỗi 404{% endblock %}
+{% block auth_title %}Không tìm thấy trang{% endblock %}
+
+{% block content %}{% include "partials/error_body.html" with message="Trang bạn tìm không tồn tại hoặc đã bị xóa." %}{% endblock %}
+{% block auth_content %}{% include "partials/error_body.html" with message="Trang bạn tìm không tồn tại hoặc đã bị xóa." %}{% endblock %}
