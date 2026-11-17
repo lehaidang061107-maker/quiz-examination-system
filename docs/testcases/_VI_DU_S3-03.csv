@@ -1,0 +1,31 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-03-01,Login (FR-02),"1. Mở trang Đăng nhập (/accounts/login/)
+2. Nhập email và mật khẩu đúng của Student
+3. Bấm 'Đăng nhập'","Email: student1@demo.example
+Mật khẩu: Kiemthu2026","Đăng nhập thành công, chuyển tới trang Danh sách bài thi của Student; thanh menu hiện tên 'Sinh viên một'"
+S3-03-02,Login (FR-02),"1. Mở trang Đăng nhập (/accounts/login/)
+2. Nhập email và mật khẩu đúng của Teacher
+3. Bấm 'Đăng nhập'","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","Đăng nhập thành công, chuyển tới Trang chủ Teacher"
+S3-03-03,Login (FR-02),"1. Mở trang Đăng nhập (/accounts/login/)
+2. Nhập email viết HOA, có khoảng trắng đầu/cuối và mật khẩu đúng
+3. Bấm 'Đăng nhập'","Email: '  STUDENT1@Demo.Example  '
+Mật khẩu: Kiemthu2026",Đăng nhập thành công (email được bỏ khoảng trắng và đổi chữ thường trước khi kiểm tra)
+S3-03-04,Login (FR-02),"1. Mở trang Đăng nhập (/accounts/login/)
+2. Nhập email đúng, mật khẩu sai
+3. Bấm 'Đăng nhập'","Email: student1@demo.example
+Mật khẩu: SaiMatKhau1","Hiện thông báo 'Email hoặc mật khẩu không đúng.'; vẫn ở trang Đăng nhập, ô mật khẩu được xóa trống"
+S3-03-05,Login (FR-02),"1. Mở trang Đăng nhập (/accounts/login/)
+2. Nhập email chưa đăng ký
+3. Bấm 'Đăng nhập'","Email: khongton@demo.example
+Mật khẩu: Kiemthu2026","Hiện thông báo 'Email hoặc mật khẩu không đúng.' (giống sai mật khẩu, không để lộ email nào đã đăng ký)"
+S3-03-06,Login - khóa tạm (NFR-SEC-07),"1. Mở trang Đăng nhập (/accounts/login/)
+2. Nhập sai mật khẩu và bấm 'Đăng nhập' 5 lần liên tiếp
+3. Lần thứ 6 nhập đúng mật khẩu, bấm 'Đăng nhập'","Email: student2@demo.example
+Mật khẩu sai: SaiMatKhau1 (5 lần)
+Mật khẩu đúng: Kiemthu2026","Lần 1-5: 'Email hoặc mật khẩu không đúng.'
+Lần 6: 'Bạn đã nhập sai 5 lần. Vui lòng thử lại sau 15 phút.'; không đăng nhập được dù mật khẩu đúng"
+S3-03-07,Login - tài khoản bị khóa (BR-22),"1. Admin khóa tài khoản student2@demo.example
+2. Mở trang Đăng nhập
+3. Nhập email, mật khẩu đúng của student2, bấm 'Đăng nhập'","Email: student2@demo.example
+Mật khẩu: Kiemthu2026",Hiện thông báo 'Tài khoản đã bị khóa hoặc ngừng sử dụng. Vui lòng liên hệ quản trị viên.'; không tạo phiên đăng nhập

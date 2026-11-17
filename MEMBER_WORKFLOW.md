@@ -90,6 +90,15 @@ python manage.py test
 
 PostgreSQL phải đang chạy (`docker compose up -d --wait db`).
 
+### Test case (nộp cho cô)
+
+Viết test case của task vào `docs/testcases/S3-xx.csv` và commit **cùng PR với code**.
+Cách viết xem [docs/testcases/README.md](docs/testcases/README.md). Kiểm tra trước khi push:
+
+```bash
+python scripts/build_testcases.py --check
+```
+
 ---
 
 ## 5. Push
@@ -125,6 +134,7 @@ Trong PR ghi ngắn gọn:
 
 ## Cách test
 - python manage.py test accounts → OK
+- Test case: docs/testcases/S3-02.csv (5 ca), build_testcases.py --check → hợp lệ
 - Chạy thử: đăng ký email mới, email trùng, mật khẩu không khớp
 
 ## Jira
@@ -180,7 +190,7 @@ In Progress
    ↓
 Branch feature/S3-xx-... từ develop
    ↓
-Code + test
+Code + unit test + test case CSV
    ↓
 git status → commit
    ↓

@@ -31,6 +31,7 @@ Kiểm thử: trong thư mục `src`, chạy `python manage.py test`; cuối k�
 | Cài và chạy database, xem bằng Beekeeper/DBeaver | [database/README.md](database/README.md) |
 | Tài khoản và dữ liệu demo | [database/seeds/README.md](database/seeds/README.md) |
 | Kết quả kiểm tra database | [database/VERIFICATION.md](database/VERIFICATION.md) |
+| Cách viết test case nộp cho cô | [docs/testcases/README.md](docs/testcases/README.md) |
 | Quy trình Git và Jira | [MEMBER_WORKFLOW.md](MEMBER_WORKFLOW.md) |
 | Kế hoạch các giai đoạn | [PROJECT_PLAN.md](PROJECT_PLAN.md) |
 | Yêu cầu môn học | [GUIDELINES.md](GUIDELINES.md) |
