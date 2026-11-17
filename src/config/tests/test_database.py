@@ -60,7 +60,7 @@ INVALID_SQL = (
     "UPDATE submission_answers a SET selected_option_id="
     "(SELECT min(option_id) FROM answer_options WHERE question_id<>a.question_id)",
     # Câu hỏi có thật nhưng không nằm trong đề.
-    "UPDATE submission_answers SET question_id=(SELECT question_id FROM questions WHERE status='DRAFT'), "
+    "UPDATE submission_answers SET question_id=(SELECT min(question_id) FROM questions WHERE status='DRAFT'), "
     "selected_option_id=NULL WHERE (submission_id, question_id) = "
     "(SELECT submission_id, question_id FROM submission_answers LIMIT 1)",
     # Đề có thật nhưng không phải đề của lượt làm bài.
@@ -99,8 +99,8 @@ class DatabaseRulesTests(TestCase):
 
     def test_seed_counts(self):
         expected = {
-            "users": 4, "questions": 4, "answer_options": 9, "exams": 4, "exam_questions": 12,
-            "exam_participants": 8, "submissions": 4, "submission_answers": 10, "results": 2,
+            "users": 6, "questions": 7, "answer_options": 15, "exams": 4, "exam_questions": 12,
+            "exam_participants": 10, "submissions": 4, "submission_answers": 10, "results": 2,
         }
         self.assertEqual({t: scalar(f"SELECT count(*) FROM {t}") for t in TABLES}, expected)
 
@@ -112,7 +112,7 @@ class DatabaseRulesTests(TestCase):
         self.assertFalse(seed_demo(PASSWORD))
         self.assertEqual(snapshot(), before)
         hashes = [h for (h,) in rows("SELECT password_hash FROM users")]
-        self.assertEqual(len(set(hashes)), 4)
+        self.assertEqual(len(set(hashes)), 6)
         self.assertTrue(all(h != PASSWORD and check_password(PASSWORD, h) for h in hashes))
 
     def test_seed_rejects_weak_password(self):
