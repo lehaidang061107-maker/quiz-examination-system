@@ -77,12 +77,28 @@ Kiểm tra thêm:
 
 ## Các thư mục
 
-| Thư mục | Chứa gì |
-| --- | --- |
-| `docs/` | Tài liệu đặc tả (Word), sơ đồ dữ liệu, sơ đồ lớp, thiết kế giao diện |
-| `database/` | Hướng dẫn chạy database, dữ liệu mẫu, kết quả kiểm tra |
-| `src/` | Mã nguồn website: `config/` (cấu hình, kiểm thử chung) và các app `accounts`, `questions`, `exams`, `attempts`, `results` (mỗi app có bảng và migration riêng) |
-| `tests/` | Kiểm thử hệ thống (dùng ở giai đoạn 4) |
+```text
+quiz-examination-system/
+├── src/                      Mã nguồn website (chạy lệnh manage.py ở đây)
+│   ├── config/               Cấu hình Django, URL gốc, menu theo vai trò, test chung
+│   ├── accounts/             Tài khoản, phân quyền; lệnh seed_demo, dev_login
+│   ├── questions/            Ngân hàng câu hỏi
+│   ├── exams/                Đề thi
+│   ├── attempts/             Lượt làm bài
+│   ├── results/              Kết quả, điểm
+│   ├── templates/            Giao diện HTML: base.html, trang lỗi 403/404
+│   └── static/css/           CSS chung (app.css)
+├── database/                 Hướng dẫn cài và xem database, kết quả kiểm tra (VERIFICATION.md)
+├── docs/                     Đặc tả (Word), sơ đồ dữ liệu / lớp / use case (.drawio), thiết kế Figma
+│   └── testcases/            Test case từng task: S3-xx.csv
+├── tests/                    Kiểm thử tích hợp và hệ thống (giai đoạn 4)
+├── scripts/                  Script hỗ trợ: tạo file test case, cập nhật mục lục
+├── compose.yaml              Chạy PostgreSQL bằng Docker
+├── requirements.txt          Thư viện Python
+└── .env.example              Mẫu file .env
+```
+
+Mỗi app trong `src/` có `models.py`, `migrations/` và `tests/` riêng.
 
 Cấu trúc bảng theo mục 6 tài liệu đặc tả và `docs/DataModel-Reviewed.drawio`.
 Mật khẩu và thông tin kết nối riêng của mỗi máy để trong `.env`; chỉ đưa `.env.example` lên GitHub.
