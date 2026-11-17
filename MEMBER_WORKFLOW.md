@@ -149,6 +149,31 @@ python manage.py test
 
 PostgreSQL phải đang chạy (`docker compose up -d --wait db`).
 
+### Chạy thử trên trình duyệt
+
+```bash
+cd src
+python manage.py runserver          # mở http://127.0.0.1:8000/
+```
+
+**Đăng nhập tạm** (dùng tới khi có trang Đăng nhập của S3-03): mở terminal thứ hai trong `src`, chạy
+
+```bash
+python manage.py dev_login teacher@demo.example     # hoặc admin@..., student1@..., student2@...
+```
+
+Lệnh in ra `sessionid = ...`. Trong Chrome: **F12 → Application → Cookies → `http://127.0.0.1:8000`**,
+sửa (hoặc thêm) dòng tên `sessionid`, dán giá trị vừa in, rồi **F5**. Đổi tài khoản thì chạy lại lệnh với email khác.
+Lệnh chỉ chạy khi `DEBUG=True`.
+
+**Kiểm tra thêm:**
+
+- Giao diện điện thoại: F12 → biểu tượng điện thoại (Toggle device toolbar) → khung **390 × 844** (NFR-USA-02).
+- Trang lỗi 403/404 tiếng Việt chỉ hiện khi tắt DEBUG: `DEBUG=False python manage.py runserver --insecure`
+  (`--insecure` để vẫn tải được CSS). Thử xong chạy lại bình thường.
+- Sai quyền: đăng nhập vai trò khác rồi gõ thẳng URL trang của mình, phải ra trang 403.
+- Cần kiểm tra những gì thì xem test case của task trong `docs/testcases/S3-xx.csv`.
+
 ### Test case (nộp cho cô)
 
 Viết test case của task vào `docs/testcases/S3-xx.csv` và commit **cùng PR với code**.
