@@ -88,5 +88,6 @@ Bảng bắt đầu bằng `django_` hoặc `auth_` là của hệ thống, khô
 | `password authentication failed` | Sai `POSTGRES_PASSWORD` trong `.env` |
 | `DEMO_PASSWORD chưa hợp lệ` | Đổi `DEMO_PASSWORD` thành ít nhất 8 ký tự, có cả chữ và số |
 | `Demo đã tồn tại` | Bình thường, dữ liệu mẫu đã có sẵn |
+| `port is already allocated` khi `docker compose up` | Cổng đang bị chương trình khác dùng: đổi `POSTGRES_PORT` hoặc `WEB_PORT` trong `.env` |
 
 Muốn xóa hết dữ liệu để làm lại từ đầu: `docker compose down -v`, rồi làm lại bước 4.

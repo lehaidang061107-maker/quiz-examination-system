@@ -1,0 +1,15 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-30-01,Chạy hệ thống bằng Docker (M3),"1. Chép .env.example thành .env, điền POSTGRES_PASSWORD, DEMO_PASSWORD, SECRET_KEY
+2. Chạy docker compose up -d --build --wait
+3. Mở http://127.0.0.1:8000/health/",DEMO_PASSWORD: Kiemthu2026,"Lệnh báo web-1 và db-1 Healthy; trang hiện {""status"": ""ok"", ""database"": ""ok""}"
+S3-30-02,Chạy hệ thống bằng Docker (M3),"1. Đang chạy bằng Docker (S3-30-01)
+2. Chạy docker compose logs web",Lệnh: docker compose logs web,"Log có các dòng Applying ... OK (lần đầu) hoặc No migrations to apply (lần sau), không có lỗi"
+S3-30-03,Dữ liệu mẫu,"1. Chạy docker compose exec web python manage.py seed_demo
+2. Mở database bằng Beekeeper/DBeaver, xem bảng users, exams, results",DEMO_PASSWORD: Kiemthu2026,"Lệnh in 'Đã tạo dữ liệu demo.'; bảng users có 1 ADMIN, 2 TEACHER, 3 STUDENT; exams có 1 đề DRAFT, 1 đề PUBLISHED; results có 2 dòng"
+S3-30-04,Dữ liệu mẫu,"1. Chạy lại lệnh seed_demo của S3-30-03 thêm 2 lần
+2. Đếm lại số dòng các bảng users, questions, exams",DEMO_PASSWORD: Kiemthu2026 (giữ nguyên),Mỗi lần in 'Demo đã tồn tại; giữ nguyên dữ liệu và mật khẩu.'; số dòng các bảng không đổi
+S3-30-05,Dữ liệu mẫu,"1. Đặt DEMO_PASSWORD=abc trong .env
+2. Chạy docker compose up -d --wait rồi lệnh seed_demo",DEMO_PASSWORD: abc,"Lệnh dừng, báo 'DEMO_PASSWORD chưa hợp lệ: ...'; không tạo tài khoản nào"
+S3-30-06,Trang chủ theo vai trò (FR-02),"1. Đang chạy bằng Docker, đã seed
+2. Chạy docker compose exec web python manage.py dev_login teacher2@demo.example
+3. Dán sessionid vào trình duyệt, mở http://127.0.0.1:8000/",Email: teacher2@demo.example,"Hiện Trang chủ, dòng 'Chào mừng, Giảng viên hai'; thẻ Ngân hàng câu hỏi hiện 3"

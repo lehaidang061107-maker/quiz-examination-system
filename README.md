@@ -5,6 +5,8 @@
 **Mục lục**
 
 - [Chạy website](#chạy-website)
+  - [Cách 1: chạy toàn bộ bằng Docker](#cách-1-chạy-toàn-bộ-bằng-docker)
+  - [Cách 2: chạy Python trên máy (khi viết code)](#cách-2-chạy-python-trên-máy-khi-viết-code)
 - [Kiểm thử](#kiểm-thử)
   - [Unit test](#unit-test)
   - [Chạy thử trên trình duyệt](#chạy-thử-trên-trình-duyệt)
@@ -16,10 +18,49 @@
 Hệ thống thi trắc nghiệm của nhóm 04, môn Công nghệ phần mềm. Admin quản lý tài khoản,
 giảng viên tạo câu hỏi và đề thi, sinh viên làm bài và xem kết quả.
 
-**Hiện có:** tài liệu đặc tả và thiết kế; database 9 bảng kèm dữ liệu mẫu; các lớp theo sơ đồ lớp kèm phương thức nghiệp vụ và unit test; khung website Django. Kiến trúc: **MVC** (xem [TECH_STACK.md](TECH_STACK.md)).
+**Hiện có:** tài liệu đặc tả và thiết kế; database 9 bảng kèm dữ liệu mẫu; chạy cả hệ thống bằng Docker; các lớp theo sơ đồ lớp kèm phương thức nghiệp vụ và unit test; khung website Django. Kiến trúc: **MVC** (xem [TECH_STACK.md](TECH_STACK.md)).
 **Chưa có:** các chức năng của website. Công nghệ: Python + Django + PostgreSQL.
 
 ## Chạy website
+
+Có hai cách. Muốn **xem/demo** thì dùng cách 1 (chỉ cần Docker Desktop). Muốn **viết code** thì dùng cách 2.
+
+### Cách 1: chạy toàn bộ bằng Docker
+
+Chỉ cần cài **Docker Desktop** và mở nó lên. Ở thư mục dự án:
+
+1. Tạo file `.env`: `cp .env.example .env` (Windows: `copy .env.example .env`), mở ra điền
+   `POSTGRES_PASSWORD`, `DEMO_PASSWORD`, `SECRET_KEY` như bảng ở bước 3 của
+   [database/README.md](database/README.md#lần-đầu-làm-1-lần). Chưa có Python để tạo `SECRET_KEY`
+   thì gõ tạm một chuỗi ngẫu nhiên dài khoảng 50 ký tự.
+2. Chạy website và database (lần đầu mất vài phút để tải và build):
+
+   ```bash
+   docker compose up -d --build --wait
+   ```
+
+   Website tự tạo bảng (`migrate`) mỗi lần khởi động.
+3. Tạo dữ liệu mẫu (chạy lại nhiều lần không bị trùng):
+
+   ```bash
+   docker compose exec web python manage.py seed_demo
+   ```
+
+Mở http://127.0.0.1:8000/health/ — thấy `{"status": "ok", "database": "ok"}` là chạy đúng.
+Tài khoản mẫu xem ở [database/seeds/README.md](database/seeds/README.md); đăng nhập tạm xem mục
+[Chạy thử trên trình duyệt](#chạy-thử-trên-trình-duyệt), thêm `docker compose exec web` trước lệnh `python manage.py ...`.
+
+| Muốn | Lệnh |
+| --- | --- |
+| Xem log website | `docker compose logs -f web` |
+| Sửa code xong, chạy lại bản mới | `docker compose up -d --build --wait` |
+| Tắt (giữ dữ liệu) | `docker compose stop` |
+| Xóa hết dữ liệu, làm lại từ đầu | `docker compose down -v`, rồi làm lại bước 2, 3 |
+| Cổng 8000 đang bận | Thêm `WEB_PORT=8001` vào `.env`, mở http://127.0.0.1:8001 |
+
+Website trong Docker chạy bằng `runserver` của Django, chỉ dùng cho máy cá nhân và buổi demo.
+
+### Cách 2: chạy Python trên máy (khi viết code)
 
 Làm trước phần "Lần đầu cài" trong [database/README.md](database/README.md) (cài thư viện,
 điền `.env`, tạo bảng và dữ liệu mẫu). `.env` cần có `SECRET_KEY`, `DEBUG=True`,
@@ -33,6 +74,7 @@ python manage.py runserver
 ```
 
 Mở http://127.0.0.1:8000/health/ — thấy `{"status": "ok", "database": "ok"}` là chạy đúng.
+Đang chạy website bằng Docker (cách 1) thì tắt trước: `docker compose stop web`.
 
 ## Kiểm thử
 
@@ -47,7 +89,7 @@ Website đang chạy (`python manage.py runserver`, mục trên). **Đăng nhậ
 (S3-03): mở terminal thứ hai, vào `src`, bật `.venv`, chạy
 
 ```bash
-python manage.py dev_login teacher@demo.example     # hoặc admin@..., student1@..., student2@...
+python manage.py dev_login teacher@demo.example     # hoặc admin@..., teacher2@..., student1@... đến student3@...
 ```
 
 Lệnh in ra `sessionid = ...`. Trong Chrome: **F12 → Application → Cookies → `http://127.0.0.1:8000`**,
@@ -93,7 +135,8 @@ quiz-examination-system/
 │   └── testcases/            Test case từng task: S3-xx.csv
 ├── tests/                    Kiểm thử tích hợp và hệ thống (giai đoạn 4)
 ├── scripts/                  Script hỗ trợ: tạo file test case, cập nhật mục lục
-├── compose.yaml              Chạy PostgreSQL bằng Docker
+├── Dockerfile                Đóng gói website Django (Python 3.12)
+├── compose.yaml              Chạy website (web) và PostgreSQL (db) bằng Docker
 ├── requirements.txt          Thư viện Python
 └── .env.example              Mẫu file .env
 ```
