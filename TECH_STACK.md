@@ -26,7 +26,7 @@ Mục ghi **(chờ xác nhận)** là đề xuất, nhóm cần đồng ý trư�
 
 | Phần (app) | Lo việc gì |
 | --- | --- |
-| `config` | Cấu hình chung, đường dẫn gốc, trang `/health` kiểm tra website còn chạy |
+| `config` | Cấu hình chung, Trang chủ theo vai trò, menu (`navigation.py`), trang `/health` kiểm tra website còn chạy |
 | `accounts` | Đăng ký Student, đăng nhập/đăng xuất, khóa tạm, Admin quản lý tài khoản |
 | `questions` | Ngân hàng câu hỏi và phương án |
 | `exams` | Tạo đề, phát hành đề, giao đề cho sinh viên |

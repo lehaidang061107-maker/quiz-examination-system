@@ -1,0 +1,24 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-28-01,Trang chủ theo vai trò (FR-02),"1. Đăng nhập bằng tài khoản Teacher
+2. Xem trang hiện ra sau khi đăng nhập","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","Hiện Trang chủ, dòng 'Chào mừng, Giảng viên demo'; menu trái có nhãn TEACHER và các mục Trang chủ, Ngân hàng câu hỏi, Quản lý kỳ thi, Kết quả thi; 3 thẻ số liệu Ngân hàng câu hỏi, Kỳ thi đang mở, Bài thi đã nộp"
+S3-28-02,Trang chủ theo vai trò (FR-02),"1. Đăng nhập bằng tài khoản Student
+2. Xem trang hiện ra sau khi đăng nhập","Email: student1@demo.example
+Mật khẩu: Kiemthu2026","Hiện Trang chủ 'Chào mừng, Sinh viên một'; menu trái có nhãn STUDENT, các mục Trang chủ, Danh sách bài thi, Lịch sử bài thi; không có mục Ngân hàng câu hỏi hay Quản lý tài khoản"
+S3-28-03,Trang chủ theo vai trò (FR-02),"1. Đăng nhập bằng tài khoản Admin
+2. Xem trang hiện ra sau khi đăng nhập","Email: admin@demo.example
+Mật khẩu: Kiemthu2026","Hiện Trang chủ; menu trái có nhãn ADMIN, các mục Trang chủ, Quản lý tài khoản; 3 thẻ số liệu Tổng số tài khoản, Đang hoạt động, Bị khóa"
+S3-28-04,Phân quyền (NFR-SEC-02),"1. Chưa đăng nhập, gõ thẳng địa chỉ Trang chủ vào trình duyệt",URL: http://127.0.0.1:8000/,Chuyển tới trang Đăng nhập (/accounts/login/?next=/); không hiện nội dung Trang chủ
+S3-28-05,"Phân quyền (NFR-SEC-02, NFR-SEC-09)","1. Đăng nhập bằng tài khoản Student
+2. Gõ thẳng địa chỉ trang Ngân hàng câu hỏi của Teacher vào trình duyệt","Email: student1@demo.example
+Mật khẩu: Kiemthu2026
+URL: http://127.0.0.1:8000/questions/",Hiện trang 'Không có quyền truy cập' (mã lỗi 403) với thông báo 'Bạn không có quyền truy cập trang này.' và nút 'Về Trang chủ'
+S3-28-06,Trang lỗi 404,"1. Đăng nhập bằng tài khoản bất kỳ
+2. Gõ địa chỉ không tồn tại","Email: student1@demo.example
+Mật khẩu: Kiemthu2026
+URL: http://127.0.0.1:8000/khong-co-trang-nay/","Hiện trang 'Không tìm thấy trang' (mã lỗi 404), thông báo 'Trang bạn tìm không tồn tại hoặc đã bị xóa.' và nút 'Về Trang chủ' (chạy với DEBUG=False)"
+S3-28-07,Giao diện tương thích (NFR-USA-02),"1. Đăng nhập bằng tài khoản Teacher
+2. Bật chế độ thiết bị di động của Chrome (F12, khung 390 × 844)
+3. Bấm nút ☰ ở thanh trên","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026
+Khung nhìn: 390 × 844","Menu trái ẩn, hiện nút ☰; bấm ☰ thì menu trượt ra từ bên trái; 3 thẻ số liệu xếp dọc, không bị tràn ngang"
