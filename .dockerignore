@@ -1,0 +1,13 @@
+# Chỉ cần requirements.txt và src/ để build image; mọi thứ khác bỏ qua.
+.env
+.env.*
+.git
+.venv
+**/__pycache__
+**/*.py[cod]
+.DS_Store
+docs
+database
+tests
+scripts
+*.md

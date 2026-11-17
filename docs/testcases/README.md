@@ -58,8 +58,8 @@ Dùng tài khoản demo (`python manage.py seed_demo`), đặt `DEMO_PASSWORD=Ki
 | Email | Vai trò |
 | --- | --- |
 | `admin@demo.example` | Admin |
-| `teacher@demo.example` | Teacher |
-| `student1@demo.example`, `student2@demo.example` | Student |
+| `teacher@demo.example`, `teacher2@demo.example` | Teacher |
+| `student1@demo.example`, `student2@demo.example`, `student3@demo.example` | Student |
 
 ## Sửa file CSV bằng gì
 

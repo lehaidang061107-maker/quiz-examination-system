@@ -1,7 +1,8 @@
 """Tạo dữ liệu demo: python manage.py seed_demo
 
-Chỉ chạy trên database phát triển hoặc demo. Không xóa hay ghi đè dữ liệu đã có:
-chạy lại khi demo đã đủ thì giữ nguyên; demo dở dang thì dừng để tránh ghi đè.
+Chỉ chạy trên database phát triển hoặc demo. Chạy lại bao nhiêu lần cũng được: phần nào đã có
+thì giữ nguyên (không thêm trùng, không đổi mật khẩu), phần nào còn thiếu thì tạo thêm.
+Bộ đề thi demo dở dang (thiếu đề) thì dừng để tránh ghi đè.
 """
 import os
 from datetime import timedelta
@@ -22,8 +23,10 @@ from results.models import Result
 ACCOUNTS = (
     ("admin@demo.example", "Quản trị demo", Role.ADMIN),
     ("teacher@demo.example", "Giảng viên demo", Role.TEACHER),
+    ("teacher2@demo.example", "Giảng viên hai", Role.TEACHER),
     ("student1@demo.example", "Sinh viên một", Role.STUDENT),
     ("student2@demo.example", "Sinh viên hai", Role.STUDENT),
+    ("student3@demo.example", "Sinh viên ba", Role.STUDENT),
 )
 EMAILS = tuple(a[0] for a in ACCOUNTS)
 MARKER = "S3-21 demo v1"
@@ -33,59 +36,85 @@ EXAM_TITLES = (
     "[Demo S3-21] Đề chờ chấm",
     "[Demo S3-21] Đề đã công bố",
 )
+# Ngân hàng câu hỏi: (email giảng viên, nội dung, các lựa chọn; lựa chọn đầu tiên là đáp án đúng).
 QUESTIONS = (
-    ("Khóa chính dùng để làm gì?", ("Định danh duy nhất bản ghi", "Lưu mật khẩu", "Sắp xếp giao diện")),
-    ("PostgreSQL là hệ quản trị nào?", ("Cơ sở dữ liệu quan hệ", "Trình soạn thảo", "Trình duyệt")),
-    ("Khóa ngoại dùng để làm gì?", ("Tham chiếu dữ liệu ở bảng liên quan", "Mã hóa mật khẩu", "Tạo giao diện")),
+    ("teacher@demo.example", "Khóa chính dùng để làm gì?",
+     ("Định danh duy nhất bản ghi", "Lưu mật khẩu", "Sắp xếp giao diện")),
+    ("teacher@demo.example", "PostgreSQL là hệ quản trị nào?",
+     ("Cơ sở dữ liệu quan hệ", "Trình soạn thảo", "Trình duyệt")),
+    ("teacher@demo.example", "Khóa ngoại dùng để làm gì?",
+     ("Tham chiếu dữ liệu ở bảng liên quan", "Mã hóa mật khẩu", "Tạo giao diện")),
+    ("teacher2@demo.example", "Mô hình MVC gồm những thành phần nào?",
+     ("Model, View, Controller", "Module, Version, Client", "Main, Value, Config")),
+    ("teacher2@demo.example", "Sơ đồ Use Case mô tả điều gì?",
+     ("Chức năng hệ thống theo góc nhìn người dùng", "Cấu trúc bảng dữ liệu", "Thứ tự gói tin mạng")),
 )
+EXAM_QUESTION_COUNT = 3  # 3 câu đầu (của teacher@) được đưa vào các đề demo
 POINTS = Decimal("2.00")
 ADVISORY_LOCK_ID = 3212026  # tuần tự hóa hai lần chạy đồng thời
 
 
-def seed_demo(password):
-    """Tạo bộ demo. Trả về True nếu vừa tạo, False nếu bộ demo đã có đủ."""
-    try:
-        validate_password(password)
-    except ValidationError as exc:
-        raise CommandError("DEMO_PASSWORD chưa hợp lệ: " + " ".join(exc.messages)) from exc
+class _Seeder:
+    def __init__(self, password):
+        self.password = password
+        self.created = 0
 
-    with transaction.atomic():
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT pg_advisory_xact_lock(%s)", [ADVISORY_LOCK_ID])
+    def users(self):
+        users = {}
+        for email, name, role in ACCOUNTS:
+            user = User.objects.filter(email=email).first()
+            if user is None:
+                user = User.objects.create_user(email, self.password, full_name=name, role=role)
+                self.created += 1
+            elif user.role != role:
+                raise CommandError(f"Email demo {email} đã có với vai trò {user.role}; không ghi đè.")
+            users[email] = user
+        return users
 
-        existing = dict(User.objects.filter(email__in=EMAILS).values_list("email", "user_id"))
+    def questions(self, users):
+        """Trả về [(câu hỏi, [phương án theo thứ tự])] theo thứ tự QUESTIONS."""
+        bank = []
+        for email, content, choices in QUESTIONS:
+            teacher = users[email]
+            question = Question.objects.filter(teacher=teacher, content=content).order_by("pk").first()
+            if question is None:
+                question = Question.objects.create(teacher=teacher, content=content)
+                for i, choice in enumerate(choices):
+                    AnswerOption.objects.create(
+                        question=question, content=choice, display_order=i + 1, is_correct=(i == 0)
+                    )
+                # Kích hoạt sau khi đã có đủ phương án và đúng một đáp án đúng.
+                Question.objects.filter(pk=question.pk).update(status=QuestionStatus.ACTIVE)
+                self.created += 1
+            bank.append((question, list(question.options.order_by("display_order"))))
+        # Mỗi giảng viên có một câu nháp chưa hoàn chỉnh.
+        for teacher in {users[email] for email, _, _ in QUESTIONS}:
+            if not Question.objects.filter(teacher=teacher, content__isnull=True).exists():
+                Question.objects.create(teacher=teacher, content=None)
+                self.created += 1
+        return bank
+
+    def exams(self, users, bank):
+        teacher = users["teacher@demo.example"]
+        existing = Exam.objects.filter(teacher=teacher, description=MARKER, title__in=EXAM_TITLES).count()
+        if existing == len(EXAM_TITLES):
+            return
         if existing:
-            complete = len(existing) == len(EMAILS) and Exam.objects.filter(
-                teacher_id=existing[EMAILS[1]], description=MARKER, title__in=EXAM_TITLES
-            ).count() == len(EXAM_TITLES)
-            if complete:
-                return False
-            raise CommandError("Email demo đã tồn tại hoặc dữ liệu demo chưa đủ; không ghi đè.")
+            raise CommandError("Bộ đề demo đang dở dang (thiếu đề); không ghi đè.")
 
-        users = [User.objects.create_user(email, password, full_name=name, role=role) for email, name, role in ACCOUNTS]
-        teacher, student1, student2 = users[1:]
-
-        questions, options = [], []
-        for content, choices in QUESTIONS:
-            question = Question.objects.create(teacher=teacher, content=content)
-            options.append([
-                AnswerOption.objects.create(question=question, content=c, display_order=i + 1, is_correct=(i == 0))
-                for i, c in enumerate(choices)
-            ])
-            # Kích hoạt sau khi đã có đủ phương án và đúng một đáp án đúng.
-            Question.objects.filter(pk=question.pk).update(status=QuestionStatus.ACTIVE)
-            questions.append(question)
-        Question.objects.create(teacher=teacher, content=None)  # câu nháp chưa hoàn chỉnh
-
+        student1, student2, student3 = (users[f"student{i}@demo.example"] for i in (1, 2, 3))
+        questions = [q for q, _ in bank[:EXAM_QUESTION_COUNT]]
+        options = [o for _, o in bank[:EXAM_QUESTION_COUNT]]
         now = timezone.now()
         exams = []
-        for title in EXAM_TITLES:
+        for index, title in enumerate(EXAM_TITLES):
             exam = Exam.objects.create(teacher=teacher, title=title, description=MARKER, duration_minutes=30)
             for i, question in enumerate(questions):
                 ExamQuestion.objects.create(exam=exam, question=question, position=i + 1, points=POINTS)
-            for student in (student1, student2):
+            students = (student1, student2, student3) if index < 2 else (student1, student2)
+            for student in students:
                 ExamParticipant.objects.create(exam=exam, student=student)
-            if title != EXAM_TITLES[0]:
+            if index > 0:
                 Exam.objects.filter(pk=exam.pk).update(
                     status=ExamStatus.PUBLISHED, opens_at=now - timedelta(days=1), closes_at=now + timedelta(days=30)
                 )
@@ -125,11 +154,28 @@ def seed_demo(password):
 
         Exam.objects.filter(pk__in=[e.pk for e in exams[2:]]).update(status=ExamStatus.CLOSED, closes_at=now)
         Exam.objects.filter(pk=exams[3].pk).update(results_published=True)
-        return True
+        self.created += len(exams)
+
+
+def seed_demo(password):
+    """Tạo phần demo còn thiếu. Trả về True nếu có tạo thêm gì, False nếu bộ demo đã đủ."""
+    try:
+        validate_password(password)
+    except ValidationError as exc:
+        raise CommandError("DEMO_PASSWORD chưa hợp lệ: " + " ".join(exc.messages)) from exc
+    seeder = _Seeder(password)
+    with transaction.atomic():
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT pg_advisory_xact_lock(%s)", [ADVISORY_LOCK_ID])
+        users = seeder.users()
+        bank = seeder.questions(users)
+        seeder.exams(users, bank)
+    return seeder.created > 0
 
 
 class Command(BaseCommand):
-    help = "Tạo dữ liệu demo (4 tài khoản, câu hỏi, đề thi, bài làm, kết quả). Mật khẩu lấy từ DEMO_PASSWORD trong .env."
+    help = ("Tạo dữ liệu demo (1 admin, 2 giảng viên, 3 sinh viên, câu hỏi, đề thi, bài làm, kết quả). "
+            "Mật khẩu lấy từ DEMO_PASSWORD trong .env. Chạy lại không tạo trùng.")
 
     def handle(self, *args, **options):
         created = seed_demo(os.getenv("DEMO_PASSWORD", ""))
