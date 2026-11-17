@@ -1,5 +1,24 @@
 # Member Git & Jira Workflow
 
+<!-- toc -->
+
+**Mục lục**
+
+- [1. Nhận Task](#1-nhận-task)
+- [2. Tạo Branch](#2-tạo-branch)
+- [3. Code](#3-code)
+  - [Viết một trang (MVC)](#viết-một-trang-mvc)
+- [4. Test](#4-test)
+  - [Test case (nộp cho cô)](#test-case-nộp-cho-cô)
+- [5. Push](#5-push)
+- [6. Tạo Pull Request](#6-tạo-pull-request)
+- [7. Sau Khi Tạo PR](#7-sau-khi-tạo-pr)
+- [8. Nếu Có Merge Conflict](#8-nếu-có-merge-conflict)
+- [9. Member Checklist](#9-member-checklist)
+  - [Chỉ cần nhớ](#chỉ-cần-nhớ)
+
+<!-- /toc -->
+
 Quy trình này áp dụng cho mọi task trong giai đoạn 3. Công nghệ phải dùng xem ở
 [TECH_STACK.md](TECH_STACK.md).
 
@@ -77,6 +96,8 @@ python manage.py migrate
 
 Commit file migration cùng với model. Không sửa migration đã merge, không `CREATE TABLE` trong code.
 
+Sửa hay thêm tiêu đề `##`/`###` trong file `.md` thì chạy `python scripts/update_toc.py` để cập nhật mục lục ở đầu file.
+
 ### Viết một trang (MVC)
 
 Kiến trúc MVC xem [TECH_STACK.md](TECH_STACK.md). Một trang gồm 3 phần:
@@ -148,6 +169,9 @@ python manage.py test
 ```
 
 PostgreSQL phải đang chạy (`docker compose up -d --wait db`).
+
+Chạy thử giao diện trên trình duyệt (đăng nhập tạm, khung điện thoại, trang 403/404):
+xem [README.md › Chạy thử trên trình duyệt](README.md#chạy-thử-trên-trình-duyệt).
 
 ### Test case (nộp cho cô)
 

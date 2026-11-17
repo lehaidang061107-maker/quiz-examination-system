@@ -1,5 +1,17 @@
 # Test case
 
+<!-- toc -->
+
+**Mục lục**
+
+- [Việc của mỗi thành viên](#việc-của-mỗi-thành-viên)
+- [Mỗi chức năng cần những test case nào](#mỗi-chức-năng-cần-những-test-case-nào)
+- [Dữ liệu dùng khi kiểm thử](#dữ-liệu-dùng-khi-kiểm-thử)
+- [Sửa file CSV bằng gì](#sửa-file-csv-bằng-gì)
+- [Gộp thành file nộp (PM làm)](#gộp-thành-file-nộp-pm-làm)
+
+<!-- /toc -->
+
 Test case nộp cho cô phải theo đúng file **Testing Document Template.xlsx** (sai template là 0 điểm phần này).
 Cả nhóm không sửa chung một file Excel qua Git (sẽ conflict, mất bài). Mỗi task viết vào **một file CSV riêng**;
 cuối kỳ PM chạy script gộp tất cả vào template.
