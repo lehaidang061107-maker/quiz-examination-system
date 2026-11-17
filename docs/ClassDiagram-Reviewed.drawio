@@ -21,7 +21,7 @@
           <mxGeometry x="0" y="77" width="400" height="108" as="geometry"/>
         </mxCell>
         <mxCell id="User" value="" style="group;" vertex="1" parent="1">
-          <mxGeometry x="830" y="100" width="400" height="277" as="geometry"/>
+          <mxGeometry x="830" y="100" width="400" height="300" as="geometry"/>
         </mxCell>
         <mxCell id="User_title" value="User" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontSize=20;fontStyle=3;align=center;verticalAlign=middle;" vertex="1" parent="User">
           <mxGeometry x="0" y="0" width="400" height="38" as="geometry"/>
@@ -29,8 +29,8 @@
         <mxCell id="User_attr" value="- userId: Long&#10;- fullName: String&#10;- email: String&#10;- passwordHash: String&#10;- role: Role&#10;- status: UserStatus" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="User">
           <mxGeometry x="0" y="38" width="400" height="154" as="geometry"/>
         </mxCell>
-        <mxCell id="User_method" value="+ login(email, password): Boolean&#10;+ logout(): void&#10;+ isActive(): Boolean" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="User">
-          <mxGeometry x="0" y="192" width="400" height="85" as="geometry"/>
+        <mxCell id="User_method" value="+ login(email, password): Boolean&#10;+ logout(): void&#10;+ isActive(): Boolean&#10;+ asRole(): User" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="User">
+          <mxGeometry x="0" y="192" width="400" height="108" as="geometry"/>
         </mxCell>
         <mxCell id="Student" value="" style="group;" vertex="1" parent="1">
           <mxGeometry x="1610" y="100" width="400" height="208" as="geometry"/>
@@ -57,7 +57,7 @@
           <mxGeometry x="0" y="77" width="400" height="131" as="geometry"/>
         </mxCell>
         <mxCell id="Exam" value="" style="group;" vertex="1" parent="1">
-          <mxGeometry x="830" y="520" width="400" height="369" as="geometry"/>
+          <mxGeometry x="830" y="520" width="400" height="438" as="geometry"/>
         </mxCell>
         <mxCell id="Exam_title" value="Exam" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="Exam">
           <mxGeometry x="0" y="0" width="400" height="38" as="geometry"/>
@@ -65,8 +65,8 @@
         <mxCell id="Exam_attr" value="- examId: Long&#10;- teacherId: Long&#10;- title: String&#10;- description: String?&#10;- status: ExamStatus&#10;- durationMinutes: Integer?&#10;- opensAt: DateTime?&#10;- closesAt: DateTime?&#10;- resultsPublished: Boolean" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="Exam">
           <mxGeometry x="0" y="38" width="400" height="223" as="geometry"/>
         </mxCell>
-        <mxCell id="Exam_method" value="+ addQuestion(id, points): void&#10;+ publish(): void&#10;+ canStart(student): Boolean&#10;+ publishResults(): void" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="Exam">
-          <mxGeometry x="0" y="261" width="400" height="108" as="geometry"/>
+        <mxCell id="Exam_method" value="+ addQuestion(id, points): void&#10;+ publish(): void&#10;+ canStart(student): Boolean&#10;+ publishResults(): void&#10;+ applySettings(data): void&#10;+ cannotStartReason(student): String?&#10;+ close(): void" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="Exam">
+          <mxGeometry x="0" y="261" width="400" height="177" as="geometry"/>
         </mxCell>
         <mxCell id="ExamParticipant" value="" style="group;" vertex="1" parent="1">
           <mxGeometry x="1610" y="520" width="400" height="231" as="geometry"/>
@@ -81,7 +81,7 @@
           <mxGeometry x="0" y="146" width="400" height="85" as="geometry"/>
         </mxCell>
         <mxCell id="Question" value="" style="group;" vertex="1" parent="1">
-          <mxGeometry x="50" y="950" width="400" height="277" as="geometry"/>
+          <mxGeometry x="50" y="950" width="400" height="346" as="geometry"/>
         </mxCell>
         <mxCell id="Question_title" value="Question" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="Question">
           <mxGeometry x="0" y="0" width="400" height="38" as="geometry"/>
@@ -89,11 +89,11 @@
         <mxCell id="Question_attr" value="- questionId: Long&#10;- teacherId: Long&#10;- content: String?&#10;- questionType: QuestionType&#10;- status: QuestionStatus" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="Question">
           <mxGeometry x="0" y="38" width="400" height="131" as="geometry"/>
         </mxCell>
-        <mxCell id="Question_method" value="+ addOption(data): AnswerOption&#10;+ validateOptions(): Boolean&#10;+ createRevision(): Question&#10;+ archive(): void" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="Question">
-          <mxGeometry x="0" y="169" width="400" height="108" as="geometry"/>
+        <mxCell id="Question_method" value="+ addOption(data): AnswerOption&#10;+ validateOptions(): Boolean&#10;+ createRevision(): Question&#10;+ archive(): void&#10;+ activate(): void&#10;+ optionErrors(): List&lt;String&gt;&#10;+ isLocked(): Boolean" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="Question">
+          <mxGeometry x="0" y="169" width="400" height="177" as="geometry"/>
         </mxCell>
         <mxCell id="ExamQuestion" value="" style="group;" vertex="1" parent="1">
-          <mxGeometry x="830" y="1000" width="400" height="208" as="geometry"/>
+          <mxGeometry x="830" y="1040" width="400" height="208" as="geometry"/>
         </mxCell>
         <mxCell id="ExamQuestion_title" value="ExamQuestion" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="ExamQuestion">
           <mxGeometry x="0" y="0" width="400" height="38" as="geometry"/>
@@ -105,7 +105,7 @@
           <mxGeometry x="0" y="146" width="400" height="62" as="geometry"/>
         </mxCell>
         <mxCell id="Submission" value="" style="group;" vertex="1" parent="1">
-          <mxGeometry x="1610" y="950" width="400" height="415" as="geometry"/>
+          <mxGeometry x="1610" y="950" width="400" height="438" as="geometry"/>
         </mxCell>
         <mxCell id="Submission_title" value="Submission" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="Submission">
           <mxGeometry x="0" y="0" width="400" height="38" as="geometry"/>
@@ -113,8 +113,8 @@
         <mxCell id="Submission_attr" value="- submissionId: Long&#10;- examId: Long&#10;- studentId: Long&#10;- attemptNo: Integer = 1&#10;- status: SubmissionStatus&#10;- startedAt: DateTime&#10;- deadlineAt: DateTime?&#10;- lastSavedAt: DateTime?&#10;- submittedAt: DateTime?&#10;- version: Integer" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="Submission">
           <mxGeometry x="0" y="38" width="400" height="246" as="geometry"/>
         </mxCell>
-        <mxCell id="Submission_method" value="+ saveAnswer(data): void&#10;+ submit(): void&#10;+ autoSubmit(): void&#10;+ grade(): Result&#10;+ isEditable(): Boolean" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="Submission">
-          <mxGeometry x="0" y="284" width="400" height="131" as="geometry"/>
+        <mxCell id="Submission_method" value="+ saveAnswer(data): void&#10;+ submit(): void&#10;+ autoSubmit(): void&#10;+ grade(): Result&#10;+ isEditable(): Boolean&#10;+ start(exam, student): Submission {static}" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="Submission">
+          <mxGeometry x="0" y="284" width="400" height="154" as="geometry"/>
         </mxCell>
         <mxCell id="AnswerOption" value="" style="group;" vertex="1" parent="1">
           <mxGeometry x="50" y="1400" width="400" height="231" as="geometry"/>
@@ -152,25 +152,25 @@
         <mxCell id="Result_method" value="+ calculate(): void&#10;+ canView(user): Boolean" style="rounded=0;whiteSpace=wrap;html=0;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;fontFamily=Arial;fontColor=#111111;fontSize=17;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="Result">
           <mxGeometry x="0" y="215" width="400" height="62" as="geometry"/>
         </mxCell>
-        <mxCell id="edge0" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=1.0;exitY=0.5637560637560638;exitPerimeter=0;entryX=0.0;entryY=0.45741923539757473;entryPerimeter=0;endArrow=block;endFill=0;endSize=18;" edge="1" parent="1" source="Admin" target="User">
+        <mxCell id="edge0" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=1.0;exitY=0.5637560637560638;exitPerimeter=0;entryX=0.0;entryY=0.422350;entryPerimeter=0;endArrow=block;endFill=0;endSize=18;" edge="1" parent="1" source="Admin" target="User">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="edge1" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=1.0;exitY=0.024778106508875908;exitPerimeter=0;entryX=0.0;entryY=0.8568453207442376;entryPerimeter=0;endArrow=block;endFill=0;endSize=18;" edge="1" parent="1" source="Teacher" target="User">
+        <mxCell id="edge1" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=1.0;exitY=0.024778106508875908;exitPerimeter=0;entryX=0.0;entryY=0.791154;entryPerimeter=0;endArrow=block;endFill=0;endSize=18;" edge="1" parent="1" source="Teacher" target="User">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="edge2" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.0;exitY=0.5425295857988165;exitPerimeter=0;entryX=1.0;entryY=0.4680644265481811;entryPerimeter=0;endArrow=block;endFill=0;endSize=18;" edge="1" parent="1" source="Student" target="User">
+        <mxCell id="edge2" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.0;exitY=0.5425295857988165;exitPerimeter=0;entryX=1.0;entryY=0.432179;entryPerimeter=0;endArrow=block;endFill=0;endSize=18;" edge="1" parent="1" source="Student" target="User">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
         <mxCell id="edge3" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.5;exitY=1.0;exitPerimeter=0;entryX=0.5;entryY=0.0;entryPerimeter=0;" edge="1" parent="1" source="Teacher" target="Question">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="edge4" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=1.0;exitY=0.5992357001972386;exitPerimeter=0;entryX=0.0;entryY=0.4440622611354319;entryPerimeter=0;" edge="1" parent="1" source="Teacher" target="Exam">
+        <mxCell id="edge4" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=1.0;exitY=0.5992357001972386;exitPerimeter=0;entryX=0.0;entryY=0.374107;entryPerimeter=0;" edge="1" parent="1" source="Teacher" target="Exam">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
         <mxCell id="edge5" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.5;exitY=1.0;exitPerimeter=0;entryX=0.5;entryY=0.0;entryPerimeter=0;" edge="1" parent="1" source="Student" target="ExamParticipant">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="edge6" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=1.0;exitY=0.5143478663334256;exitPerimeter=0;entryX=0.0;entryY=0.48089250493096686;entryPerimeter=0;" edge="1" parent="1" source="Question" target="ExamQuestion">
+        <mxCell id="edge6" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=1.0;exitY=0.411776;exitPerimeter=0;entryX=0.0;entryY=0.288585;entryPerimeter=0;" edge="1" parent="1" source="Question" target="ExamQuestion">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
         <mxCell id="edge7" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.5;exitY=1.0;exitPerimeter=0;entryX=0.5;entryY=0.0;entryPerimeter=0;" edge="1" parent="1" source="ExamQuestion" target="SubmissionAnswer">
@@ -182,10 +182,10 @@
         <mxCell id="edge9" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.5;exitY=1.0;exitPerimeter=0;entryX=0.5;entryY=0.0;entryPerimeter=0;startArrow=diamond;startFill=1;startSize=24;" edge="1" parent="1" source="Exam" target="ExamQuestion">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="edge10" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=1.0;exitY=0.4520533666875129;exitPerimeter=0;entryX=0.0;entryY=0.5765900765900768;entryPerimeter=0;startArrow=diamond;startFill=1;startSize=24;" edge="1" parent="1" source="Exam" target="ExamParticipant">
+        <mxCell id="edge10" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=1.0;exitY=0.380839;exitPerimeter=0;entryX=0.0;entryY=0.5765900765900768;entryPerimeter=0;startArrow=diamond;startFill=1;startSize=24;" edge="1" parent="1" source="Exam" target="ExamParticipant">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="edge11" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.0;exitY=0.7459067037380289;exitPerimeter=0;entryX=1.0;entryY=0.058219558219558494;entryPerimeter=0;startArrow=diamond;startFill=1;startSize=24;" edge="1" parent="1" source="Submission" target="SubmissionAnswer">
+        <mxCell id="edge11" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.0;exitY=0.706738;exitPerimeter=0;entryX=1.0;entryY=0.058219558219558494;entryPerimeter=0;startArrow=diamond;startFill=1;startSize=24;" edge="1" parent="1" source="Submission" target="SubmissionAnswer">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
         <mxCell id="edge12" style="noEdgeStyle=1;edgeStyle=none;orthogonal=0;rounded=0;curved=0;jumpStyle=none;strokeColor=#111111;strokeWidth=2;startArrow=none;endArrow=none;exitX=0.5;exitY=1.0;exitPerimeter=0;entryX=0.5;entryY=0.0;entryPerimeter=0;startArrow=diamond;startFill=1;startSize=24;" edge="1" parent="1" source="Submission" target="Result">
@@ -222,22 +222,22 @@
           <mxGeometry x="766.0069084980538" y="1065.3302654893844" width="60" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="m8" value="1" style="text;html=0;strokeColor=none;fillColor=none;fontFamily=Arial;fontSize=17;align=left;verticalAlign=top;spacing=5;" vertex="1" parent="1">
-          <mxGeometry x="1025.0" y="1229.0" width="60" height="28" as="geometry"/>
+          <mxGeometry x="1025.0" y="1252" width="60" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="m9" value="0..*" style="text;html=0;strokeColor=none;fillColor=none;fontFamily=Arial;fontSize=17;align=left;verticalAlign=top;spacing=5;" vertex="1" parent="1">
           <mxGeometry x="1025.0" y="1391.0" width="60" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="m10" value="1" style="text;html=0;strokeColor=none;fillColor=none;fontFamily=Arial;fontSize=17;align=left;verticalAlign=top;spacing=5;" vertex="1" parent="1">
-          <mxGeometry x="245.0" y="1248.0" width="60" height="28" as="geometry"/>
+          <mxGeometry x="245.0" y="1300" width="60" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="m11" value="0..*" style="text;html=0;strokeColor=none;fillColor=none;fontFamily=Arial;fontSize=17;align=left;verticalAlign=top;spacing=5;" vertex="1" parent="1">
           <mxGeometry x="245.0" y="1351.0" width="60" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="m12" value="1" style="text;html=0;strokeColor=none;fillColor=none;fontFamily=Arial;fontSize=17;align=left;verticalAlign=top;spacing=5;" vertex="1" parent="1">
-          <mxGeometry x="1025.0" y="910.0" width="60" height="28" as="geometry"/>
+          <mxGeometry x="1025.0" y="962" width="60" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="m13" value="0..*" style="text;html=0;strokeColor=none;fillColor=none;fontFamily=Arial;fontSize=17;align=left;verticalAlign=top;spacing=5;" vertex="1" parent="1">
-          <mxGeometry x="1025.0" y="951.0" width="60" height="28" as="geometry"/>
+          <mxGeometry x="1025.0" y="1010" width="60" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="m14" value="1" style="text;html=0;strokeColor=none;fillColor=none;fontFamily=Arial;fontSize=17;align=left;verticalAlign=top;spacing=5;" vertex="1" parent="1">
           <mxGeometry x="1235.863853271106" y="649.7235822106329" width="60" height="28" as="geometry"/>
@@ -252,10 +252,10 @@
           <mxGeometry x="1232.1760049826917" y="1403.5409615601138" width="60" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="m18" value="1" style="text;html=0;strokeColor=none;fillColor=none;fontFamily=Arial;fontSize=17;align=left;verticalAlign=top;spacing=5;" vertex="1" parent="1">
-          <mxGeometry x="1805.0" y="1379.3333333333333" width="60" height="28" as="geometry"/>
+          <mxGeometry x="1805.0" y="1392" width="60" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="m19" value="0..1" style="text;html=0;strokeColor=none;fillColor=none;fontFamily=Arial;fontSize=17;align=left;verticalAlign=top;spacing=5;" vertex="1" parent="1">
-          <mxGeometry x="1805.0" y="1407.6666666666667" width="60" height="28" as="geometry"/>
+          <mxGeometry x="1805.0" y="1420" width="60" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="m20" value="1" style="text;html=0;strokeColor=none;fillColor=none;fontFamily=Arial;fontSize=17;align=left;verticalAlign=top;spacing=5;" vertex="1" parent="1">
           <mxGeometry x="1805.0" y="772.0" width="60" height="28" as="geometry"/>
