@@ -1,5 +1,18 @@
 # Kế hoạch thực hiện
 
+<!-- toc -->
+
+**Mục lục**
+
+- [Giai đoạn 1 — Phân tích yêu cầu (mốc M1)](#giai-đoạn-1--phân-tích-yêu-cầu-mốc-m1)
+- [Giai đoạn 2 — Thiết kế (mốc M2)](#giai-đoạn-2--thiết-kế-mốc-m2)
+- [Giai đoạn 3 — Làm phần mềm (mốc M3)](#giai-đoạn-3--làm-phần-mềm-mốc-m3)
+- [Giai đoạn 4 — Kiểm thử (mốc M4)](#giai-đoạn-4--kiểm-thử-mốc-m4)
+- [Theo dõi và thay đổi](#theo-dõi-và-thay-đổi)
+- [Nộp cuối dự án](#nộp-cuối-dự-án)
+
+<!-- /toc -->
+
 Dự án làm theo 4 giai đoạn của môn học ([GUIDELINES.md](GUIDELINES.md)). Xong giai đoạn trước
 (đạt mốc M1–M4) mới chuyển sang giai đoạn sau. Mỗi việc có một người làm chính và một người khác
 rà soát. Công nghệ xem [TECH_STACK.md](TECH_STACK.md); quy trình Git/Jira xem [MEMBER_WORKFLOW.md](MEMBER_WORKFLOW.md).

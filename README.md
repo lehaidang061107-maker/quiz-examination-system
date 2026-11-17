@@ -1,5 +1,15 @@
 # Quiz Examination System
 
+<!-- toc -->
+
+**Mục lục**
+
+- [Chạy website](#chạy-website)
+- [Muốn làm gì thì đọc đâu](#muốn-làm-gì-thì-đọc-đâu)
+- [Các thư mục](#các-thư-mục)
+
+<!-- /toc -->
+
 Hệ thống thi trắc nghiệm của nhóm 04, môn Công nghệ phần mềm. Admin quản lý tài khoản,
 giảng viên tạo câu hỏi và đề thi, sinh viên làm bài và xem kết quả.
 

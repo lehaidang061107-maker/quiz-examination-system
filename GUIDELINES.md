@@ -1,5 +1,19 @@
 ﻿# Guidelines cho dự án nhóm
 
+<!-- toc -->
+
+**Mục lục**
+
+- [1. Yêu cầu chung](#1-yêu-cầu-chung)
+  - [Giai đoạn 1 — Phân tích và đặc tả yêu cầu](#giai-đoạn-1--phân-tích-và-đặc-tả-yêu-cầu)
+  - [Giai đoạn 2 — Thiết kế](#giai-đoạn-2--thiết-kế)
+  - [Giai đoạn 3 — Triển khai](#giai-đoạn-3--triển-khai)
+  - [Giai đoạn 4 — Kiểm thử](#giai-đoạn-4--kiểm-thử)
+- [2. Cấu trúc tài liệu đặc tả yêu cầu và thiết kế](#2-cấu-trúc-tài-liệu-đặc-tả-yêu-cầu-và-thiết-kế)
+- [3. Công cụ được gợi ý trong guidelines](#3-công-cụ-được-gợi-ý-trong-guidelines)
+
+<!-- /toc -->
+
 Yêu cầu thực hiện dự án theo hướng dẫn môn Công nghệ phần mềm.
 
 ## 1. Yêu cầu chung

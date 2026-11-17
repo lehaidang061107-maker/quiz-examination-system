@@ -1,5 +1,16 @@
 # Hướng dẫn mở database
 
+<!-- toc -->
+
+**Mục lục**
+
+- [Lần đầu (làm 1 lần)](#lần-đầu-làm-1-lần)
+- [Những lần sau](#những-lần-sau)
+- [Xem dữ liệu bằng Beekeeper hoặc DBeaver](#xem-dữ-liệu-bằng-beekeeper-hoặc-dbeaver)
+- [Gặp lỗi](#gặp-lỗi)
+
+<!-- /toc -->
+
 Database lưu tài khoản, câu hỏi, đề thi, bài làm và điểm. Nó chạy bằng **Docker Desktop**
 trên máy bạn; mỗi người có database riêng.
 
