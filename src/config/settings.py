@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 
+from django.contrib.messages import constants as message_constants
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
@@ -62,6 +63,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "config.navigation.navigation",
             ],
         },
     },
@@ -108,3 +110,13 @@ USE_I18N = True
 USE_TZ = True  # lưu UTC, hiển thị giờ Việt Nam
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# Trang Đăng nhập do S3-03 làm (accounts/urls.py, name="login"). Chưa đăng nhập mà vào trang
+# cần quyền thì chuyển tới đây; đăng nhập/đăng xuất xong về Trang chủ.
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = LOGIN_URL
+
+# messages.error(...) hiển thị bằng class Bootstrap "alert-danger".
+MESSAGE_TAGS = {message_constants.ERROR: "danger"}
