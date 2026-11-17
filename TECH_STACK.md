@@ -34,8 +34,57 @@ Mục ghi **(chờ xác nhận)** là đề xuất, nhóm cần đồng ý trư�
 | `results` | Chấm điểm, công bố và xem kết quả |
 
 Mỗi phần có `urls.py` riêng và phải được khai báo trong `config/urls.py`, nếu không trang sẽ báo 404.
-Trong mỗi phần: `views.py` nhận yêu cầu và kiểm tra quyền → `services.py` xử lý nghiệp vụ (tính điểm,
-khóa tài khoản…) → `models.py` lưu dữ liệu **(chờ xác nhận)**.
+
+### Kiến trúc: MVC
+
+Nhóm chọn mẫu kiến trúc **MVC (Model – View – Controller)**. Django gọi là MVT nhưng vai trò giống nhau:
+
+| MVC | Trong code | Làm gì | Không được làm |
+| --- | --- | --- | --- |
+| **Model** | `models.py` | Lớp theo sơ đồ lớp, lưu dữ liệu, **mọi quy tắc nghiệp vụ** (phát hành đề, chấm điểm, khóa tài khoản…) | Đọc `request`, trả HTML |
+| **View** | `templates/<app>/*.html` | Hiển thị giao diện theo Figma | Truy vấn database, tính toán nghiệp vụ |
+| **Controller** | `views.py` + `urls.py` | Nhận yêu cầu, kiểm tra đăng nhập/vai trò, đọc form, **gọi phương thức của Model**, chọn template | Tự viết lại quy tắc đã có trong Model |
+
+Ví dụ phát hành đề, trong `exams/views.py`:
+
+```python
+def publish_exam(request, exam_id):
+    teacher = request.user.as_role()           # Teacher
+    exam = teacher.manage_exam(exam_id)        # sai giảng viên -> PermissionDenied (403)
+    try:
+        exam.publish()                         # quy tắc nằm trong Model
+        messages.success(request, "Đã phát hành đề.")
+    except ValidationError as e:
+        for msg in e.messages:
+            messages.error(request, msg)
+    return redirect("exams:detail", exam_id)
+```
+
+Phương thức Model báo lỗi nghiệp vụ bằng `ValidationError` (thông báo tiếng Việt, hiển thị thẳng cho
+người dùng) và lỗi sai quyền bằng `PermissionDenied`.
+
+### Sơ đồ lớp trong code
+
+Tên phương thức theo sơ đồ lớp (mục 5.2 tài liệu đặc tả), viết kiểu Python: `viewAvailableExams()` → `view_available_exams()`.
+Admin/Teacher/Student là proxy model của `User` (cùng bảng `users`); lấy từ phiên bằng `request.user.as_role()`.
+
+| Lớp | File | Phương thức |
+| --- | --- | --- |
+| User | `accounts/models.py` | `login(request, email, password)`, `logout(request)`, `is_active` |
+| Admin | `accounts/models.py` | `create_user`, `update_user`, `lock_user`, `delete_user` |
+| Teacher | `accounts/models.py` | `manage_questions`, `create_exam`, `manage_exam`, `assign_students`, `view_results` |
+| Student | `accounts/models.py` | `view_available_exams`, `start_exam`, `save_answer`, `submit_exam`, `view_result` |
+| Question | `questions/models.py` | `add_option`, `validate_options`, `create_revision`, `archive` (+ `activate`, `option_errors`, `is_locked`) |
+| AnswerOption | `questions/models.py` | `update_content`, `set_correct` |
+| Exam | `exams/models.py` | `add_question`, `publish`, `can_start`, `publish_results` (+ `apply_settings`, `close`, `cannot_start_reason`) |
+| ExamQuestion | `exams/models.py` | `set_position`, `set_points` |
+| ExamParticipant | `exams/models.py` | `grant_access`, `revoke_access`, `can_participate` |
+| Submission | `attempts/models.py` | `save_answer`, `submit`, `auto_submit`, `grade`, `is_editable` |
+| SubmissionAnswer | `attempts/models.py` | `select_option`, `clear_selection` |
+| Result | `results/models.py` | `calculate`, `can_view` |
+
+Phương thức trong ngoặc `(+ …)` là phần thêm để giao diện dùng, không có trong sơ đồ. Muốn thêm phương thức
+mới vào lớp nào thì báo PM để cập nhật sơ đồ lớp cho khớp.
 
 ## 3. Quy tắc bắt buộc khi viết code
 
