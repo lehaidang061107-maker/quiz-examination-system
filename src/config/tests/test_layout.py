@@ -101,3 +101,40 @@ class ErrorPageTests(TestCase):
         response = self.client.get("/khong-co-trang-nay/")
         self.assertContains(response, "Không tìm thấy trang", status_code=404)
         self.assertContains(response, "Về Trang chủ", status_code=404)
+
+
+class DevLoginTests(TestCase):
+    """Lệnh dev_login dùng để chạy thử giao diện khi chưa có trang Đăng nhập."""
+
+    def run_command(self, *args):
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        out = StringIO()
+        call_command("dev_login", *args, stdout=out)
+        return out.getvalue()
+
+    @override_settings(DEBUG=True)
+    def test_tao_phien_dung_tai_khoan(self):
+        teacher = make_user(Role.TEACHER, name="Cô Lan")
+        output = self.run_command(teacher.email)
+        session_id = output.split("sessionid = ")[1].split()[0]
+        self.client.cookies["sessionid"] = session_id
+        self.assertContains(self.client.get(reverse("home")), "Chào mừng, Cô Lan")
+
+    @override_settings(DEBUG=False)
+    def test_khong_chay_khi_tat_debug(self):
+        from django.core.management.base import CommandError
+
+        with self.assertRaisesMessage(CommandError, "DEBUG=True"):
+            self.run_command(make_user().email)
+
+    @override_settings(DEBUG=True)
+    def test_tai_khoan_bi_khoa_khong_dang_nhap_tam_duoc(self):
+        from django.core.management.base import CommandError
+
+        student = make_user()
+        User.objects.filter(pk=student.pk).update(status=UserStatus.LOCKED)
+        with self.assertRaisesMessage(CommandError, "bị khóa"):
+            self.run_command(student.email)

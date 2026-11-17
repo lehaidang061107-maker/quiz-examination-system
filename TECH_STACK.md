@@ -1,5 +1,18 @@
 # Công nghệ sử dụng
 
+<!-- toc -->
+
+**Mục lục**
+
+- [1. Dùng gì cho việc gì](#1-dùng-gì-cho-việc-gì)
+- [2. Code chia thành các phần](#2-code-chia-thành-các-phần)
+  - [Kiến trúc: MVC](#kiến-trúc-mvc)
+  - [Sơ đồ lớp trong code](#sơ-đồ-lớp-trong-code)
+- [3. Quy tắc bắt buộc khi viết code](#3-quy-tắc-bắt-buộc-khi-viết-code)
+- [4. Triển khai, thử tải, sao lưu](#4-triển-khai-thử-tải-sao-lưu)
+
+<!-- /toc -->
+
 Website viết bằng **Python + Django**, dữ liệu lưu trong **PostgreSQL**.
 Cả nhóm dùng chung bộ này; không tự chọn công nghệ khác (ví dụ Flask, SQLite).
 Mục ghi **(chờ xác nhận)** là đề xuất, nhóm cần đồng ý trước khi áp dụng.
@@ -100,10 +113,10 @@ mới vào lớp nào thì báo PM để cập nhật sơ đồ lớp cho khớp
   không khóa Admin cuối cùng; câu hỏi kích hoạt phải có ≥ 2 phương án và đúng 1 đáp án đúng; không sửa đề đã
   phát hành; hạn nộp và tự nộp; chấm đúng điểm; chỉ công bố điểm khi đủ điều kiện.
 
-## 4. Việc chưa quyết định
+## 4. Triển khai, thử tải, sao lưu
 
-| Việc | Cần quyết định gì |
-| --- | --- |
-| Đưa website lên mạng | Chỉ demo trên máy cá nhân, hay thuê máy chủ để truy cập qua Internet |
-| Thử tải | Cách kiểm tra website chịu được 500 sinh viên thi cùng lúc như đặc tả yêu cầu |
-| Sao lưu | Cách sao lưu dữ liệu hằng ngày và khôi phục khi có sự cố |
+| Việc | Đã quyết định | Ai làm |
+| --- | --- | --- |
+| Đưa website lên mạng | Chỉ demo trên máy cá nhân bằng Docker (`http://127.0.0.1:8000`), không thuê máy chủ. Vì không đưa lên Internet nên chưa bật HTTPS (NFR-SEC-08); ghi rõ hạn chế này trong báo cáo | S3-30 |
+| Thử tải (NFR-PER-01 → 06) | Dùng **Locust** giả lập sinh viên: đăng nhập → xem danh sách → làm bài, lưu đáp án mỗi 10 giây → nộp bài. Chạy website bằng Docker + gunicorn (không đo trên `runserver`), tăng dần 50 → 100 → 200 → 500 người. Ghi cấu hình máy, p95 thời gian phản hồi, tỉ lệ lỗi, thời gian chấm; chưa đạt 500 thì ghi đúng mức đạt được, không ghi "Đã đạt" | S3-10, làm sau khi có trang đăng nhập, làm bài, nộp bài |
+| Sao lưu (NFR-REL-04) | `pg_dump` chép database ra file `backups/quiz_<ngày>.sql.gz`, giữ 7 bản mới nhất; có lệnh khôi phục. Demo: sao lưu → xóa dữ liệu → khôi phục → dữ liệu quay lại. Chạy hằng ngày bằng lịch (cron) trên máy demo | S3-25 |
