@@ -5,6 +5,9 @@
 **Mục lục**
 
 - [Chạy website](#chạy-website)
+- [Kiểm thử](#kiểm-thử)
+  - [Unit test](#unit-test)
+  - [Chạy thử trên trình duyệt](#chạy-thử-trên-trình-duyệt)
 - [Muốn làm gì thì đọc đâu](#muốn-làm-gì-thì-đọc-đâu)
 - [Các thư mục](#các-thư-mục)
 
@@ -31,7 +34,33 @@ python manage.py runserver
 
 Mở http://127.0.0.1:8000/health/ — thấy `{"status": "ok", "database": "ok"}` là chạy đúng.
 
-Kiểm thử: trong thư mục `src`, chạy `python manage.py test`; cuối kết quả có `OK` là đạt.
+## Kiểm thử
+
+### Unit test
+
+Trong thư mục `src` (PostgreSQL phải đang chạy), chạy `python manage.py test`; cuối kết quả có `OK` là đạt.
+Chạy riêng một app: `python manage.py test accounts`.
+
+### Chạy thử trên trình duyệt
+
+Website đang chạy (`python manage.py runserver`, mục trên). **Đăng nhập tạm** khi chưa có trang Đăng nhập
+(S3-03): mở terminal thứ hai, vào `src`, bật `.venv`, chạy
+
+```bash
+python manage.py dev_login teacher@demo.example     # hoặc admin@..., student1@..., student2@...
+```
+
+Lệnh in ra `sessionid = ...`. Trong Chrome: **F12 → Application → Cookies → `http://127.0.0.1:8000`**,
+sửa (hoặc thêm) dòng tên `sessionid`, dán giá trị vừa in, rồi **F5**. Đổi tài khoản thì chạy lại lệnh với email khác.
+Lệnh chỉ chạy khi `DEBUG=True`.
+
+Kiểm tra thêm:
+
+- Giao diện điện thoại: F12 → biểu tượng điện thoại (Toggle device toolbar) → khung **390 × 844** (NFR-USA-02).
+- Trang lỗi 403/404 tiếng Việt chỉ hiện khi tắt DEBUG: `DEBUG=False python manage.py runserver --insecure`
+  (`--insecure` để vẫn tải được CSS). Thử xong chạy lại bình thường.
+- Sai quyền: đăng nhập vai trò khác rồi gõ thẳng URL trang không phải của mình, phải ra trang 403.
+- Cần kiểm tra những gì: xem test case của từng task trong `docs/testcases/S3-xx.csv`.
 
 ## Muốn làm gì thì đọc đâu
 
