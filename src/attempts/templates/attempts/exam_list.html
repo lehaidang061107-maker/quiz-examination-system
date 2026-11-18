@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Danh sách bài thi{% endblock %}
+{% block page_title %}Danh sách bài thi{% endblock %}
+{% block page_subtitle %}Các kỳ thi trắc nghiệm được giao cho bạn{% endblock %}
+
+{% block content %}
+<div class="qes-card p-4">
+  {% if exam_items %}
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Tên bài thi</th>
+            <th>Thời lượng</th>
+            <th>Thời gian mở - đóng</th>
+            <th>Trạng thái</th>
+            <th class="text-end">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in exam_items %}
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ item.exam.title }}</div>
+                {% if item.exam.description %}
+                  <div class="small text-muted">{{ item.exam.description|truncatechars:90 }}</div>
+                {% endif %}
+              </td>
+              <td>{{ item.exam.duration_minutes }} phút</td>
+              <td class="small">
+                <div>Mở: {{ item.exam.opens_at|date:"d/m/Y H:i"|default:"Tự do" }}</div>
+                <div>Đóng: {{ item.exam.closes_at|date:"d/m/Y H:i"|default:"Không giới hạn" }}</div>
+              </td>
+              <td>
+                {% if item.is_submitted %}
+                  <span class="badge text-bg-success">Đã nộp bài</span>
+                {% elif item.is_in_progress %}
+                  <span class="badge text-bg-warning">Đang làm bài</span>
+                {% elif item.cannot_reason %}
+                  <span class="badge text-bg-secondary">{{ item.cannot_reason }}</span>
+                {% else %}
+                  <span class="badge text-bg-primary">Sẵn sàng thi</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                {% if item.is_submitted %}
+                  <button type="button" class="btn btn-sm btn-outline-secondary" disabled>Đã hoàn thành</button>
+                {% elif item.is_in_progress %}
+                  <a href="{% url 'attempts:take_exam' item.submission.pk %}" class="btn btn-sm btn-warning">
+                    Tiếp tục làm bài
+                  </a>
+                {% elif item.cannot_reason %}
+                  <button type="button" class="btn btn-sm btn-secondary" disabled>Chưa thể bắt đầu</button>
+                {% else %}
+                  <form method="post" action="{% url 'attempts:start_exam' item.exam.pk %}" class="d-inline"
+                        onsubmit="return confirm('Bạn chắc chắn muốn bắt đầu làm bài thi này? Đồng hồ sẽ tính giờ ngay lập tức.');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-primary">Bắt đầu làm bài</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-4 text-muted">
+      Hiện tại bạn chưa được giao bài thi nào.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
