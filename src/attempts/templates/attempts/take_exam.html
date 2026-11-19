@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Làm bài: {{ exam.title }}{% endblock %}
+{% block page_title %}{{ exam.title }}{% endblock %}
+{% block page_subtitle %}Lượt thi #{{ submission.attempt_no }} · Tổng cộng {{ question_items|length }} câu hỏi{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex align-items-center gap-3">
+  <span id="save-status" class="small text-muted">Đã đồng bộ</span>
+  <div class="badge text-bg-danger fs-6 px-3 py-2">
+    Còn lại: <span id="countdown-timer">--:--</span>
+  </div>
+  <form id="submit-exam-form" method="post" action="{% url 'attempts:submit_exam' submission.pk %}" class="m-0">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-success fw-semibold"
+            onclick="return confirm('Bạn chắc chắn muốn nộp bài thi này? Sau khi nộp sẽ không thể sửa đáp án.');">
+      Nộp bài
+    </button>
+  </form>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-9">
+    {% for item in question_items %}
+      <div id="question-card-{{ item.position }}" class="qes-card p-4 mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fw-bold text-primary">Câu {{ item.position }}</span>
+          <span class="badge text-bg-light border">{{ item.points }} điểm</span>
+        </div>
+        <div class="mb-3" style="white-space: pre-line;">{{ item.question.content }}</div>
+
+        <div class="d-flex flex-column gap-2">
+          {% for opt in item.options %}
+            <label class="border rounded p-2 px-3 d-flex align-items-center gap-2" style="cursor: pointer;">
+              <input type="radio"
+                     name="question_{{ item.question.pk }}"
+                     value="{{ opt.pk }}"
+                     data-question-id="{{ item.question.pk }}"
+                     data-position="{{ item.position }}"
+                     class="form-check-input mt-0 answer-radio"
+                     {% if item.selected_option_id == opt.pk %}checked{% endif %}>
+              <span>{{ opt.content }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+    {% empty %}
+      <div class="qes-card p-4 text-center text-muted">Đề thi này chưa có câu hỏi nào.</div>
+    {% endfor %}
+  </div>
+
+  <div class="col-lg-3">
+    <div class="qes-card p-3 position-sticky" style="top: 1rem;">
+      <div class="fw-semibold mb-2">Danh sách câu hỏi</div>
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        {% for item in question_items %}
+          <a id="nav-q-{{ item.position }}"
+             href="#question-card-{{ item.position }}"
+             class="btn btn-sm {% if item.selected_option_id %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+             style="width: 38px;">
+            {{ item.position }}
+          </a>
+        {% endfor %}
+      </div>
+      <div class="small text-muted">
+        Đáp án được tự động lưu ngay khi bạn chọn.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  let currentVersion = {{ submission.version }};
+  let remainingSeconds = {{ remaining_seconds }};
+  const saveUrl = "{% url 'attempts:save_answer_api' submission.pk %}";
+  const csrfToken = document.querySelector("#submit-exam-form [name=csrfmiddlewaretoken]").value;
+  const saveStatusEl = document.getElementById("save-status");
+  const timerEl = document.getElementById("countdown-timer");
+  const submitForm = document.getElementById("submit-exam-form");
+
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+  }
+
+  timerEl.textContent = formatTime(remainingSeconds);
+  const countdownInterval = setInterval(function() {
+    remainingSeconds -= 1;
+    if (remainingSeconds <= 0) {
+      clearInterval(countdownInterval);
+      timerEl.textContent = "00:00";
+      submitForm.submit();
+      return;
+    }
+    timerEl.textContent = formatTime(remainingSeconds);
+  }, 1000);
+
+  document.querySelectorAll(".answer-radio").forEach(function(radio) {
+    radio.addEventListener("change", async function() {
+      const questionId = this.dataset.questionId;
+      const position = this.dataset.position;
+      const optionId = this.value;
+
+      saveStatusEl.textContent = "Đang lưu...";
+      saveStatusEl.className = "small text-warning";
+
+      try {
+        const res = await fetch(saveUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken
+          },
+          body: JSON.stringify({
+            question_id: questionId,
+            option_id: optionId,
+            version: currentVersion
+          })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          currentVersion = data.version;
+          saveStatusEl.textContent = "Đã lưu";
+          saveStatusEl.className = "small text-success";
+          const navBtn = document.getElementById("nav-q-" + position);
+          if (navBtn) {
+            navBtn.classList.remove("btn-outline-secondary");
+            navBtn.classList.add("btn-primary");
+          }
+        } else {
+          saveStatusEl.textContent = data.error || "Lỗi lưu bài";
+          saveStatusEl.className = "small text-danger";
+          alert(data.error || "Không thể lưu đáp án. Vui lòng tải lại trang.");
+        }
+      } catch (err) {
+        saveStatusEl.textContent = "Mất kết nối";
+        saveStatusEl.className = "small text-danger";
+      }
+    });
+  });
+})();
+</script>
+{% endblock %}
