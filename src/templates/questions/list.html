@@ -1,0 +1,220 @@
+
+{% extends "base.html" %}
+
+{% block title %}Ngân hàng câu hỏi{% endblock %}
+
+{% block page_title %}Ngân hàng câu hỏi{% endblock %}
+
+{% block page_subtitle %}
+Quản lý và theo dõi các câu hỏi của bạn.
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+
+    {% if error_message %}
+        <div class="alert alert-danger" role="alert">
+            {{ error_message }}
+        </div>
+
+    {% else %}
+
+        <!-- Thanh tìm kiếm và lọc -->
+        <div class="qes-card p-3 mb-3">
+            <form method="get" action="{% url 'questions:list' %}" id="question-filter-form">
+
+                <div class="row g-2 align-items-end">
+
+                    <div class="col-12 col-md-6">
+                        <label for="question-search" class="form-label">
+                            Tìm kiếm câu hỏi
+                        </label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="question-search"
+                            name="q"
+                            value="{{ search_query }}"
+                            placeholder="Nhập nội dung câu hỏi..."
+                        >
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <label for="question-status" class="form-label">
+                            Trạng thái
+                        </label>
+                        <select
+                            class="form-select"
+                            id="question-status"
+                            name="status"
+                        >
+                            <option value="">Tất cả trạng thái</option>
+                            {% for value, label in status_choices %}
+                                <option
+                                    value="{{ value }}"
+                                    {% if selected_status == value %}selected{% endif %}
+                                >
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-3 d-flex gap-2">
+                        <button
+                            type="submit"
+                            class="btn btn-primary flex-grow-1"
+                            id="question-search-button"
+                        >
+                            <span class="button-text">Tìm kiếm</span>
+                            <span
+                                class="spinner-border spinner-border-sm d-none"
+                                role="status"
+                                aria-hidden="true"
+                            ></span>
+                        </button>
+
+                        <a
+                            href="{% url 'questions:list' %}"
+                            class="btn btn-outline-secondary"
+                        >
+                            Xóa lọc
+                        </a>
+                    </div>
+
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Danh sách câu hỏi -->
+        <div class="qes-card p-3">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Danh sách câu hỏi</h5>
+                <span class="text-muted small">
+                    {{ page_obj.paginator.count }} câu hỏi
+                </span>
+            </div>
+
+            {% if questions %}
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Nội dung câu hỏi</th>
+                                <th>Trạng thái</th>
+                                <th class="text-center">Số phương án</th>
+                                <th class="text-center">Ngày cập nhật</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for question in questions %}
+                                <tr>
+                                    <td style="min-width: 250px;">
+                                        <div class="fw-medium">
+                                            {{ question.content|default:"Chưa có nội dung"|truncatechars:120 }}
+                                        </div>
+                                        <small class="text-muted">
+                                            Mã câu hỏi: {{ question.question_id }}
+                                        </small>
+                                    </td>
+
+                                    <td>
+                                        {% if question.status == "DRAFT" %}
+                                            <span class="badge text-bg-secondary">
+                                                Nháp
+                                            </span>
+                                        {% elif question.status == "ACTIVE" %}
+                                            <span class="badge text-bg-success">
+                                                Đang dùng
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td class="text-center">
+                                        {{ question.option_count }}
+                                    </td>
+
+                                    <td class="text-center">
+                                        {{ question.updated_at|date:"d/m/Y H:i" }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Phân trang -->
+                {% if page_obj.has_other_pages %}
+                    <nav aria-label="Phân trang câu hỏi">
+                        <ul class="pagination justify-content-center mb-0">
+
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       href="?q={{ search_query|urlencode }}&status={{ selected_status|urlencode }}&page={{ page_obj.previous_page_number }}">
+                                        Trước
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">Trước</span>
+                                </li>
+                            {% endif %}
+
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}
+                                </span>
+                            </li>
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       href="?q={{ search_query|urlencode }}&status={{ selected_status|urlencode }}&page={{ page_obj.next_page_number }}">
+                                        Sau
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">Sau</span>
+                                </li>
+                            {% endif %}
+
+                        </ul>
+                    </nav>
+                {% endif %}
+
+            {% else %}
+                <div class="text-center py-5">
+                    <h6 class="text-muted">Không tìm thấy câu hỏi nào</h6>
+                    <p class="text-muted small mb-0">
+                        Thử thay đổi từ khóa hoặc bộ lọc để tìm câu hỏi.
+                    </p>
+                </div>
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("question-filter-form");
+        const button = document.getElementById("question-search-button");
+
+        if (!form || !button) return;
+
+        form.addEventListener("submit", function () {
+            button.disabled = true;
+            button.querySelector(".button-text").textContent = "Đang tải...";
+            button.querySelector(".spinner-border").classList.remove("d-none");
+        });
+    });
+</script>
+{% endblock %}
