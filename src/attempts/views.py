@@ -11,7 +11,16 @@ from accounts.decorators import role_required
 from accounts.models import Role
 from exams.models import Exam, ExamParticipant, ExamQuestion, ExamStatus
 
-from .models import Submission, SubmissionAnswer, SubmissionStatus
+from .models import StaleVersionError, Submission, SubmissionAnswer, SubmissionStatus
+from .services import finalize_manual_submit, sync_and_finalize_if_needed
+
+FINALIZE_MESSAGES = {
+    "expired": "Đã hết thời gian làm bài. Hệ thống đã tự động chốt và nộp bài của bạn.",
+    "exam_closed": "Đề thi đã được giảng viên đóng. Hệ thống đã tự động nộp bài của bạn.",
+    "revoked": "Quyền dự thi của bạn đã bị thu hồi. Hệ thống đã tự động chốt bài.",
+    "already_submitted": "Lượt thi này đã được nộp trước đó.",
+    "submitted": "Đã nộp bài thi thành công!",
+}
 
 
 @role_required(Role.STUDENT)
@@ -37,10 +46,7 @@ def exam_list(request):
     for p in participants:
         exam = p.exam
         sub = submissions.get(exam.pk)
-        cannot_reason = None
-
-        if sub is None:
-            cannot_reason = exam.cannot_start_reason(request.user)
+        cannot_reason = exam.cannot_start_reason(request.user) if sub is None else None
 
         exam_items.append(
             {
@@ -90,21 +96,16 @@ def start_exam(request, exam_id):
 
 @role_required(Role.STUDENT)
 def take_exam(request, submission_id):
-    """S3-17: Phòng làm bài thi với đồng hồ đếm ngược và danh sách câu hỏi."""
+    """S3-17 & S3-19: Phòng làm bài thi với đồng hồ đếm ngược và kiểm tra chốt bài."""
     submission = get_object_or_404(
         Submission.objects.select_related("exam"),
         pk=submission_id,
         student=request.user,
     )
 
-    if submission.status != SubmissionStatus.IN_PROGRESS:
-        messages.info(request, "Lượt thi này đã được nộp.")
-        return redirect("attempts:exam_list")
-
-    # Nếu đã quá hạn nộp thì tự động chốt bài
-    if timezone.now() >= submission.deadline_at:
-        submission.auto_submit()
-        messages.warning(request, "Đã hết thời gian làm bài. Hệ thống đã tự động nộp bài của bạn.")
+    forced = sync_and_finalize_if_needed(submission)
+    if forced is not None:
+        messages.warning(request, FINALIZE_MESSAGES.get(forced.reason, "Lượt thi đã kết thúc."))
         return redirect("attempts:exam_list")
 
     exam_questions = (
@@ -132,7 +133,11 @@ def take_exam(request, submission_id):
             }
         )
 
-    remaining_seconds = max(0, int((submission.deadline_at - timezone.now()).total_seconds()))
+    remaining_seconds = (
+        max(0, int((submission.deadline_at - timezone.now()).total_seconds()))
+        if submission.deadline_at
+        else 0
+    )
 
     return render(
         request,
@@ -149,8 +154,24 @@ def take_exam(request, submission_id):
 @role_required(Role.STUDENT)
 @require_POST
 def save_answer_api(request, submission_id):
-    """S3-17: API AJAX lưu đáp án tự động và kiểm tra version chống mở 2 tab."""
-    submission = get_object_or_404(Submission, pk=submission_id, student=request.user)
+    """S3-18 & S3-19: API lưu đáp án tự động, kiểm tra chốt bài & xung đột version."""
+    submission = get_object_or_404(
+        Submission.objects.select_related("exam"),
+        pk=submission_id,
+        student=request.user,
+    )
+
+    forced = sync_and_finalize_if_needed(submission)
+    if forced is not None:
+        return JsonResponse(
+            {
+                "ok": False,
+                "finalized": True,
+                "reason": forced.reason,
+                "error": FINALIZE_MESSAGES.get(forced.reason, "Bài thi đã kết thúc."),
+            },
+            status=409,
+        )
 
     try:
         payload = json.loads(request.body.decode("utf-8"))
@@ -167,9 +188,12 @@ def save_answer_api(request, submission_id):
             option_id=option_id,
             version=version,
         )
+    except StaleVersionError as exc:
+        msg = exc.messages[0] if getattr(exc, "messages", None) else str(exc)
+        return JsonResponse({"ok": False, "stale": True, "error": msg}, status=409)
     except ValidationError as exc:
         msg = exc.messages[0] if getattr(exc, "messages", None) else str(exc)
-        return JsonResponse({"ok": False, "error": msg}, status=409)
+        return JsonResponse({"ok": False, "error": msg}, status=400)
 
     return JsonResponse({"ok": True, "version": new_version})
 
@@ -177,13 +201,20 @@ def save_answer_api(request, submission_id):
 @role_required(Role.STUDENT)
 @require_POST
 def submit_exam(request, submission_id):
-    """S3-18: Sinh viên bấm nộp bài thủ công."""
-    submission = get_object_or_404(Submission, pk=submission_id, student=request.user)
+    """S3-19: Nộp bài qua dịch vụ chốt bài thống nhất."""
+    submission = get_object_or_404(
+        Submission.objects.select_related("exam"),
+        pk=submission_id,
+        student=request.user,
+    )
 
-    if submission.status == SubmissionStatus.IN_PROGRESS:
-        submission.submit()
+    result = finalize_manual_submit(submission)
+    msg = FINALIZE_MESSAGES.get(result.reason, "Đã xử lý nộp bài.")
+    if result.reason == "submitted":
         messages.success(request, f"Đã nộp bài thi '{submission.exam.title}' thành công!")
+    elif result.finalized:
+        messages.warning(request, msg)
     else:
-        messages.info(request, "Bài thi này đã được nộp trước đó.")
+        messages.info(request, msg)
 
     return redirect("attempts:exam_list")
