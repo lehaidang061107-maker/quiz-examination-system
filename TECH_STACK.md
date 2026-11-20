@@ -1,4 +1,4 @@
-# 03 · Coding Guidelines
+# Coding Guidelines
 
 <!-- toc -->
 
@@ -25,7 +25,7 @@ Mục ghi **(chờ xác nhận)** là đề xuất, nhóm cần đồng ý trư�
 | Ngôn ngữ | Python 3.12 – 3.14 | Các bản Django 5.2 hỗ trợ |
 | Khung website | Django 5.2 (bản hỗ trợ dài hạn, tới 4/2028) | Ghi bản cụ thể trong `requirements.txt`, hiện là `Django==5.2.19` |
 | Giao diện | Django Templates + Bootstrap 5 | Làm theo bản Figma trong `docs/` |
-| Lưu dữ liệu | PostgreSQL 17, chạy bằng Docker | [Cách cài](01-getting-started.md). Không dùng SQLite, kể cả khi test |
+| Lưu dữ liệu | PostgreSQL 17, chạy bằng Docker | [Cách cài](database/README.md). Không dùng SQLite, kể cả khi test |
 | Tạo/sửa bảng | Django migrations | Chạy `makemigrations`, đọc lại file sinh ra; không sửa migration đã merge |
 | Tài khoản | Model `accounts.User` riêng, đăng nhập bằng email, lưu ở bảng `users` | Phải có trước lần `migrate` đầu tiên |
 | Đăng nhập, phiên | Có sẵn của Django, phiên lưu trong database | Tự đăng xuất sau 30 phút không hoạt động; tài khoản bị khóa mất phiên ngay |

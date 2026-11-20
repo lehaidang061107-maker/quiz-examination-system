@@ -17,12 +17,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FILES = [
     "README.md",
-    "docs/guides/01-getting-started.md",
-    "docs/guides/02-git-workflow.md",
-    "docs/guides/03-coding-guidelines.md",
-    "docs/guides/04-testing.md",
-    "docs/project/project-plan.md",
-    "docs/project/course-requirements.md",
+    "MEMBER_WORKFLOW.md",
+    "TECH_STACK.md",
+    "PROJECT_PLAN.md",
+    "GUIDELINES.md",
+    "database/README.md",
+    "database/seeds/README.md",
+    "docs/testcases/README.md",
 ]
 START, END = "<!-- toc -->", "<!-- /toc -->"
 HEADING = re.compile(r"^(#{2,3})\s+(.+?)\s*#*\s*$")

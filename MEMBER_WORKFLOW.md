@@ -1,4 +1,4 @@
-# 02 · Git Workflow
+# Git Workflow
 
 <!-- toc -->
 
@@ -45,7 +45,7 @@ Dùng mã `S3-xx` (không dùng `CNPM-x`). Mô tả viết thường, không d�
 
 ## 3. Code & Commit
 
-Làm đúng phạm vi task, không gộp code của task khác. Cách viết code xem [03-coding-guidelines.md](03-coding-guidelines.md).
+Làm đúng phạm vi task, không gộp code của task khác. Cách viết code xem [TECH_STACK.md](TECH_STACK.md).
 
 ```bash
 git status                           # luôn xem trước mình sắp commit gì
@@ -57,7 +57,7 @@ Không commit: `.env`, mật khẩu, API key; file `*.db`, `*.sqlite3`; `__pycac
 
 ## 4. Test Before Push
 
-Chạy unit test, thử trên trình duyệt và viết test case CSV theo [04-testing.md](04-testing.md).
+Chạy unit test, thử trên trình duyệt và viết test case CSV theo [docs/testcases/README.md](docs/testcases/README.md).
 Test case CSV commit **cùng PR với code**.
 
 ## 5. Push & Open a Pull Request

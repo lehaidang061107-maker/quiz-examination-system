@@ -85,4 +85,4 @@ Nhóm nên trình bày mô tả kiến trúc trong phần thiết kế của cù
 
 Guidelines cho phép sử dụng công cụ khác. Danh sách trên là gợi ý, không phải yêu cầu bắt buộc sử dụng tất cả công cụ.
 
-Kế hoạch áp dụng cho nhóm 5 người được trình bày trong [project-plan.md](project-plan.md).
+Kế hoạch áp dụng cho nhóm 5 người được trình bày trong [PROJECT_PLAN.md](PROJECT_PLAN.md).
