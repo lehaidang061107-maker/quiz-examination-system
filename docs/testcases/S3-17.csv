@@ -1,0 +1,7 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-17-01,Take Exam,1. Bắt đầu làm một đề có thời lượng 30 phút.,Tài khoản Student được giao đề,"Phòng thi hiển thị đủ câu hỏi, điểm từng câu, đồng hồ đếm ngược và bảng điều hướng câu hỏi."
+S3-17-02,Take Exam,1. Bắt đầu làm đề không giới hạn thời lượng.,Thời lượng: (trống),"Không hiển thị đồng hồ đếm ngược, hiển thị Không giới hạn thời gian và không tự nộp."
+S3-17-03,Take Exam - Navigation,"1. Trong phòng thi, chọn đáp án câu 1.
+2. Xem bảng Danh sách câu hỏi.",Tài khoản Student được giao đề,Ô số 1 đổi sang màu đã trả lời.
+S3-17-04,Take Exam - Auto Submit,"1. Bắt đầu làm bài.
+2. Chờ đến khi đồng hồ về 00:00.",Tài khoản Student được giao đề,Hệ thống tự nộp bài với các đáp án đã lưu và chuyển về trang Bài thi.

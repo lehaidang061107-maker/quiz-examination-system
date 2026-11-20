@@ -195,3 +195,30 @@ class AttemptsFlowAndConcurrencyTests(TestCase):
         )
         self.assertEqual(res.status_code, 400)
         self.assertFalse(res.json().get("ok"))
+
+    def test_exam_list_shows_unlimited_duration(self):
+        """Đề không giới hạn thời lượng hiển thị "Không giới hạn" thay vì "None phút"."""
+        unlimited_exam = Exam.objects.create(
+            teacher=self.teacher,
+            title="Đề không giới hạn thời lượng",
+            duration_minutes=None,
+            opens_at=timezone.now() - timedelta(minutes=5),
+            status=ExamStatus.PUBLISHED,
+        )
+        ExamParticipant.objects.create(
+            exam=unlimited_exam, student=self.student, is_active=True
+        )
+
+        res = self.client.get(reverse("attempts:exam_list"))
+
+        self.assertContains(res, "Đề không giới hạn thời lượng")
+        self.assertNotContains(res, "None phút")
+
+    def test_take_exam_uses_base_layout_header(self):
+        """Phòng thi dùng tiêu đề và nút Nộp bài trong header chung của base.html."""
+        sub = Submission.start(exam=self.exam, student=self.student)
+
+        res = self.client.get(reverse("attempts:take_exam", args=[sub.pk]))
+
+        self.assertContains(res, '<h1 class="h4 fw-bold mb-1">Đề kiểm thử S3-20</h1>', html=False)
+        self.assertContains(res, 'id="btn-submit-exam"')

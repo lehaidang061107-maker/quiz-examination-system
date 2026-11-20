@@ -27,7 +27,7 @@
                   <div class="small text-muted">{{ item.exam.description|truncatechars:90 }}</div>
                 {% endif %}
               </td>
-              <td>{{ item.exam.duration_minutes }} phút</td>
+              <td>{% if item.exam.duration_minutes %}{{ item.exam.duration_minutes }} phút{% else %}Không giới hạn{% endif %}</td>
               <td class="small">
                 <div>Mở: {{ item.exam.opens_at|date:"d/m/Y H:i"|default:"Tự do" }}</div>
                 <div>Đóng: {{ item.exam.closes_at|date:"d/m/Y H:i"|default:"Không giới hạn" }}</div>

@@ -26,7 +26,6 @@ FINALIZE_MESSAGES = {
 @role_required(Role.STUDENT)
 def exam_list(request):
     """S3-16: Danh sách bài thi được giao cho sinh viên và trạng thái từng lượt thi."""
-    now = timezone.now()
     participants = (
         ExamParticipant.objects.filter(
             student=request.user,
@@ -56,7 +55,6 @@ def exam_list(request):
                 "is_in_progress": sub is not None and sub.status == SubmissionStatus.IN_PROGRESS,
                 "is_submitted": sub is not None
                 and sub.status in [SubmissionStatus.SUBMITTED, SubmissionStatus.GRADED],
-                "now": now,
             }
         )
 
@@ -65,7 +63,6 @@ def exam_list(request):
         "attempts/exam_list.html",
         {
             "exam_items": exam_items,
-            "now": now,
         },
     )
 
