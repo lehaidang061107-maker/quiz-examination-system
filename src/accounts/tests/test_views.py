@@ -1,4 +1,6 @@
 """Kiểm thử view đăng ký (S3-02), đăng nhập / đăng xuất (S3-03)."""
+from unittest import mock
+
 from django.test import TestCase
 from django.urls import reverse
 
@@ -121,3 +123,16 @@ class RegisterViewTests(TestCase):
         User.objects.create_user("student@x.example", PASSWORD, full_name="S")
         self.client.post(reverse("accounts:login"), {"email": "student@x.example", "password": PASSWORD})
         self.assertRedirects(self.client.get(self.url), reverse("home"), fetch_redirect_response=False)
+
+
+class RegisterRaceTests(TestCase):
+    def test_email_taken_between_check_and_insert(self):
+        """Request khác tạo cùng email ngay sau khi form kiểm tra xong: báo lỗi, không ra trang 500."""
+        User.objects.create_user("race@x.example", PASSWORD, full_name="Người khác")
+        data = {"full_name": "A", "email": "race@x.example", "password": PASSWORD, "confirm_password": PASSWORD}
+        # Lúc form kiểm tra thì email chưa có (bỏ qua bước kiểm tra trùng), tới lúc lưu mới đụng ràng buộc.
+        with mock.patch("accounts.forms.StudentRegisterForm.clean_email", lambda form: form.cleaned_data["email"]):
+            response = self.client.post("/accounts/register/", data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Email này đã được sử dụng.")
+        self.assertEqual(User.objects.filter(email="race@x.example").count(), 1)

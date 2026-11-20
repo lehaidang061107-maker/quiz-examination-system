@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
@@ -60,12 +61,18 @@ def register_view(request):
             email = form.cleaned_data["email"]
             password = form.cleaned_data["password"]
 
-            User.objects.create_user(
-                email=email,
-                password=password,
-                full_name=full_name,
-                role=Role.STUDENT,
-            )
+            try:
+                with transaction.atomic():
+                    User.objects.create_user(
+                        email=email,
+                        password=password,
+                        full_name=full_name,
+                        role=Role.STUDENT,
+                    )
+            except IntegrityError:
+                # Hai người đăng ký cùng email cùng lúc: ràng buộc uq_users_email chặn người đến sau.
+                form.add_error("email", "Email này đã được sử dụng. Vui lòng chọn email khác.")
+                return render(request, "accounts/register.html", {"form": form})
 
             messages.success(request, "Đăng ký tài khoản thành công! Vui lòng đăng nhập.")
             return redirect("accounts:login")

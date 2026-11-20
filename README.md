@@ -85,16 +85,18 @@ Chạy riêng một app: `python manage.py test accounts`.
 
 ### Chạy thử trên trình duyệt
 
-Website đang chạy (`python manage.py runserver`, mục trên). **Đăng nhập tạm** khi chưa có trang Đăng nhập
-(S3-03): mở terminal thứ hai, vào `src`, bật `.venv`, chạy
+Website đang chạy (`python manage.py runserver`, mục trên). Mở `http://127.0.0.1:8000/accounts/login/` và đăng nhập
+bằng tài khoản demo (bảng trong [`docs/testcases/README.md`](docs/testcases/README.md#dữ-liệu-dùng-khi-kiểm-thử)).
+Muốn tạo Student mới thì bấm **Đăng ký ngay** ở trang Đăng nhập. Đổi tài khoản: bấm **Đăng xuất** trên thanh menu.
+
+Đổi vai trò nhanh mà không gõ mật khẩu (chỉ khi `DEBUG=True`): mở terminal thứ hai, vào `src`, bật `.venv`, chạy
 
 ```bash
 python manage.py dev_login teacher@demo.example     # hoặc admin@..., teacher2@..., student1@... đến student3@...
 ```
 
 Lệnh in ra `sessionid = ...`. Trong Chrome: **F12 → Application → Cookies → `http://127.0.0.1:8000`**,
-sửa (hoặc thêm) dòng tên `sessionid`, dán giá trị vừa in, rồi **F5**. Đổi tài khoản thì chạy lại lệnh với email khác.
-Lệnh chỉ chạy khi `DEBUG=True`.
+sửa (hoặc thêm) dòng tên `sessionid`, dán giá trị vừa in, rồi **F5**.
 
 Kiểm tra thêm:
 
