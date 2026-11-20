@@ -11,7 +11,7 @@ from config.urls import urlpatterns as project_urls
 
 @role_required(Role.TEACHER)
 def publish_exam(request, exam_id):
-    """Mẫu Controller giống TECH_STACK.md: gọi Model, lỗi nghiệp vụ hiện bằng messages."""
+    """Mẫu Controller giống docs/guides/03-coding-guidelines.md: gọi Model, lỗi nghiệp vụ hiện bằng messages."""
     teacher = request.user.as_role()
     exam = teacher.manage_exam(exam_id)  # đề của người khác -> PermissionDenied -> 403
     try:

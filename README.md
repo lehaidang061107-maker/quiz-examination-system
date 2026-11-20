@@ -25,7 +25,8 @@ docker compose exec web python manage.py seed_demo
 ```
 
 Mở http://127.0.0.1:8000/accounts/login/, đăng nhập bằng `student1@demo.example` hoặc `teacher@demo.example`
-(mật khẩu là `DEMO_PASSWORD` trong `.env`). Chi tiết và cách chạy khi viết code: [database/README.md](database/README.md).
+(mật khẩu là `DEMO_PASSWORD` trong `.env`). Chi tiết và cách chạy khi viết code:
+[docs/guides/01-getting-started.md](docs/guides/01-getting-started.md).
 
 ## Documentation
 
@@ -33,19 +34,18 @@ Mở http://127.0.0.1:8000/accounts/login/, đăng nhập bằng `student1@demo.
 
 | # | File | Đọc khi |
 | --- | --- | --- |
-| 1 | [Getting Started](database/README.md) | Lần đầu cài; chạy bằng Docker hoặc Python; xem database; gặp lỗi khi chạy |
-|  | [Seed Data](database/seeds/README.md) | Tài khoản mẫu và dữ liệu demo có sẵn |
-| 2 | [Git Workflow](MEMBER_WORKFLOW.md) | Nhận task Jira → branch → PR → merge |
-| 3 | [Coding Guidelines](TECH_STACK.md) | Công nghệ, MVC, cách viết một trang, sơ đồ lớp, quy tắc bắt buộc |
-| 4 | [Testing](docs/testcases/README.md) | Unit test, thử trên trình duyệt, viết test case CSV |
+| 1 | [Getting Started](docs/guides/01-getting-started.md) | Lần đầu cài; tài khoản mẫu; xem database; gặp lỗi khi chạy |
+| 2 | [Git Workflow](docs/guides/02-git-workflow.md) | Nhận task Jira → branch → PR → merge |
+| 3 | [Coding Guidelines](docs/guides/03-coding-guidelines.md) | Công nghệ, MVC, cách viết một trang, sơ đồ lớp, quy tắc bắt buộc |
+| 4 | [Testing](docs/guides/04-testing.md) | Unit test, thử trên trình duyệt, viết test case CSV |
 
 **Project management:**
 
 | File | Nội dung |
 | --- | --- |
-| [Project Plan](PROJECT_PLAN.md) | 4 giai đoạn, mốc M1–M4, rủi ro, sản phẩm nộp cuối |
-| [Course Requirements](GUIDELINES.md) | Guidelines của môn, 7 phần tài liệu, công cụ gợi ý |
-| [Database Verification](database/VERIFICATION.md) | Kết quả kiểm tra database |
+| [Project Plan](docs/project/project-plan.md) | 4 giai đoạn, mốc M1–M4, rủi ro, sản phẩm nộp cuối |
+| [Course Requirements](docs/project/course-requirements.md) | Guidelines của môn, 7 phần tài liệu, công cụ gợi ý |
+| [Database Verification](docs/project/database-verification.md) | Kết quả kiểm tra database |
 
 Đặc tả (Word), sơ đồ `.drawio` và thiết kế Figma nằm trong [`docs/`](docs/).
 
@@ -62,9 +62,11 @@ quiz-examination-system/
 │   ├── results/              Kết quả, điểm
 │   ├── templates/            Giao diện HTML: base.html, trang lỗi 403/404
 │   └── static/css/           CSS chung (app.css)
-├── database/                 Cài và xem database (README), dữ liệu mẫu (seeds/), kết quả kiểm tra (VERIFICATION.md)
-├── docs/                     Đặc tả (Word), sơ đồ (.drawio), thiết kế Figma
-│   └── testcases/            Hướng dẫn kiểm thử (README) và test case từng task: S3-xx.csv
+├── docs/
+│   ├── guides/               Developer guides (4 file đánh số)
+│   ├── project/              Project plan, course requirements, verification report
+│   ├── testcases/            Test case từng task: S3-xx.csv
+│   └── ...                   Đặc tả (Word), sơ đồ (.drawio), thiết kế Figma
 ├── tests/                    Kiểm thử tích hợp và hệ thống (giai đoạn 4)
 ├── scripts/                  Script hỗ trợ: gộp test case, cập nhật mục lục
 ├── Dockerfile, compose.yaml  Chạy website (web) và PostgreSQL (db) bằng Docker

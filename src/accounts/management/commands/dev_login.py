@@ -1,7 +1,7 @@
 """Đăng nhập tạm để chạy thử giao diện: python manage.py dev_login teacher@demo.example
 
 Tạo phiên đăng nhập cho tài khoản rồi in ra giá trị cookie `sessionid` để dán vào trình duyệt
-(cách dán xem docs/testcases/README.md). Chỉ chạy khi DEBUG=True, không dùng trên máy chủ thật.
+(cách dán xem docs/guides/04-testing.md). Chỉ chạy khi DEBUG=True, không dùng trên máy chủ thật.
 """
 from django.conf import settings
 from django.contrib.auth import login
