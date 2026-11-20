@@ -1,8 +1,7 @@
-from urllib.parse import urlsplit
-
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from .forms import StudentRegisterForm
@@ -10,22 +9,16 @@ from .models import Role, User
 
 
 def _is_safe_next_url(next_url, request):
-    if not next_url:
-        return False
-    parsed = urlsplit(next_url)
-    # Chỉ cho phép đường dẫn nội bộ tương đối (tránh open redirect)
-    return not parsed.scheme and not parsed.netloc and next_url.startswith("/")
+    """Chỉ cho chuyển tới đường dẫn trong chính website (tránh open redirect, kể cả '/\\evil.com')."""
+    return bool(next_url) and url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    )
 
 
-def _redirect_by_role(user, next_url=None, request=None):
-    if request and _is_safe_next_url(next_url, request):
+def _redirect_after_login(request, next_url=None):
+    if _is_safe_next_url(next_url, request):
         return redirect(next_url)
-
-    if user.role == Role.ADMIN:
-        return redirect("admin:index")
-    if user.role == Role.TEACHER:
-        # Đổi tên route dashboard giảng viên nếu app của bạn đặt tên khác
-        return redirect("exams:teacher_dashboard")
+    # Trang chủ tự hiển thị dashboard theo vai trò (Admin, Teacher, Student).
     return redirect("home")
 
 
@@ -33,14 +26,14 @@ def login_view(request):
     next_url = request.GET.get("next") or request.POST.get("next")
 
     if request.user.is_authenticated:
-        return _redirect_by_role(request.user, next_url=next_url, request=request)
+        return _redirect_after_login(request, next_url)
 
     if request.method == "POST":
         email = request.POST.get("email", "")
         password = request.POST.get("password", "")
         try:
             User.login(request, email, password)
-            return _redirect_by_role(request.user, next_url=next_url, request=request)
+            return _redirect_after_login(request, next_url)
         except ValidationError as exc:
             for msg in exc.messages:
                 messages.error(request, msg)
@@ -57,6 +50,9 @@ def logout_view(request):
 
 
 def register_view(request):
+    if request.user.is_authenticated:
+        return redirect("home")
+
     if request.method == "POST":
         form = StudentRegisterForm(request.POST)
         if form.is_valid():

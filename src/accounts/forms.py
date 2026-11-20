@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 import re
 
@@ -35,6 +36,8 @@ class StudentRegisterForm(forms.Form):
             raise ValidationError("Mật khẩu phải có độ dài tối thiểu từ 8 ký tự trở lên.")
         if not re.search(r'[A-Za-z]', password) or not re.search(r'[0-9]', password):
             raise ValidationError("Mật khẩu phải bao gồm cả chữ và số.")
+        # Thêm các quy tắc chung của hệ thống (AUTH_PASSWORD_VALIDATORS), ví dụ chặn mật khẩu quá phổ biến.
+        validate_password(password)
         return password
 
     def clean(self):
