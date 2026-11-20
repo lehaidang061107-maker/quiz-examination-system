@@ -1,0 +1,218 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ page_heading }}{% endblock %}
+
+{% block page_title %}{{ page_heading }}{% endblock %}
+
+{% block page_subtitle %}
+    Soạn nội dung câu hỏi và các phương án trả lời
+{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="post" id="question-form">
+            {% csrf_token %}
+
+            <div class="mb-4">
+                <label for="question-content" class="form-label fw-semibold">
+                    Nội dung câu hỏi
+                </label>
+                <textarea
+                    name="content"
+                    id="question-content"
+                    class="form-control"
+                    rows="4"
+                    placeholder="Nhập nội dung câu hỏi..."
+                >{% if form_data is not None %}{{ form_data.content }}{% else %}{{ question.content|default:'' }}{% endif %}</textarea>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Các phương án trả lời</h5>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="add-option">
+                    <i class="bi bi-plus-lg me-1"></i>
+                    Thêm phương án
+                </button>
+            </div>
+
+            <p class="text-muted small">
+                Chọn nút tròn bên cạnh phương án để đánh dấu đáp án đúng.
+            </p>
+
+
+            <div id="options-container">
+                {% if form_data is not None %}
+                    {% for option in form_data.options %}
+                    <div class="input-group mb-2 option-row">
+                        <div class="input-group-text">
+                            <input
+                                type="radio"
+                                name="correct_option"
+                                value="{{ forloop.counter0 }}"
+                                aria-label="Chọn đáp án đúng"
+                                {% if option.is_correct %}checked{% endif %}
+                            >
+                        </div>
+
+                        <input
+                            type="hidden"
+                            name="option_id"
+                            value="{{ option.option_id }}"
+                        >
+
+                        <input
+                            type="text"
+                            name="option_content"
+                            class="form-control"
+                            value="{{ option.content }}"
+                            placeholder="Nhập phương án trả lời..."
+                        >
+
+                        <button type="button" class="btn btn-outline-danger remove-option">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    {% for option in options %}
+                    <div class="input-group mb-2 option-row">
+                        <div class="input-group-text">
+                            <input
+                                type="radio"
+                                name="correct_option"
+                                value="{{ forloop.counter0 }}"
+                                aria-label="Chọn đáp án đúng"
+                                {% if option.is_correct %}checked{% endif %}
+                            >
+                        </div>
+
+                        <input
+                            type="hidden"
+                            name="option_id"
+                            value="{{ option.option_id }}"
+                        >
+
+                        <input
+                            type="text"
+                            name="option_content"
+                            class="form-control"
+                            value="{{ option.content }}"
+                            placeholder="Nhập phương án trả lời..."
+                        >
+
+                        <button type="button" class="btn btn-outline-danger remove-option">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    {% empty %}
+                        {% for number in "12" %}
+                        <div class="input-group mb-2 option-row">
+                            <div class="input-group-text">
+                                <input
+                                    type="radio"
+                                    name="correct_option"
+                                    value="{{ forloop.counter0 }}"
+                                    aria-label="Chọn đáp án đúng"
+                                >
+                            </div>
+
+                            <input
+                                type="text"
+                                name="option_content"
+                                class="form-control"
+                                placeholder="Nhập phương án trả lời..."
+                            >
+
+                            <button type="button" class="btn btn-outline-danger remove-option">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+
+
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'questions:list' %}" class="btn btn-outline-secondary">
+                    Quay lại
+                </a>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" name="action" value="draft" class="btn btn-secondary">
+                        Lưu nháp
+                    </button>
+                    <button type="submit" name="action" value="activate" class="btn btn-primary">
+                        Lưu và kích hoạt
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const container = document.getElementById("options-container");
+    const addButton = document.getElementById("add-option");
+
+    function updateRadioValues() {
+        container.querySelectorAll(".option-row").forEach((row, index) => {
+            row.querySelector('input[type="radio"]').value = index;
+        });
+    }
+
+    addButton.addEventListener("click", function () {
+        const row = document.createElement("div");
+        row.className = "input-group mb-2 option-row";
+
+        row.innerHTML = `
+            <div class="input-group-text">
+                <input
+                    type="radio"
+                    name="correct_option"
+                    value=""
+                    aria-label="Chọn đáp án đúng"
+                >
+            </div>
+            <input type="hidden" name="option_id" value="">
+            <input
+                type="text"
+                name="option_content"
+                class="form-control"
+                placeholder="Nhập phương án trả lời..."
+            >
+            <button type="button" class="btn btn-outline-danger remove-option">
+                <i class="bi bi-trash"></i>
+            </button>
+        `;
+
+        container.appendChild(row);
+        updateRadioValues();
+        row.querySelector('input[type="text"]').focus();
+    });
+
+    container.addEventListener("click", function (event) {
+        const button = event.target.closest(".remove-option");
+
+        if (!button) return;
+
+        const rows = container.querySelectorAll(".option-row");
+
+        if (rows.length <= 2) {
+            alert("Câu hỏi phải có ít nhất 2 phương án.");
+            return;
+        }
+
+        button.closest(".option-row").remove();
+        updateRadioValues();
+    });
+
+    updateRadioValues();
+});
+</script>
+{% endblock %}
