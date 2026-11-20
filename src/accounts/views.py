@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
+from .forms import StudentRegisterForm
 from .models import Role, User
 
 
@@ -53,3 +54,26 @@ def logout_view(request):
         request.user.logout(request)
     messages.info(request, "Bạn đã đăng xuất.")
     return redirect("accounts:login")
+
+
+def register_view(request):
+    if request.method == "POST":
+        form = StudentRegisterForm(request.POST)
+        if form.is_valid():
+            full_name = form.cleaned_data["full_name"]
+            email = form.cleaned_data["email"]
+            password = form.cleaned_data["password"]
+
+            User.objects.create_user(
+                email=email,
+                password=password,
+                full_name=full_name,
+                role=Role.STUDENT,
+            )
+
+            messages.success(request, "Đăng ký tài khoản thành công! Vui lòng đăng nhập.")
+            return redirect("accounts:login")
+    else:
+        form = StudentRegisterForm()
+
+    return render(request, "accounts/register.html", {"form": form})
