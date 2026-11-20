@@ -34,5 +34,19 @@ services:
       retries: 20
       start_period: 10s
 
+  worker:
+    # S3-23: tự nộp lượt hết giờ và chấm lại bài chờ chấm, kể cả khi sinh viên đã đóng trình duyệt.
+    build: .
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+    command: ["python", "manage.py", "run_worker"]
+    depends_on:
+      web:
+        condition: service_healthy  # web chạy migrate xong mới khởi động worker
+    restart: unless-stopped
+    stop_grace_period: 15s
+
 volumes:
   postgres_data:
