@@ -69,7 +69,7 @@ TEMPLATES = [
     },
 ]
 
-# PostgreSQL chạy bằng Docker (compose.yaml); dùng chung biến với .env (xem docs/huong-dan/1-cai-dat-va-chay.md).
+# PostgreSQL chạy bằng Docker (compose.yaml); dùng chung biến với .env (xem docs/guides/01-getting-started.md).
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",

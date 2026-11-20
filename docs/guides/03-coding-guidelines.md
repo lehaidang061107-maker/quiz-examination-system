@@ -1,16 +1,16 @@
-# 3. Viết code
+# 03 · Coding Guidelines
 
 <!-- toc -->
 
 **Mục lục**
 
-- [1. Dùng gì cho việc gì](#1-dùng-gì-cho-việc-gì)
-- [2. Code chia thành các phần](#2-code-chia-thành-các-phần)
-  - [Kiến trúc: MVC](#kiến-trúc-mvc)
-  - [Viết một trang](#viết-một-trang)
-  - [Sơ đồ lớp trong code](#sơ-đồ-lớp-trong-code)
-- [3. Quy tắc bắt buộc khi viết code](#3-quy-tắc-bắt-buộc-khi-viết-code)
-- [4. Triển khai, thử tải, sao lưu](#4-triển-khai-thử-tải-sao-lưu)
+- [1. Tech Stack](#1-tech-stack)
+- [2. Project Modules](#2-project-modules)
+  - [Architecture: MVC](#architecture-mvc)
+  - [Building a Page](#building-a-page)
+  - [Class Diagram Mapping](#class-diagram-mapping)
+- [3. Coding Rules](#3-coding-rules)
+- [4. Deployment, Load Testing & Backup](#4-deployment-load-testing--backup)
 
 <!-- /toc -->
 
@@ -18,14 +18,14 @@ Website viết bằng **Python + Django**, dữ liệu lưu trong **PostgreSQL**
 Cả nhóm dùng chung bộ này; không tự chọn công nghệ khác (ví dụ Flask, SQLite).
 Mục ghi **(chờ xác nhận)** là đề xuất, nhóm cần đồng ý trước khi áp dụng.
 
-## 1. Dùng gì cho việc gì
+## 1. Tech Stack
 
 | Việc | Dùng | Ghi chú |
 | --- | --- | --- |
 | Ngôn ngữ | Python 3.12 – 3.14 | Các bản Django 5.2 hỗ trợ |
 | Khung website | Django 5.2 (bản hỗ trợ dài hạn, tới 4/2028) | Ghi bản cụ thể trong `requirements.txt`, hiện là `Django==5.2.19` |
 | Giao diện | Django Templates + Bootstrap 5 | Làm theo bản Figma trong `docs/` |
-| Lưu dữ liệu | PostgreSQL 17, chạy bằng Docker | [Cách cài](1-cai-dat-va-chay.md). Không dùng SQLite, kể cả khi test |
+| Lưu dữ liệu | PostgreSQL 17, chạy bằng Docker | [Cách cài](01-getting-started.md). Không dùng SQLite, kể cả khi test |
 | Tạo/sửa bảng | Django migrations | Chạy `makemigrations`, đọc lại file sinh ra; không sửa migration đã merge |
 | Tài khoản | Model `accounts.User` riêng, đăng nhập bằng email, lưu ở bảng `users` | Phải có trước lần `migrate` đầu tiên |
 | Đăng nhập, phiên | Có sẵn của Django, phiên lưu trong database | Tự đăng xuất sau 30 phút không hoạt động; tài khoản bị khóa mất phiên ngay |
@@ -36,7 +36,7 @@ Mục ghi **(chờ xác nhận)** là đề xuất, nhóm cần đồng ý trư�
 | Kiểm thử | `python manage.py test` | Django tự tạo database thử riêng, không đụng dữ liệu thật |
 | Cấu hình bí mật | File `.env` trên máy mình (mẫu: `.env.example`) | `SECRET_KEY`, mật khẩu không viết trong code, không đưa lên GitHub |
 
-## 2. Code chia thành các phần
+## 2. Project Modules
 
 | Phần (app) | Lo việc gì |
 | --- | --- |
@@ -49,7 +49,7 @@ Mục ghi **(chờ xác nhận)** là đề xuất, nhóm cần đồng ý trư�
 
 Mỗi phần có `urls.py` riêng và phải được khai báo trong `config/urls.py`, nếu không trang sẽ báo 404.
 
-### Kiến trúc: MVC
+### Architecture: MVC
 
 Nhóm chọn mẫu kiến trúc **MVC (Model – View – Controller)**. Django gọi là MVT nhưng vai trò giống nhau:
 
@@ -62,7 +62,7 @@ Nhóm chọn mẫu kiến trúc **MVC (Model – View – Controller)**. Django 
 Phương thức Model báo lỗi nghiệp vụ bằng `ValidationError` (thông báo tiếng Việt, hiển thị thẳng cho
 người dùng) và lỗi sai quyền bằng `PermissionDenied`.
 
-### Viết một trang
+### Building a Page
 
 Một trang gồm 3 phần.
 
@@ -113,7 +113,7 @@ Thông báo `messages`, thanh trên, menu trái đã có sẵn trong `base.html`
 **3. `urls.py`:** đặt `name=` đúng như menu trong `src/config/navigation.py` (ví dụ `questions:list`, `exams:list`).
 Đúng tên thì menu tự hiện link; chưa có thì hiện mờ "Sắp có".
 
-### Sơ đồ lớp trong code
+### Class Diagram Mapping
 
 Tên phương thức theo sơ đồ lớp (mục 5.2 tài liệu đặc tả), viết kiểu Python: `viewAvailableExams()` → `view_available_exams()`.
 Admin/Teacher/Student là proxy model của `User` (cùng bảng `users`); lấy từ phiên bằng `request.user.as_role()`.
@@ -136,7 +136,7 @@ Admin/Teacher/Student là proxy model của `User` (cùng bảng `users`); lấy
 Phương thức trong ngoặc `(+ …)` là phần thêm để giao diện dùng, không có trong sơ đồ. Muốn thêm phương thức
 mới vào lớp nào thì báo PM để cập nhật sơ đồ lớp cho khớp.
 
-## 3. Quy tắc bắt buộc khi viết code
+## 3. Coding Rules
 
 - Tên bảng, cột đúng như mô hình dữ liệu đã duyệt (ví dụ `users.user_id`, `full_name`, `password_hash`).
 - Trạng thái viết HOA: `ADMIN`/`TEACHER`/`STUDENT`; `ACTIVE`/`LOCKED`/`DELETED`; `DRAFT`/`PUBLISHED`/`CLOSED`/`ARCHIVED`; `IN_PROGRESS`/`SUBMITTED`/`GRADED`.
@@ -158,7 +158,7 @@ mới vào lớp nào thì báo PM để cập nhật sơ đồ lớp cho khớp
   không khóa Admin cuối cùng; câu hỏi kích hoạt phải có ≥ 2 phương án và đúng 1 đáp án đúng; không sửa đề đã
   phát hành; hạn nộp và tự nộp; chấm đúng điểm; chỉ công bố điểm khi đủ điều kiện.
 
-## 4. Triển khai, thử tải, sao lưu
+## 4. Deployment, Load Testing & Backup
 
 | Việc | Đã quyết định | Ai làm |
 | --- | --- | --- |

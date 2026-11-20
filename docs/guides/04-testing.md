@@ -1,13 +1,13 @@
-# 4. Kiểm thử
+# 04 · Testing
 
 <!-- toc -->
 
 **Mục lục**
 
 - [Unit test](#unit-test)
-- [Thử trên trình duyệt](#thử-trên-trình-duyệt)
-- [Test case CSV (nộp cho cô)](#test-case-csv-nộp-cho-cô)
-- [Gộp file nộp (PM làm)](#gộp-file-nộp-pm-làm)
+- [Manual Testing (Browser)](#manual-testing-browser)
+- [Test Cases (CSV)](#test-cases-csv)
+- [Export Test Report (PM)](#export-test-report-pm)
 
 <!-- /toc -->
 
@@ -28,10 +28,10 @@ Test chạy trên database tạm riêng rồi tự xóa, không đụng dữ li�
 - Test quyền: vai trò khác mở thẳng URL phải nhận 403 (mẫu: `src/config/tests/test_layout.py`).
 - Đăng nhập sẵn trong test: `self.client.force_login(user)`.
 
-## Thử trên trình duyệt
+## Manual Testing (Browser)
 
-Chạy website (xem [1-cai-dat-va-chay.md](1-cai-dat-va-chay.md)), mở http://127.0.0.1:8000/accounts/login/
-và đăng nhập bằng [tài khoản mẫu](1-cai-dat-va-chay.md#tài-khoản-mẫu). Đổi tài khoản: bấm **Đăng xuất** trên thanh menu.
+Chạy website (xem [01-getting-started.md](01-getting-started.md)), mở http://127.0.0.1:8000/accounts/login/
+và đăng nhập bằng [tài khoản mẫu](01-getting-started.md#demo-accounts--seed-data). Đổi tài khoản: bấm **Đăng xuất** trên thanh menu.
 
 Cần thử thêm:
 
@@ -44,7 +44,7 @@ Cần thử thêm:
 `python manage.py dev_login teacher@demo.example`. Lệnh in ra `sessionid = ...`; trong Chrome mở
 **F12 → Application → Cookies → `http://127.0.0.1:8000`**, sửa dòng `sessionid` thành giá trị vừa in, rồi **F5**.
 
-## Test case CSV (nộp cho cô)
+## Test Cases (CSV)
 
 Test case nộp phải đúng file **Testing Document Template.xlsx** (sai template là 0 điểm phần này).
 Không sửa chung file Excel qua Git; mỗi task viết **một file CSV riêng** trong `docs/testcases/`, cuối kỳ PM gộp lại.
@@ -76,7 +76,7 @@ File mẫu đầy đủ: [`_VI_DU_S3-03.csv`](../testcases/_VI_DU_S3-03.csv). Fi
 - Ca **sai quyền**: vai trò khác mở thẳng đường dẫn thì bị chặn.
 
 Tự bấm lại đúng từng bước trên giao diện rồi mới ghi Expected Result; đừng chép từ đặc tả mà chưa chạy thử.
-Dữ liệu dùng [tài khoản mẫu](1-cai-dat-va-chay.md#tài-khoản-mẫu) với mật khẩu `Kiemthu2026`.
+Dữ liệu dùng [tài khoản mẫu](01-getting-started.md#demo-accounts--seed-data) với mật khẩu `Kiemthu2026`.
 
 **Sửa CSV bằng gì:**
 
@@ -85,7 +85,7 @@ Dữ liệu dùng [tài khoản mẫu](1-cai-dat-va-chay.md#tài-khoản-mẫu) 
   Xuống dòng trong ô: `Alt + Enter` (Mac: `Option + Enter`).
 - Không đổi dòng tiêu đề, không thêm cột.
 
-## Gộp file nộp (PM làm)
+## Export Test Report (PM)
 
 ```bash
 pip install -r requirements.txt

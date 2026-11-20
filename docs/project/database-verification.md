@@ -1,4 +1,4 @@
-# Kết quả kiểm tra database
+# Database Verification Report
 
 Kết quả kiểm tra phần database (giai đoạn 3, trước khi làm chức năng website).
 

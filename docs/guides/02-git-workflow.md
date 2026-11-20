@@ -1,16 +1,16 @@
-# 2. Quy trình làm một task
+# 02 · Git Workflow
 
 <!-- toc -->
 
 **Mục lục**
 
-- [1. Nhận task trên Jira](#1-nhận-task-trên-jira)
-- [2. Tạo branch từ `develop` mới nhất](#2-tạo-branch-từ-develop-mới-nhất)
-- [3. Code và commit](#3-code-và-commit)
-- [4. Test trước khi push](#4-test-trước-khi-push)
-- [5. Push và tạo Pull Request](#5-push-và-tạo-pull-request)
-- [6. Sau khi tạo PR](#6-sau-khi-tạo-pr)
-- [Cách PM merge và sửa PR lỗi](#cách-pm-merge-và-sửa-pr-lỗi)
+- [1. Pick a Jira Ticket](#1-pick-a-jira-ticket)
+- [2. Create a Branch](#2-create-a-branch)
+- [3. Code & Commit](#3-code--commit)
+- [4. Test Before Push](#4-test-before-push)
+- [5. Push & Open a Pull Request](#5-push--open-a-pull-request)
+- [6. Code Review](#6-code-review)
+- [Merge Strategy (PM)](#merge-strategy-pm)
 
 <!-- /toc -->
 
@@ -20,14 +20,14 @@
 1 Jira task = 1 branch = 1 PR vào develop
 ```
 
-## 1. Nhận task trên Jira
+## 1. Pick a Jira Ticket
 
 Vào Jira (dự án `CNPM`), xem task được assign. Tên task có mã, ví dụ `CNPM-3 · S3-02 Đăng ký tài khoản Student`.
 
 - Task phụ thuộc chưa merge vào `develop` thì báo PM trước khi bắt đầu.
 - Chuyển task `To Do → In Progress`.
 
-## 2. Tạo branch từ `develop` mới nhất
+## 2. Create a Branch
 
 ```bash
 git checkout develop
@@ -43,9 +43,9 @@ git checkout -b feature/S3-02-register-student
 
 Dùng mã `S3-xx` (không dùng `CNPM-x`). Mô tả viết thường, không dấu, nối bằng `-`.
 
-## 3. Code và commit
+## 3. Code & Commit
 
-Làm đúng phạm vi task, không gộp code của task khác. Cách viết code xem [3-viet-code.md](3-viet-code.md).
+Làm đúng phạm vi task, không gộp code của task khác. Cách viết code xem [03-coding-guidelines.md](03-coding-guidelines.md).
 
 ```bash
 git status                           # luôn xem trước mình sắp commit gì
@@ -55,12 +55,12 @@ git commit -m "feat(S3-02): add student registration"
 
 Không commit: `.env`, mật khẩu, API key; file `*.db`, `*.sqlite3`; `__pycache__/`, `.venv/`.
 
-## 4. Test trước khi push
+## 4. Test Before Push
 
-Chạy unit test, thử trên trình duyệt và viết test case CSV theo [4-kiem-thu.md](4-kiem-thu.md).
+Chạy unit test, thử trên trình duyệt và viết test case CSV theo [04-testing.md](04-testing.md).
 Test case CSV commit **cùng PR với code**.
 
-## 5. Push và tạo Pull Request
+## 5. Push & Open a Pull Request
 
 ```bash
 git push -u origin feature/S3-02-register-student
@@ -86,14 +86,14 @@ CNPM-3
 
 Chuyển Jira `In Progress → In Review`.
 
-## 6. Sau khi tạo PR
+## 6. Code Review
 
 - Người review yêu cầu sửa: sửa, commit, push lên **cùng branch**, PR tự cập nhật.
 - PR còn lỗi chặn merge thì task được chuyển lại `In Progress`.
 - PR báo **merge conflict**: không cần tự xử lý, nhắn PM "S3-02 đang conflict, nhờ PM xử lý giúp."
 - PR được merge thì chuyển Jira sang `Done`.
 
-## Cách PM merge và sửa PR lỗi
+## Merge Strategy (PM)
 
 Merge PR luôn chọn **Create a merge commit** (bấm mũi tên ▾ cạnh nút xanh nếu nút đang ghi "Squash and merge"),
 để giữ commit riêng của từng thành viên.

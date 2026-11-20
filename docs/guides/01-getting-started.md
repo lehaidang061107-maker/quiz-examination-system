@@ -1,15 +1,15 @@
-# 1. Cài đặt và chạy website
+# 01 · Getting Started
 
 <!-- toc -->
 
 **Mục lục**
 
-- [File `.env` (làm trước, cả hai cách)](#file-env-làm-trước-cả-hai-cách)
-- [Cách 1: chạy hết bằng Docker](#cách-1-chạy-hết-bằng-docker)
-- [Cách 2: chạy Python trên máy](#cách-2-chạy-python-trên-máy)
-- [Tài khoản mẫu](#tài-khoản-mẫu)
-- [Xem dữ liệu bằng Beekeeper hoặc DBeaver](#xem-dữ-liệu-bằng-beekeeper-hoặc-dbeaver)
-- [Gặp lỗi](#gặp-lỗi)
+- [Environment Variables (`.env`)](#environment-variables-env)
+- [Option A: Run with Docker](#option-a-run-with-docker)
+- [Option B: Local Development](#option-b-local-development)
+- [Demo Accounts & Seed Data](#demo-accounts--seed-data)
+- [Database Client (Beekeeper / DBeaver)](#database-client-beekeeper--dbeaver)
+- [Troubleshooting](#troubleshooting)
 
 <!-- /toc -->
 
@@ -19,10 +19,10 @@ Có hai cách chạy:
 
 | Muốn | Dùng | Cần cài |
 | --- | --- | --- |
-| Xem, demo | [Cách 1: chạy hết bằng Docker](#cách-1-chạy-hết-bằng-docker) | Docker Desktop |
-| Viết code | [Cách 2: chạy Python trên máy](#cách-2-chạy-python-trên-máy) | Docker Desktop + Python 3.12–3.14 |
+| Xem, demo | [Option A: Run with Docker](#option-a-run-with-docker) | Docker Desktop |
+| Viết code | [Option B: Local Development](#option-b-local-development) | Docker Desktop + Python 3.12–3.14 |
 
-## File `.env` (làm trước, cả hai cách)
+## Environment Variables (`.env`)
 
 Ở thư mục dự án, chép file mẫu: `cp .env.example .env` (Windows: `copy .env.example .env`), mở ra điền:
 
@@ -35,14 +35,14 @@ Có hai cách chạy:
 
 `.env` chỉ nằm trên máy mình, không commit lên GitHub.
 
-## Cách 1: chạy hết bằng Docker
+## Option A: Run with Docker
 
 ```bash
 docker compose up -d --build --wait                        # lần đầu mất vài phút; tự tạo bảng mỗi lần khởi động
 docker compose exec web python manage.py seed_demo          # tạo dữ liệu mẫu, chạy lại không bị trùng
 ```
 
-Mở http://127.0.0.1:8000/accounts/login/ và đăng nhập bằng [tài khoản mẫu](#tài-khoản-mẫu).
+Mở http://127.0.0.1:8000/accounts/login/ và đăng nhập bằng [tài khoản mẫu](#demo-accounts--seed-data).
 
 | Muốn | Lệnh |
 | --- | --- |
@@ -53,7 +53,7 @@ Mở http://127.0.0.1:8000/accounts/login/ và đăng nhập bằng [tài khoả
 
 Website trong Docker chạy bằng `runserver`, chỉ dùng cho máy cá nhân và buổi demo.
 
-## Cách 2: chạy Python trên máy
+## Option B: Local Development
 
 **Lần đầu** (Docker Desktop đang mở):
 
@@ -80,7 +80,7 @@ python manage.py runserver
 Mở http://127.0.0.1:8000/accounts/login/. Đang chạy cách 1 thì tắt website Docker trước: `docker compose stop web`.
 Tắt database khi xong việc: `docker compose stop db` (dữ liệu vẫn giữ).
 
-## Tài khoản mẫu
+## Demo Accounts & Seed Data
 
 Lệnh `seed_demo` tạo 6 tài khoản, mật khẩu đều là `DEMO_PASSWORD` trong `.env`:
 
@@ -102,7 +102,7 @@ Chạy lại `seed_demo` **không** thêm trùng, không đổi mật khẩu hay
 chỉ tạo phần còn thiếu. Nếu dữ liệu mẫu bị xóa dở hoặc email mẫu đang thuộc vai trò khác, lệnh dừng lại để không ghi đè.
 Code của lệnh: `src/accounts/management/commands/seed_demo.py`.
 
-## Xem dữ liệu bằng Beekeeper hoặc DBeaver
+## Database Client (Beekeeper / DBeaver)
 
 Tạo kết nối **PostgreSQL**:
 
@@ -127,7 +127,7 @@ Các bảng nằm trong mục `public`:
 
 Bảng bắt đầu bằng `django_` hoặc `auth_` là của hệ thống, không cần quan tâm.
 
-## Gặp lỗi
+## Troubleshooting
 
 | Lỗi | Cách xử lý |
 | --- | --- |

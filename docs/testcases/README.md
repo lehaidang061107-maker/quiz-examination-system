@@ -1,7 +1,7 @@
-# Test case
+# Test Cases
 
 Mỗi task một file `S3-xx.csv`. Cách viết, cách kiểm tra và cách gộp file nộp xem
-[docs/huong-dan/4-kiem-thu.md](../huong-dan/4-kiem-thu.md#test-case-csv-nộp-cho-cô).
+[docs/guides/04-testing.md](../guides/04-testing.md#test-cases-csv).
 
 - `_TEMPLATE.csv`: copy file này để bắt đầu.
 - `_VI_DU_S3-03.csv`: ví dụ đầy đủ.

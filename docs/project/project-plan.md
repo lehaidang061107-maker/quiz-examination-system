@@ -1,24 +1,24 @@
-# Kế hoạch thực hiện
+# Project Plan
 
 <!-- toc -->
 
 **Mục lục**
 
-- [Giai đoạn 1 — Phân tích yêu cầu (mốc M1)](#giai-đoạn-1--phân-tích-yêu-cầu-mốc-m1)
-- [Giai đoạn 2 — Thiết kế (mốc M2)](#giai-đoạn-2--thiết-kế-mốc-m2)
-- [Giai đoạn 3 — Làm phần mềm (mốc M3)](#giai-đoạn-3--làm-phần-mềm-mốc-m3)
-- [Giai đoạn 4 — Kiểm thử (mốc M4)](#giai-đoạn-4--kiểm-thử-mốc-m4)
-- [Theo dõi và thay đổi](#theo-dõi-và-thay-đổi)
-- [Nộp cuối dự án](#nộp-cuối-dự-án)
+- [Phase 1 — Requirements Analysis (M1)](#phase-1--requirements-analysis-m1)
+- [Phase 2 — Design (M2)](#phase-2--design-m2)
+- [Phase 3 — Implementation (M3)](#phase-3--implementation-m3)
+- [Phase 4 — Testing (M4)](#phase-4--testing-m4)
+- [Tracking & Change Management](#tracking--change-management)
+- [Final Deliverables](#final-deliverables)
 
 <!-- /toc -->
 
-Dự án làm theo 4 giai đoạn của môn học ([yeu-cau-mon-hoc.md](yeu-cau-mon-hoc.md)). Xong giai đoạn trước
+Dự án làm theo 4 giai đoạn của môn học ([course-requirements.md](course-requirements.md)). Xong giai đoạn trước
 (đạt mốc M1–M4) mới chuyển sang giai đoạn sau. Mỗi việc có một người làm chính và một người khác
-rà soát. Công nghệ và cách viết code xem [3-viet-code.md](../huong-dan/3-viet-code.md); quy trình Git/Jira xem
-[2-quy-trinh-lam-task.md](../huong-dan/2-quy-trinh-lam-task.md). Tài liệu đặc tả, sơ đồ nằm trong [`docs/`](../).
+rà soát. Công nghệ và cách viết code xem [03-coding-guidelines.md](../guides/03-coding-guidelines.md); quy trình Git/Jira xem
+[02-git-workflow.md](../guides/02-git-workflow.md). Tài liệu đặc tả, sơ đồ nằm trong [`docs/`](../).
 
-## Giai đoạn 1 — Phân tích yêu cầu (mốc M1)
+## Phase 1 — Requirements Analysis (M1)
 
 | Phần việc | Nội dung | Nộp |
 | --- | --- | --- |
@@ -35,7 +35,7 @@ giới hạn thời gian, số lần làm, tự lưu, tự nộp; khi nào và a
 Class Diagram và khớp với yêu cầu; có file nguồn sơ đồ; cả nhóm đã rà soát file tổng hợp; có danh sách việc
 ưu tiên.
 
-## Giai đoạn 2 — Thiết kế (mốc M2)
+## Phase 2 — Design (M2)
 
 - Thiết kế màn hình và luồng thao tác theo Use Case, gồm cả trạng thái trống, nhập sai, đang tải, lỗi.
 - Chọn kiến trúc đã học, giải thích lý do và vai trò từng phần.
@@ -45,7 +45,7 @@ Class Diagram và khớp với yêu cầu; có file nguồn sơ đồ; cả nhó
 **M2 đạt khi:** tài liệu đủ 7 phần theo guidelines; mọi chức năng có giao diện; kiến trúc, dữ liệu,
 công nghệ đã rõ; việc triển khai đã chia thành task có tiêu chí nghiệm thu.
 
-## Giai đoạn 3 — Làm phần mềm (mốc M3)
+## Phase 3 — Implementation (M3)
 
 Thứ tự: dựng khung website → chuyển database sang Django → làm chức năng
 (tài khoản → câu hỏi, đề thi → làm bài → chấm điểm, kết quả).
@@ -57,7 +57,7 @@ Thứ tự: dựng khung website → chuyển database sang Django → làm ch�
 **M3 đạt khi:** đủ chức năng trong phạm vi và đã ghép chạy chung; code theo đúng kiến trúc; test đã chạy,
 lỗi được ghi lại; người khác cài và chạy được theo hướng dẫn với dữ liệu mẫu; lỗi còn mở có người phụ trách.
 
-## Giai đoạn 4 — Kiểm thử (mốc M4)
+## Phase 4 — Testing (M4)
 
 - Viết ca kiểm thử từ FR, NFR, Use Case; có bảng nối yêu cầu ↔ ca kiểm thử.
 - Chạy kiểm thử chức năng, tích hợp, luồng người dùng, NFR và unit test; ghi Đạt / Không đạt / Bị chặn kèm bằng chứng.
@@ -68,7 +68,7 @@ lỗi được ghi lại; người khác cài và chạy được theo hướng 
 **M4 đạt khi:** mỗi FR/NFR có kiểm thử và kết quả; không còn lỗi chặn luồng chính hay làm sai điểm;
 hạn chế còn lại được ghi rõ; tài liệu, code, dữ liệu mẫu, hướng dẫn và demo khớp nhau.
 
-## Theo dõi và thay đổi
+## Tracking & Change Management
 
 - Cập nhật Jira khi có tiến triển hoặc vướng mắc; cuối mỗi giai đoạn dò lại checklist mốc.
 - Muốn đổi yêu cầu: ghi lý do và ảnh hưởng (thiết kế, code, kiểm thử, khối lượng), nhóm đồng ý rồi mới làm.
@@ -82,7 +82,7 @@ hạn chế còn lại được ghi rõ; tài liệu, code, dữ liệu mẫu, h
 | Dồn kiểm thử về cuối | Viết test ngay khi làm chức năng |
 | Tài liệu lệch với code | Sửa tài liệu trong cùng PR với code |
 
-## Nộp cuối dự án
+## Final Deliverables
 
 - Tài liệu đặc tả và thiết kế đủ 7 phần; DFD, Use Case, Class Diagram, Data Model kèm file gốc.
 - Thiết kế giao diện và mô tả kiến trúc.
