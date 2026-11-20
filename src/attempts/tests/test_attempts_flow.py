@@ -132,3 +132,66 @@ class AttemptsFlowAndConcurrencyTests(TestCase):
         sub.refresh_from_db()
         self.assertIn(sub.status, [SubmissionStatus.SUBMITTED, SubmissionStatus.GRADED])
         self.assertIsNotNone(sub.submitted_at)
+
+    def test_start_exam_rejects_draft_or_unassigned_exam(self):
+        """Review fix #1: Sinh viên tự POST /start/ vào đề nháp hoặc đề chưa được giao bị chặn."""
+        draft_exam = Exam.objects.create(
+            teacher=self.teacher,
+            title="Đề nháp chưa công bố",
+            duration_minutes=30,
+            status=ExamStatus.DRAFT,
+        )
+        res_draft = self.client.post(reverse("attempts:start_exam", args=[draft_exam.pk]))
+        self.assertRedirects(res_draft, reverse("attempts:exam_list"))
+        self.assertEqual(Submission.objects.filter(exam=draft_exam).count(), 0)
+
+        unassigned_exam = Exam.objects.create(
+            teacher=self.teacher,
+            title="Đề không giao cho sinh viên này",
+            duration_minutes=30,
+            opens_at=timezone.now() - timedelta(minutes=5),
+            closes_at=timezone.now() + timedelta(hours=1),
+            status=ExamStatus.PUBLISHED,
+        )
+        res_unassigned = self.client.post(reverse("attempts:start_exam", args=[unassigned_exam.pk]))
+        self.assertRedirects(res_unassigned, reverse("attempts:exam_list"))
+        self.assertEqual(Submission.objects.filter(exam=unassigned_exam).count(), 0)
+
+    def test_take_exam_without_deadline_hides_countdown(self):
+        """Review fix #3: Đề không giới hạn thời gian (deadline_at=None) không tự nộp sau 1 giây."""
+        unlimited_exam = Exam.objects.create(
+            teacher=self.teacher,
+            title="Đề không giới hạn thời gian",
+            duration_minutes=None,
+            opens_at=timezone.now() - timedelta(minutes=5),
+            closes_at=None,
+            status=ExamStatus.PUBLISHED,
+        )
+        ExamQuestion.objects.create(
+            exam=unlimited_exam, question=self.question, position=1, points=10
+        )
+        ExamParticipant.objects.create(
+            exam=unlimited_exam, student=self.student, is_active=True
+        )
+
+        sub = Submission.start(exam=unlimited_exam, student=self.student)
+        self.assertIsNone(sub.deadline_at)
+
+        res = self.client.get(reverse("attempts:take_exam", args=[sub.pk]))
+        self.assertEqual(res.status_code, 200)
+        self.assertFalse(res.context["has_deadline"])
+        self.assertIsNone(res.context["remaining_seconds"])
+        self.assertContains(res, "Không giới hạn thời gian")
+
+    def test_save_answer_api_rejects_non_object_json_payload(self):
+        """Review fix #4: Body JSON không phải dict (vd: []) trả về 400 thay vì lỗi 500."""
+        sub = Submission.start(exam=self.exam, student=self.student)
+        save_url = reverse("attempts:save_answer_api", args=[sub.pk])
+
+        res = self.client.post(
+            save_url,
+            data=json.dumps([1, 2, 3]),
+            content_type="application/json",
+        )
+        self.assertEqual(res.status_code, 400)
+        self.assertFalse(res.json().get("ok"))

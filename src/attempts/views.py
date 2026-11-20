@@ -73,7 +73,7 @@ def exam_list(request):
 @role_required(Role.STUDENT)
 @require_POST
 def start_exam(request, exam_id):
-    """S3-16: Bắt đầu một lượt làm bài thi (tạo Submission duy nhất)."""
+    """S3-16: Bắt đầu một lượt làm bài thi (kiểm tra quyền trước khi tạo Submission)."""
     exam = get_object_or_404(Exam, pk=exam_id)
 
     existing = Submission.objects.filter(exam=exam, student=request.user).first()
@@ -81,6 +81,11 @@ def start_exam(request, exam_id):
         if existing.status == SubmissionStatus.IN_PROGRESS:
             return redirect("attempts:take_exam", submission_id=existing.pk)
         messages.warning(request, "Bạn đã hoàn thành bài thi này rồi.")
+        return redirect("attempts:exam_list")
+
+    reason = exam.cannot_start_reason(request.user)
+    if reason:
+        messages.error(request, reason)
         return redirect("attempts:exam_list")
 
     try:
@@ -96,7 +101,7 @@ def start_exam(request, exam_id):
 
 @role_required(Role.STUDENT)
 def take_exam(request, submission_id):
-    """S3-17 & S3-19: Phòng làm bài thi với đồng hồ đếm ngược và kiểm tra chốt bài."""
+    """S3-17 & S3-19: Phòng làm bài thi với đồng hồ đếm ngược (nếu có hạn) và kiểm tra chốt bài."""
     submission = get_object_or_404(
         Submission.objects.select_related("exam"),
         pk=submission_id,
@@ -133,10 +138,11 @@ def take_exam(request, submission_id):
             }
         )
 
+    has_deadline = submission.deadline_at is not None
     remaining_seconds = (
         max(0, int((submission.deadline_at - timezone.now()).total_seconds()))
-        if submission.deadline_at
-        else 0
+        if has_deadline
+        else None
     )
 
     return render(
@@ -146,6 +152,7 @@ def take_exam(request, submission_id):
             "submission": submission,
             "exam": submission.exam,
             "question_items": question_items,
+            "has_deadline": has_deadline,
             "remaining_seconds": remaining_seconds,
         },
     )
@@ -175,11 +182,13 @@ def save_answer_api(request, submission_id):
 
     try:
         payload = json.loads(request.body.decode("utf-8"))
+        if not isinstance(payload, dict):
+            return JsonResponse({"ok": False, "error": "Payload JSON phải là object."}, status=400)
         question_id = int(payload.get("question_id"))
         raw_option_id = payload.get("option_id")
         option_id = int(raw_option_id) if raw_option_id is not None else None
         version = int(payload.get("version"))
-    except (ValueError, TypeError, json.JSONDecodeError):
+    except (ValueError, TypeError, AttributeError, json.JSONDecodeError):
         return JsonResponse({"ok": False, "error": "Dữ liệu gửi lên không hợp lệ."}, status=400)
 
     try:

@@ -1,149 +1,208 @@
 {% extends "base.html" %}
 
-{% block title %}Làm bài: {{ exam.title }}{% endblock %}
-{% block page_title %}{{ exam.title }}{% endblock %}
-{% block page_subtitle %}Lượt thi #{{ submission.attempt_no }} · Tổng cộng {{ question_items|length }} câu hỏi{% endblock %}
-
-{% block page_actions %}
-<div class="d-flex align-items-center gap-3">
-  <span id="save-status" class="small text-muted">Đã đồng bộ</span>
-  <div class="badge text-bg-danger fs-6 px-3 py-2">
-    Còn lại: <span id="countdown-timer">--:--</span>
-  </div>
-  <form id="submit-exam-form" method="post" action="{% url 'attempts:submit_exam' submission.pk %}" class="m-0">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-success fw-semibold"
-            onclick="return confirm('Bạn chắc chắn muốn nộp bài thi này? Sau khi nộp sẽ không thể sửa đáp án.');">
-      Nộp bài
-    </button>
-  </form>
-</div>
-{% endblock %}
+{% block title %}Làm bài: {{ exam.title }} - Quiz Examination System{% endblock %}
 
 {% block content %}
-<div class="row g-4">
-  <div class="col-lg-9">
-    {% for item in question_items %}
-      <div id="question-card-{{ item.position }}" class="qes-card p-4 mb-3">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="fw-bold text-primary">Câu {{ item.position }}</span>
-          <span class="badge text-bg-light border">{{ item.points }} điểm</span>
-        </div>
-        <div class="mb-3" style="white-space: pre-line;">{{ item.question.content }}</div>
+<div class="container-fluid py-3">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
+    <div>
+      <h4 class="mb-0">{{ exam.title }}</h4>
+      <small class="text-muted">Lượt thi #{{ submission.attempt_no }} · Tổng cộng {{ question_items|length }} câu hỏi</small>
+    </div>
 
-        <div class="d-flex flex-column gap-2">
-          {% for opt in item.options %}
-            <label class="border rounded p-2 px-3 d-flex align-items-center gap-2" style="cursor: pointer;">
-              <input type="radio"
-                     name="question_{{ item.question.pk }}"
-                     value="{{ opt.pk }}"
-                     data-question-id="{{ item.question.pk }}"
-                     data-position="{{ item.position }}"
-                     class="form-check-input mt-0 answer-radio"
-                     {% if item.selected_option_id == opt.pk %}checked{% endif %}>
-              <span>{{ opt.content }}</span>
-            </label>
-          {% endfor %}
-        </div>
+    <div class="d-flex align-items-center gap-3">
+      <span id="save-status" class="badge bg-secondary">Đã lưu</span>
+      {% if has_deadline %}
+      <div class="px-3 py-1 rounded bg-danger text-white fw-bold">
+        Còn lại: <span id="countdown-timer">--:--</span>
       </div>
-    {% empty %}
-      <div class="qes-card p-4 text-center text-muted">Đề thi này chưa có câu hỏi nào.</div>
-    {% endfor %}
+      {% else %}
+      <div class="px-3 py-1 rounded bg-info text-dark fw-bold">
+        Không giới hạn thời gian
+      </div>
+      {% endif %}
+      <form id="submit-exam-form" method="post" action="{% url 'attempts:submit_exam' submission.pk %}" class="m-0">
+        {% csrf_token %}
+        <button type="submit" id="btn-submit-exam" class="btn btn-success fw-semibold">
+          Nộp bài
+        </button>
+      </form>
+    </div>
   </div>
 
-  <div class="col-lg-3">
-    <div class="qes-card p-3 position-sticky" style="top: 1rem;">
-      <div class="fw-semibold mb-2">Danh sách câu hỏi</div>
-      <div class="d-flex flex-wrap gap-2 mb-3">
-        {% for item in question_items %}
-          <a id="nav-q-{{ item.position }}"
-             href="#question-card-{{ item.position }}"
-             class="btn btn-sm {% if item.selected_option_id %}btn-primary{% else %}btn-outline-secondary{% endif %}"
-             style="width: 38px;">
-            {{ item.position }}
-          </a>
-        {% endfor %}
+  <div class="row g-4">
+    <div class="col-lg-9">
+      {% for item in question_items %}
+      <div class="card mb-3 shadow-sm" id="question-card-{{ item.question.pk }}">
+        <div class="card-header d-flex justify-content-between align-items-center bg-light">
+          <span class="fw-bold">Câu {{ item.position }}</span>
+          <span class="badge bg-primary">{{ item.points }} điểm</span>
+        </div>
+        <div class="card-body">
+          <p class="card-text fw-medium mb-3" style="white-space: pre-line;">{{ item.question.content }}</p>
+          <div class="list-group">
+            {% for opt in item.options %}
+            <label class="list-group-item list-group-item-action d-flex align-items-center gap-2" style="cursor: pointer;">
+              <input
+                class="form-check-input answer-radio m-0"
+                type="radio"
+                name="question_{{ item.question.pk }}"
+                value="{{ opt.pk }}"
+                data-question-id="{{ item.question.pk }}"
+                {% if item.selected_option_id == opt.pk %}checked{% endif %}
+              />
+              <span>{{ opt.content }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
       </div>
-      <div class="small text-muted">
-        Đáp án được tự động lưu ngay khi bạn chọn.
+      {% empty %}
+      <div class="alert alert-warning">Đề thi hiện chưa có câu hỏi nào.</div>
+      {% endfor %}
+    </div>
+
+    <div class="col-lg-3">
+      <div class="card shadow-sm sticky-top" style="top: 1rem;">
+        <div class="card-header fw-bold bg-light">Danh sách câu hỏi</div>
+        <div class="card-body">
+          <div class="d-flex flex-wrap gap-2">
+            {% for item in question_items %}
+            <a
+              href="#question-card-{{ item.question.pk }}"
+              id="nav-btn-{{ item.question.pk }}"
+              class="btn btn-sm {% if item.selected_option_id %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+              style="width: 38px;"
+            >
+              {{ item.position }}
+            </a>
+            {% endfor %}
+          </div>
+          <hr />
+          <small class="text-muted d-block">Đáp án được tự động lưu ngay khi bạn chọn.</small>
+        </div>
       </div>
     </div>
   </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
-(function() {
-  let currentVersion = {{ submission.version }};
-  let remainingSeconds = {{ remaining_seconds }};
+(function () {
   const saveUrl = "{% url 'attempts:save_answer_api' submission.pk %}";
-  const csrfToken = document.querySelector("#submit-exam-form [name=csrfmiddlewaretoken]").value;
+  const examListUrl = "{% url 'attempts:exam_list' %}";
+  const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
   const saveStatusEl = document.getElementById("save-status");
-  const timerEl = document.getElementById("countdown-timer");
   const submitForm = document.getElementById("submit-exam-form");
+  const btnSubmit = document.getElementById("btn-submit-exam");
 
-  function formatTime(sec) {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+  let currentVersion = Number("{{ submission.version }}") || 0;
+  let saveQueue = Promise.resolve();
+  let isSubmitting = false;
+
+  function setSaveStatus(text, badgeClass) {
+    saveStatusEl.textContent = text;
+    saveStatusEl.className = "badge " + badgeClass;
   }
 
-  timerEl.textContent = formatTime(remainingSeconds);
-  const countdownInterval = setInterval(function() {
-    remainingSeconds -= 1;
-    if (remainingSeconds <= 0) {
-      clearInterval(countdownInterval);
-      timerEl.textContent = "00:00";
-      submitForm.submit();
-      return;
-    }
-    timerEl.textContent = formatTime(remainingSeconds);
-  }, 1000);
+  function enqueueSave(questionId, optionId) {
+    setSaveStatus("Đang lưu...", "bg-warning text-dark");
 
-  document.querySelectorAll(".answer-radio").forEach(function(radio) {
-    radio.addEventListener("change", async function() {
-      const questionId = this.dataset.questionId;
-      const position = this.dataset.position;
-      const optionId = this.value;
-
-      saveStatusEl.textContent = "Đang lưu...";
-      saveStatusEl.className = "small text-warning";
-
+    saveQueue = saveQueue.then(async () => {
+      if (isSubmitting) return;
       try {
-        const res = await fetch(saveUrl, {
+        const response = await fetch(saveUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken
+            "X-CSRFToken": csrfToken,
           },
           body: JSON.stringify({
-            question_id: questionId,
-            option_id: optionId,
-            version: currentVersion
-          })
+            question_id: Number(questionId),
+            option_id: optionId !== null ? Number(optionId) : null,
+            version: currentVersion,
+          }),
         });
-        const data = await res.json();
-        if (data.ok) {
+
+        const data = await response.json();
+
+        if (response.ok && data.ok) {
           currentVersion = data.version;
-          saveStatusEl.textContent = "Đã lưu";
-          saveStatusEl.className = "small text-success";
-          const navBtn = document.getElementById("nav-q-" + position);
+          setSaveStatus("Đã lưu", "bg-success");
+          const navBtn = document.getElementById("nav-btn-" + questionId);
           if (navBtn) {
-            navBtn.classList.remove("btn-outline-secondary");
-            navBtn.classList.add("btn-primary");
+            navBtn.className = optionId !== null ? "btn btn-sm btn-primary" : "btn btn-sm btn-outline-secondary";
           }
-        } else {
-          saveStatusEl.textContent = data.error || "Lỗi lưu bài";
-          saveStatusEl.className = "small text-danger";
-          alert(data.error || "Không thể lưu đáp án. Vui lòng tải lại trang.");
+          return;
         }
+
+        if (data.finalized) {
+          isSubmitting = true;
+          alert(data.error || "Bài thi đã kết thúc.");
+          window.location.href = examListUrl;
+          return;
+        }
+
+        if (data.stale || response.status === 409) {
+          alert(data.error || "Dữ liệu đã được cập nhật ở nơi khác. Trang sẽ tải lại trạng thái mới nhất.");
+          window.location.reload();
+          return;
+        }
+
+        setSaveStatus(data.error || "Lỗi lưu bài", "bg-danger");
       } catch (err) {
-        saveStatusEl.textContent = "Mất kết nối";
-        saveStatusEl.className = "small text-danger";
+        setSaveStatus("Mất kết nối mạng", "bg-danger");
       }
     });
+
+    return saveQueue;
+  }
+
+  document.querySelectorAll(".answer-radio").forEach((radio) => {
+    radio.addEventListener("change", function () {
+      enqueueSave(this.dataset.questionId, this.value);
+    });
   });
+
+  if (btnSubmit) {
+    btnSubmit.addEventListener("click", async function (e) {
+      e.preventDefault();
+      if (isSubmitting) return;
+      if (!confirm("Bạn chắc chắn muốn nộp bài thi này? Sau khi nộp sẽ không thể sửa đáp án.")) {
+        return;
+      }
+      isSubmitting = true;
+      btnSubmit.disabled = true;
+      setSaveStatus("Đang đồng bộ...", "bg-warning text-dark");
+      await saveQueue;
+      submitForm.submit();
+    });
+  }
+
+  {% if has_deadline %}
+  const timerEl = document.getElementById("countdown-timer");
+  let remaining = Number("{{ remaining_seconds }}");
+
+  function renderTimer(sec) {
+    const safe = Math.max(0, sec);
+    const mins = Math.floor(safe / 60);
+    const secs = safe % 60;
+    timerEl.textContent = String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
+  }
+
+  renderTimer(remaining);
+  const intervalId = setInterval(async () => {
+    remaining -= 1;
+    renderTimer(remaining);
+    if (remaining <= 0) {
+      clearInterval(intervalId);
+      if (!isSubmitting) {
+        isSubmitting = true;
+        await saveQueue;
+        submitForm.submit();
+      }
+    }
+  }, 1000);
+  {% endif %}
 })();
 </script>
 {% endblock %}
