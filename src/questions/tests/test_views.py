@@ -523,3 +523,38 @@ class QuestionEditorViewTests(TestCase):
             Question.objects.filter(teacher=other_teacher).count(),
             1,
         )
+    def test_can_edit_draft_saved_without_options(self):
+        self.client.post(
+            self.create_url,
+            {
+                "content": "Câu hỏi nháp",
+                "option_content": ["", ""],
+                "action": "draft",
+            },
+        )
+
+        question = Question.objects.get(teacher=self.teacher)
+        self.assertEqual(question.options.count(), 0)
+
+        edit_url = reverse("questions:edit", args=[question.question_id])
+        response = self.client.get(edit_url)
+
+        # Hai dòng phương án mặc định phải có option_id để view ghép đúng.
+        self.assertContains(response, 'name="option_id"', count=3)
+
+        response = self.client.post(
+            edit_url,
+            {
+                "content": "Câu hỏi nháp",
+                "option_id": ["", ""],
+                "option_content": ["Phương án A", "Phương án B"],
+                "correct_option": "0",
+                "action": "activate",
+            },
+        )
+
+        self.assertRedirects(response, reverse("questions:list"))
+
+        question.refresh_from_db()
+        self.assertEqual(question.status, QuestionStatus.ACTIVE)
+        self.assertEqual(question.options.count(), 2)

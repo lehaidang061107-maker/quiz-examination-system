@@ -1,14 +1,14 @@
-from django.views.decorators.http import require_POST
-from django.db import models
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db import DatabaseError, transaction
+from django.db import DatabaseError, models, transaction
 from django.db.models import Count, Exists, OuterRef
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from accounts.decorators import role_required
 from accounts.models import Role
+from attempts.models import SubmissionAnswer
 from exams.models import ExamQuestion, ExamStatus
 from questions.models import Question, QuestionStatus
 
@@ -95,6 +95,7 @@ def question_list(request):
             },
             status=503,
         )
+
 
 @role_required(Role.TEACHER)
 def question_create(request):
@@ -325,8 +326,6 @@ def question_edit(request, question_id):
                     ordered_options.append(option)
 
                 # Kiểm tra trước khi xóa phương án không còn trên biểu mẫu.
-                from attempts.models import SubmissionAnswer
-
                 removed_options = (
                     set(existing_options.keys()) - retained_ids
                 )
