@@ -1,5 +1,7 @@
 # Kết quả kiểm tra database
 
+Kết quả kiểm tra phần database (giai đoạn 3, trước khi làm chức năng website).
+
 **Đạt toàn bộ 19 bài kiểm tra** (`python manage.py test`). Thử nhập 37 kiểu dữ liệu sai,
 database đều chặn đúng, và mỗi kiểu bị chặn bởi đúng ràng buộc dành cho nó.
 

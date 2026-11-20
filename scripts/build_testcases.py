@@ -35,7 +35,7 @@ def read_cases(path):
     try:
         text = path.read_text(encoding="utf-8-sig")
     except UnicodeDecodeError:
-        return [], [f"{path.name}: không đọc được tiếng Việt. Hãy lưu lại dạng 'CSV UTF-8' (xem docs/testcases/README.md)."]
+        return [], [f"{path.name}: không đọc được tiếng Việt. Hãy lưu lại dạng 'CSV UTF-8' (xem docs/huong-dan/4-kiem-thu.md)."]
     delimiter = ";" if text.split("\n", 1)[0].count(";") > text.split("\n", 1)[0].count(",") else ","
     reader = csv.reader(text.splitlines(keepends=True), delimiter=delimiter)
     rows = [[cell.strip() for cell in row] for row in reader if any(cell.strip() for cell in row)]

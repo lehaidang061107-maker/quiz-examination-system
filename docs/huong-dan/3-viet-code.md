@@ -1,4 +1,4 @@
-# Công nghệ sử dụng
+# 3. Viết code
 
 <!-- toc -->
 
@@ -7,6 +7,7 @@
 - [1. Dùng gì cho việc gì](#1-dùng-gì-cho-việc-gì)
 - [2. Code chia thành các phần](#2-code-chia-thành-các-phần)
   - [Kiến trúc: MVC](#kiến-trúc-mvc)
+  - [Viết một trang](#viết-một-trang)
   - [Sơ đồ lớp trong code](#sơ-đồ-lớp-trong-code)
 - [3. Quy tắc bắt buộc khi viết code](#3-quy-tắc-bắt-buộc-khi-viết-code)
 - [4. Triển khai, thử tải, sao lưu](#4-triển-khai-thử-tải-sao-lưu)
@@ -24,7 +25,7 @@ Mục ghi **(chờ xác nhận)** là đề xuất, nhóm cần đồng ý trư�
 | Ngôn ngữ | Python 3.12 – 3.14 | Các bản Django 5.2 hỗ trợ |
 | Khung website | Django 5.2 (bản hỗ trợ dài hạn, tới 4/2028) | Ghi bản cụ thể trong `requirements.txt`, hiện là `Django==5.2.19` |
 | Giao diện | Django Templates + Bootstrap 5 | Làm theo bản Figma trong `docs/` |
-| Lưu dữ liệu | PostgreSQL 17, chạy bằng Docker | [Hướng dẫn](database/README.md). Không dùng SQLite, kể cả khi test |
+| Lưu dữ liệu | PostgreSQL 17, chạy bằng Docker | [Cách cài](1-cai-dat-va-chay.md). Không dùng SQLite, kể cả khi test |
 | Tạo/sửa bảng | Django migrations | Chạy `makemigrations`, đọc lại file sinh ra; không sửa migration đã merge |
 | Tài khoản | Model `accounts.User` riêng, đăng nhập bằng email, lưu ở bảng `users` | Phải có trước lần `migrate` đầu tiên |
 | Đăng nhập, phiên | Có sẵn của Django, phiên lưu trong database | Tự đăng xuất sau 30 phút không hoạt động; tài khoản bị khóa mất phiên ngay |
@@ -58,23 +59,59 @@ Nhóm chọn mẫu kiến trúc **MVC (Model – View – Controller)**. Django 
 | **View** | `templates/<app>/*.html` | Hiển thị giao diện theo Figma | Truy vấn database, tính toán nghiệp vụ |
 | **Controller** | `views.py` + `urls.py` | Nhận yêu cầu, kiểm tra đăng nhập/vai trò, đọc form, **gọi phương thức của Model**, chọn template | Tự viết lại quy tắc đã có trong Model |
 
-Ví dụ phát hành đề, trong `exams/views.py`:
-
-```python
-def publish_exam(request, exam_id):
-    teacher = request.user.as_role()           # Teacher
-    exam = teacher.manage_exam(exam_id)        # sai giảng viên -> PermissionDenied (403)
-    try:
-        exam.publish()                         # quy tắc nằm trong Model
-        messages.success(request, "Đã phát hành đề.")
-    except ValidationError as e:
-        for msg in e.messages:
-            messages.error(request, msg)
-    return redirect("exams:detail", exam_id)
-```
-
 Phương thức Model báo lỗi nghiệp vụ bằng `ValidationError` (thông báo tiếng Việt, hiển thị thẳng cho
 người dùng) và lỗi sai quyền bằng `PermissionDenied`.
+
+### Viết một trang
+
+Một trang gồm 3 phần.
+
+**1. `views.py` (Controller):** kiểm tra quyền, gọi phương thức Model, báo kết quả bằng `messages`.
+
+```python
+from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.shortcuts import redirect, render
+
+from accounts.decorators import role_required
+from accounts.models import Role
+
+
+@role_required(Role.TEACHER)                   # BẮT BUỘC: sai vai trò -> 403, chưa đăng nhập -> trang Đăng nhập
+def publish_exam(request, exam_id):
+    teacher = request.user.as_role()            # lớp Teacher theo sơ đồ lớp
+    exam = teacher.manage_exam(exam_id)         # đề của người khác -> 403 tự động
+    if request.method == "POST":
+        try:
+            exam.publish()                      # quy tắc nghiệp vụ nằm trong Model
+            messages.success(request, "Đã phát hành đề thi.")
+            return redirect("exams:list")
+        except ValidationError as error:
+            for text in error.messages:         # thông báo tiếng Việt có sẵn trong Model
+                messages.error(request, text)
+    return render(request, "exams/publish.html", {"exam": exam})
+```
+
+**2. `templates/<app>/<trang>.html` (View):** kế thừa layout chung, chỉ điền các block.
+
+```html
+{% extends "base.html" %}
+{% block title %}Phát hành đề{% endblock %}
+{% block page_title %}Phát hành đề thi{% endblock %}
+{% block page_subtitle %}{{ exam.title }}{% endblock %}
+{% block page_actions %}<a class="btn btn-outline-secondary" href="{% url 'exams:list' %}">Quay lại</a>{% endblock %}
+{% block content %}
+  <form method="post">{% csrf_token %}
+    <button class="btn btn-primary">Phát hành</button>
+  </form>
+{% endblock %}
+```
+
+Trang chưa đăng nhập (Đăng nhập, Đăng ký) dùng các block `auth_title`, `auth_subtitle`, `auth_content`.
+Thông báo `messages`, thanh trên, menu trái đã có sẵn trong `base.html`, không viết lại.
+
+**3. `urls.py`:** đặt `name=` đúng như menu trong `src/config/navigation.py` (ví dụ `questions:list`, `exams:list`).
+Đúng tên thì menu tự hiện link; chưa có thì hiện mờ "Sắp có".
 
 ### Sơ đồ lớp trong code
 
@@ -108,6 +145,14 @@ mới vào lớp nào thì báo PM để cập nhật sơ đồ lớp cho khớp
 - Email bỏ khoảng trắng, đổi chữ thường trước khi lưu.
 - Kiểm tra quyền ở phía máy chủ; ẩn nút trên giao diện là chưa đủ.
 - Không chèn dữ liệu người dùng nhập vào JavaScript trong HTML (`onclick="...{{ }}..."`), tránh bị chèn mã độc.
+- Mọi view cần đăng nhập đều có `@role_required(...)` (hoặc `@login_required_any_role`).
+- Không tính toán nghiệp vụ trong view hay template; thiếu phương thức thì thêm vào Model (báo PM để cập nhật sơ đồ lớp).
+- Form gửi dữ liệu dùng `method="post"` và `{% csrf_token %}`.
+- Thêm thư viện: **thêm dòng** vào `requirements.txt` với phiên bản cố định (ví dụ `Django==5.2.19`).
+  Không chạy `pip freeze > requirements.txt` (ghi đè thư viện của người khác, trên Windows còn lưu thành UTF-16).
+- Đổi model: `python manage.py makemigrations <app>` rồi đọc lại file vừa sinh, commit migration cùng model.
+  Không sửa migration đã merge, không `CREATE TABLE` trong code.
+- Sửa hay thêm tiêu đề `##`/`###` trong file `.md`: chạy `python scripts/update_toc.py` để cập nhật mục lục.
 - Ràng buộc Django không viết được (khóa ngoại nhiều cột, chặn `NaN`, trigger `updated_at`) để trong file `0002_db_rules.py` của từng app.
 - Database đã tự chặn dữ liệu trùng, liên kết sai, giá trị không hợp lệ. Code website **phải tự kiểm tra** thêm:
   không khóa Admin cuối cùng; câu hỏi kích hoạt phải có ≥ 2 phương án và đúng 1 đáp án đúng; không sửa đề đã

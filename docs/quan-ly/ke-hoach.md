@@ -13,10 +13,10 @@
 
 <!-- /toc -->
 
-Dự án làm theo 4 giai đoạn của môn học ([GUIDELINES.md](GUIDELINES.md)). Xong giai đoạn trước
+Dự án làm theo 4 giai đoạn của môn học ([yeu-cau-mon-hoc.md](yeu-cau-mon-hoc.md)). Xong giai đoạn trước
 (đạt mốc M1–M4) mới chuyển sang giai đoạn sau. Mỗi việc có một người làm chính và một người khác
-rà soát. Công nghệ xem [TECH_STACK.md](TECH_STACK.md); quy trình Git/Jira xem [MEMBER_WORKFLOW.md](MEMBER_WORKFLOW.md).
-Tài liệu đã làm nằm trong [`docs/`](docs/).
+rà soát. Công nghệ và cách viết code xem [3-viet-code.md](../huong-dan/3-viet-code.md); quy trình Git/Jira xem
+[2-quy-trinh-lam-task.md](../huong-dan/2-quy-trinh-lam-task.md). Tài liệu đặc tả, sơ đồ nằm trong [`docs/`](../).
 
 ## Giai đoạn 1 — Phân tích yêu cầu (mốc M1)
 
