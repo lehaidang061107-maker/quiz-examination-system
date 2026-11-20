@@ -47,6 +47,7 @@ Mở http://127.0.0.1:8000/accounts/login/ và đăng nhập bằng [tài khoả
 | Muốn | Lệnh |
 | --- | --- |
 | Xem log website | `docker compose logs -f web` |
+| Xem log tiến trình nền (tự nộp, chấm lại) | `docker compose logs -f worker` |
 | Sửa code xong, chạy bản mới | `docker compose up -d --build --wait` |
 | Chạy lệnh `manage.py` khác | Thêm `docker compose exec web` trước `python manage.py ...` |
 | Tắt (giữ dữ liệu) | `docker compose stop` |
@@ -76,6 +77,9 @@ docker compose up -d --wait db
 cd src
 python manage.py runserver
 ```
+
+Cần tự nộp bài khi hết giờ và chấm lại bài lỗi thì mở thêm một terminal, chạy `python manage.py run_worker`
+trong `src` (Ctrl+C để dừng). Chạy bằng Docker thì service `worker` đã tự bật.
 
 Mở http://127.0.0.1:8000/accounts/login/. Đang chạy cách 1 thì tắt website Docker trước: `docker compose stop web`.
 Tắt database khi xong việc: `docker compose stop db` (dữ liệu vẫn giữ).
