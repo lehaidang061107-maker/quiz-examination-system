@@ -3,17 +3,20 @@
 (UC Take Exam, Submit Exam, Automatic Grading, View Exam Results; FR-09 -> FR-13)
 Chạy riêng: cd src && python manage.py test attempts
 """
+import threading
 from datetime import timedelta
 from decimal import Decimal
 from unittest import mock
 
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.db import connection
+from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 
 from accounts.models import Role
 from attempts.models import StaleVersionError, Submission, SubmissionStatus
 from config.tests.factories import correct_option, make_open_exam, make_question, make_user, wrong_option
+from questions.models import AnswerOption, Question
 from results.models import Result
 
 
@@ -134,6 +137,127 @@ class SubmitAndGradeTests(AttemptTestCase):
         self.student.submit_exam(self.submission.pk)
         first = Result.objects.get(submission=self.submission)
         self.assertEqual(self.submission.grade().pk, first.pk)
+
+
+class GradingTests(AttemptTestCase):
+    """S3-22: chấm điểm và lưu kết quả theo giao dịch (UC Automatic Grading, FR-11)."""
+
+    def submit_without_grading(self):
+        """Nộp bài nhưng cho lần chấm đầu thất bại, để bài dừng ở SUBMITTED."""
+        with mock.patch.object(Result, "calculate", side_effect=RuntimeError("lỗi giả lập")), \
+                self.assertLogs("attempts.models", "ERROR") as logs:
+            self.student.submit_exam(self.submission.pk)
+        self.submission.refresh_from_db()
+        self.assertEqual(self.submission.status, SubmissionStatus.SUBMITTED)
+        return logs
+
+    def test_dung_sai_bo_trong_lan_lon(self):
+        # Sai câu 1 (2đ), bỏ trống câu 2 (3đ), đúng câu 3 (5đ) -> 5/10, đúng 1/3.
+        self.answer(self.questions[0], wrong_option(self.questions[0]))
+        self.answer(self.questions[2], correct_option(self.questions[2]))
+        self.student.submit_exam(self.submission.pk)
+        result = Result.objects.get(submission=self.submission)
+        self.assertEqual((result.score, result.max_score), (Decimal("5.00"), Decimal("10.00")))
+        self.assertEqual((result.correct_count, result.total_questions), (1, 3))
+
+    def test_chon_roi_bo_chon_tinh_la_bo_trong(self):
+        # Có dòng đáp án nhưng selected_option rỗng vẫn được 0 điểm.
+        self.answer(self.questions[0], correct_option(self.questions[0]))
+        self.answer(self.questions[0], None)
+        self.answer(self.questions[1], correct_option(self.questions[1]))
+        self.student.submit_exam(self.submission.pk)
+        result = Result.objects.get(submission=self.submission)
+        self.assertEqual((result.score, result.correct_count), (Decimal("3.00"), 1))
+
+    def test_diem_le_cong_dung(self):
+        for item, points in zip(self.exam.exam_questions.order_by("position"), ("0.5", "1.25", "2.75")):
+            item.points = Decimal(points)
+            item.save()
+        self.answer(self.questions[0], correct_option(self.questions[0]))
+        self.answer(self.questions[1], correct_option(self.questions[1]))
+        self.student.submit_exam(self.submission.pk)
+        result = Result.objects.get(submission=self.submission)
+        self.assertEqual((result.score, result.max_score), (Decimal("1.75"), Decimal("4.50")))
+
+    def test_sua_cau_hoi_sau_phat_hanh_van_cham_theo_ban_cu(self):
+        # BR-14: giảng viên sửa câu 1 bằng bản sao mới và đổi đáp án đúng;
+        # đề đang thi vẫn dùng câu cũ nên đáp án cũ vẫn được tính đúng.
+        old_correct = correct_option(self.questions[0])
+        revision = self.questions[0].create_revision()
+        revision.options.exclude(content=old_correct.content).first().set_correct(True)
+        self.answer(self.questions[0], old_correct)
+        self.student.submit_exam(self.submission.pk)
+        result = Result.objects.get(submission=self.submission)
+        self.assertEqual((result.score, result.correct_count), (Decimal("2.00"), 1))
+
+    def test_bai_dang_lam_khong_cham(self):
+        with self.assertRaisesMessage(ValidationError, "chưa nộp"):
+            self.submission.grade()
+        self.assertFalse(Result.objects.filter(submission=self.submission).exists())
+        self.assertEqual(self.submission.status, SubmissionStatus.IN_PROGRESS)
+
+    def test_cham_lai_nhieu_lan_chi_mot_ket_qua(self):
+        self.answer(self.questions[2], correct_option(self.questions[2]))
+        self.submit_without_grading()
+        self.assertFalse(Result.objects.filter(submission=self.submission).exists())
+        first = self.submission.grade()
+        second = self.submission.grade()
+        self.assertEqual(first.pk, second.pk)
+        self.assertEqual(Result.objects.filter(submission=self.submission).count(), 1)
+        self.assertEqual(first.score, Decimal("5.00"))
+        self.assertEqual(self.submission.status, SubmissionStatus.GRADED)
+
+    def test_log_loi_cham_khong_ghi_dap_an(self):
+        # Đặt nội dung dễ nhận ra để chắc chắn không xuất hiện trong log.
+        chosen = correct_option(self.questions[0])
+        AnswerOption.objects.filter(pk=chosen.pk).update(content="DAP-AN-BI-MAT-S322")
+        Question.objects.filter(pk=self.questions[0].pk).update(content="NOI-DUNG-CAU-HOI-S322")
+        chosen.refresh_from_db()
+        self.questions[0].refresh_from_db()
+        self.answer(self.questions[0], chosen)
+        logs = self.submit_without_grading()
+        output = "\n".join(logs.output)
+        self.assertIn(str(self.submission.pk), output)
+        self.assertNotIn(chosen.content, output)
+        self.assertNotIn(self.questions[0].content, output)
+
+
+class ConcurrentGradingTests(TransactionTestCase):
+    """S3-22: hai tiến trình cùng chấm một bài (vd. người nộp và tiến trình nền thử lại)
+    chỉ tạo một kết quả. Cần PostgreSQL thật để select_for_update có tác dụng."""
+
+    def test_hai_luong_cung_cham_chi_mot_ket_qua(self):
+        teacher = make_user(Role.TEACHER)
+        student = make_user()
+        question = make_question(teacher)
+        exam = make_open_exam(teacher, [student], [question])
+        submission = student.start_exam(exam.pk)
+        with mock.patch.object(Result, "calculate", side_effect=RuntimeError("lỗi giả lập")), \
+                self.assertLogs("attempts.models", "ERROR"):
+            student.submit_exam(submission.pk)
+
+        barrier = threading.Barrier(2)
+        errors = []
+
+        def grade():
+            try:
+                barrier.wait()
+                Submission.objects.get(pk=submission.pk).grade()
+            except Exception as exc:  # gom lỗi để báo ở luồng chính
+                errors.append(exc)
+            finally:
+                connection.close()
+
+        threads = [threading.Thread(target=grade) for _ in range(2)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        self.assertEqual(errors, [])
+        self.assertEqual(Result.objects.filter(submission=submission).count(), 1)
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, SubmissionStatus.GRADED)
 
 
 class ViewResultTests(AttemptTestCase):
