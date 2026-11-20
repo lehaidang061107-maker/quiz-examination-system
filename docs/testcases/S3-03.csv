@@ -1,0 +1,46 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-03-01,Login (FR-02),"1. Mở trang Đăng nhập (/accounts/login/)
+2. Nhập email và mật khẩu đúng của Student
+3. Bấm 'Đăng nhập'","Email: student1@demo.example
+Mật khẩu: Kiemthu2026","Đăng nhập thành công, chuyển tới Trang chủ của Student; thanh menu hiện tên 'Sinh viên một'"
+S3-03-02,Login (FR-02),"1. Mở trang Đăng nhập (/accounts/login/)
+2. Nhập email và mật khẩu đúng của Teacher
+3. Bấm 'Đăng nhập'","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","Đăng nhập thành công, chuyển tới Trang chủ của Teacher"
+S3-03-03,Login (FR-02),"1. Mở trang Đăng nhập (/accounts/login/)
+2. Nhập email và mật khẩu đúng của Admin
+3. Bấm 'Đăng nhập'","Email: admin@demo.example
+Mật khẩu: Kiemthu2026","Đăng nhập thành công, chuyển tới Trang chủ của Admin"
+S3-03-04,Login (FR-02),"1. Mở trang Đăng nhập (/accounts/login/)
+2. Nhập email viết HOA, có khoảng trắng đầu/cuối và mật khẩu đúng
+3. Bấm 'Đăng nhập'","Email: '  STUDENT1@Demo.Example  '
+Mật khẩu: Kiemthu2026",Đăng nhập thành công (email được bỏ khoảng trắng và đổi chữ thường trước khi kiểm tra)
+S3-03-05,Login (FR-02),"1. Mở trang Đăng nhập (/accounts/login/)
+2. Nhập email đúng, mật khẩu sai
+3. Bấm 'Đăng nhập'","Email: student1@demo.example
+Mật khẩu: SaiMatKhau1","Hiện thông báo 'Email hoặc mật khẩu không đúng.'; vẫn ở trang Đăng nhập, ô mật khẩu được xóa trống"
+S3-03-06,Login (FR-02),"1. Mở trang Đăng nhập (/accounts/login/)
+2. Nhập email chưa đăng ký
+3. Bấm 'Đăng nhập'","Email: khongton@demo.example
+Mật khẩu: Kiemthu2026","Hiện thông báo 'Email hoặc mật khẩu không đúng.' (giống sai mật khẩu, không để lộ email nào đã đăng ký)"
+S3-03-07,Login - khóa tạm (NFR-SEC-07),"1. Mở trang Đăng nhập (/accounts/login/)
+2. Nhập sai mật khẩu và bấm 'Đăng nhập' 5 lần liên tiếp
+3. Lần thứ 6 nhập đúng mật khẩu, bấm 'Đăng nhập'","Email: student2@demo.example
+Mật khẩu sai: SaiMatKhau1 (5 lần)
+Mật khẩu đúng: Kiemthu2026","Lần 1-5: 'Email hoặc mật khẩu không đúng.'
+Lần 6: 'Bạn đã nhập sai 5 lần. Vui lòng thử lại sau 15 phút.'; không đăng nhập được dù mật khẩu đúng"
+S3-03-08,Login - tài khoản bị khóa (BR-22),"1. Admin khóa tài khoản student3@demo.example
+2. Mở trang Đăng nhập
+3. Nhập email, mật khẩu đúng của student3, bấm 'Đăng nhập'","Email: student3@demo.example
+Mật khẩu: Kiemthu2026",Hiện thông báo 'Tài khoản đã bị khóa hoặc ngừng sử dụng. Vui lòng liên hệ quản trị viên.'; không tạo phiên đăng nhập
+S3-03-09,Login - quay lại trang đang mở (FR-02),"1. Chưa đăng nhập, mở thẳng /results/
+2. Hệ thống chuyển tới trang Đăng nhập
+3. Nhập email, mật khẩu đúng, bấm 'Đăng nhập'","Email: student1@demo.example
+Mật khẩu: Kiemthu2026","Đăng nhập thành công, quay lại đúng trang /results/"
+S3-03-10,Login - chặn chuyển hướng ra ngoài (NFR-SEC),"1. Mở /accounts/login/?next=https://evil.com
+2. Nhập email, mật khẩu đúng, bấm 'Đăng nhập'","Email: student1@demo.example
+Mật khẩu: Kiemthu2026","Đăng nhập thành công, chuyển tới Trang chủ, không chuyển sang evil.com"
+S3-03-11,Logout (FR-03),"1. Đăng nhập bằng student1
+2. Bấm 'Đăng xuất' trên thanh menu
+3. Bấm nút Back của trình duyệt hoặc mở lại Trang chủ","Email: student1@demo.example
+Mật khẩu: Kiemthu2026","Chuyển về trang Đăng nhập, hiện thông báo 'Bạn đã đăng xuất.'; mở lại Trang chủ bị chuyển về trang Đăng nhập"
