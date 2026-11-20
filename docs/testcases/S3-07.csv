@@ -1,0 +1,41 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-07-01,Create Question (FR-05),"1. Đăng nhập bằng tài khoản Teacher.
+2. Mở trang Ngân hàng câu hỏi.
+3. Nhấn Tạo câu hỏi.",Tài khoản: teacher@demo.example,Trang Tạo câu hỏi hiển thị ô nội dung và 2 dòng phương án trống.
+S3-07-02,Create Question - Save Draft (FR-05),"1. Mở trang Tạo câu hỏi.
+2. Nhập nội dung và 1 phương án, để trống phương án còn lại.
+3. Nhấn Lưu nháp.",Nội dung: Câu hỏi nháp; Phương án 1: A; Phương án 2: (trống),"Câu hỏi được lưu ở trạng thái Nháp với 1 phương án, hiển thị thông báo Tạo câu hỏi thành công."
+S3-07-03,Create Question - Activate (FR-05),"1. Mở trang Tạo câu hỏi.
+2. Nhập nội dung và 2 phương án.
+3. Chọn phương án 1 là đáp án đúng.
+4. Nhấn Lưu và kích hoạt.","Nội dung: 2 + 2 = ?; Phương án: 4, 5; Đáp án đúng: 4","Câu hỏi được lưu ở trạng thái Đang dùng, có 2 phương án và đúng 1 đáp án đúng."
+S3-07-04,Create Question - Validation (FR-05),"1. Mở trang Tạo câu hỏi.
+2. Để trống nội dung, nhập 2 phương án và chọn đáp án đúng.
+3. Nhấn Lưu và kích hoạt.","Nội dung: (trống); Phương án: A, B","Không lưu câu hỏi, hiển thị lỗi Câu hỏi chưa có nội dung."
+S3-07-05,Create Question - Validation (FR-05),"1. Mở trang Tạo câu hỏi.
+2. Nhập nội dung và 2 phương án, không chọn đáp án đúng.
+3. Nhấn Lưu và kích hoạt.","Nội dung: Câu hỏi kiểm thử; Phương án: A, B","Không lưu câu hỏi, hiển thị lỗi Chưa chọn đáp án đúng."
+S3-07-06,Create Question - Validation (FR-05),"1. Mở trang Tạo câu hỏi.
+2. Nhập nội dung và chỉ 1 phương án, chọn phương án đó là đúng.
+3. Nhấn Lưu và kích hoạt.",Nội dung: Câu hỏi kiểm thử; Phương án 1: A; Phương án 2: (trống),"Không lưu câu hỏi, hiển thị lỗi phương án không được để trống."
+S3-07-07,Edit Question (FR-05),"1. Mở trang Ngân hàng câu hỏi.
+2. Nhấn Sửa ở một câu hỏi chưa dùng trong đề phát hành.
+3. Đổi nội dung, sửa 1 phương án, thêm 1 phương án mới.
+4. Nhấn Lưu và kích hoạt.",Câu hỏi có 2 phương án; thêm phương án C,Câu hỏi được cập nhật với 3 phương án theo đúng thứ tự trên biểu mẫu.
+S3-07-08,Edit Question - Remove Option (FR-05),"1. Mở trang Sửa của câu hỏi có 3 phương án.
+2. Nhấn nút xóa ở 1 phương án.
+3. Nhấn Lưu nháp.",Câu hỏi có 3 phương án,Phương án bị xóa khỏi câu hỏi; câu hỏi còn 2 phương án.
+S3-07-09,Edit Question - Draft Without Options (FR-05),"1. Tạo câu hỏi, để trống cả 2 phương án và nhấn Lưu nháp.
+2. Mở trang Sửa của câu hỏi đó.
+3. Nhập 2 phương án, chọn đáp án đúng.
+4. Nhấn Lưu và kích hoạt.","Phương án: A, B; Đáp án đúng: A",Câu hỏi được cập nhật thành Đang dùng với 2 phương án.
+S3-07-10,Edit Question - Ownership (FR-05),"1. Đăng nhập bằng Teacher thứ nhất.
+2. Mở đường dẫn sửa câu hỏi của Teacher thứ hai.",Câu hỏi thuộc Teacher thứ hai,"Hệ thống trả về trang 404, không cho sửa."
+S3-07-11,Edit Question - Locked (FR-05),"1. Mở trang Ngân hàng câu hỏi.
+2. Tìm câu hỏi đã nằm trong đề đã phát hành.",Câu hỏi thuộc đề đang mở,"Không có nút Sửa, chỉ có nút Tạo phiên bản mới."
+S3-07-12,Create Question Revision (FR-05),"1. Ở câu hỏi đã khóa, nhấn Tạo phiên bản mới.",Câu hỏi thuộc đề đang mở,Tạo bản sao ở trạng thái Nháp và chuyển sang trang Sửa của bản sao; câu hỏi cũ giữ nguyên.
+S3-07-13,Edit Question - Used Option (FR-05),"1. Mở trang Sửa của câu hỏi có phương án đã được thí sinh chọn.
+2. Xóa phương án đó.
+3. Nhấn Lưu nháp.",Phương án đã có trong bài làm,"Không lưu thay đổi, hiển thị lỗi Không thể xóa phương án đã được sử dụng trong bài làm của thí sinh."
+S3-07-14,Create Question - Permission (FR-05),"1. Đăng nhập bằng tài khoản Student.
+2. Mở đường dẫn /questions/create/.",Tài khoản: student,"Hệ thống trả về lỗi 403, Student không truy cập được trang Tạo câu hỏi."
