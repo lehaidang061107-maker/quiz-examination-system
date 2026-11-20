@@ -1,0 +1,4 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-20-01,Concurrency - Start Exam (NFR-REL-03),1. Chạy test test_start_exam_idempotent_on_double_click.,python manage.py test attempts,Test đạt: chỉ có 1 lượt làm bài sau 2 lần bấm Bắt đầu.
+S3-20-02,Concurrency - Save Answer (NFR-REL-03),1. Chạy test test_save_answer_version_conflict_and_network_retry.,python manage.py test attempts,"Test đạt: version cũ bị từ chối với mã 409, bài làm không bị ghi đè."
+S3-20-03,Concurrency - Submit (NFR-REL-03),1. Chạy test test_concurrent_submit_is_idempotent.,python manage.py test attempts,Test đạt: nộp nhiều lần chỉ tạo 1 bản nộp.
