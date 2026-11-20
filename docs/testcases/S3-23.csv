@@ -1,0 +1,33 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-23-01,"Auto Submit - tiến trình nền (FR-10, BR-21)","1. Chạy docker compose up -d --build --wait (có service worker)
+2. Student bắt đầu đề thời lượng 1 phút, chọn đáp án đúng câu 1
+3. Đóng trình duyệt, không bấm Nộp bài
+4. Chờ quá hạn nộp khoảng 5 giây
+5. Xem docker compose logs worker","Đề '[S3-23] Đề 1 phút', 2 câu x 2 điểm
+Tài khoản: student3@demo.example","Log worker có dòng 'Worker: chốt 1, chấm lại 0, bỏ qua 0, lỗi 0'; lượt thi chuyển GRADED, submitted_at bằng hạn nộp, điểm 2.00/4.00"
+S3-23-02,Auto Submit - tiến trình nền (FR-10),1. Chạy test test_luot_con_gio_khong_dong_vao,"Lượt thi còn giờ
+Lệnh: python manage.py test attempts.tests.test_worker","Test đạt: worker không xử lý lượt nào, lượt vẫn IN_PROGRESS"
+S3-23-03,Auto Submit - đề đã đóng (FR-10),1. Chạy test test_de_da_dong_thi_chot_bai,"Đề chuyển CLOSED khi sinh viên đang làm
+Lệnh: python manage.py test attempts.tests.test_worker","Test đạt: worker chốt bài và chấm, lượt chuyển GRADED"
+S3-23-04,Auto Submit - bị thu hồi quyền (FR-10),1. Chạy test test_bi_thu_hoi_quyen_thi_chot_bai,"Giảng viên thu hồi quyền dự thi khi sinh viên đang làm
+Lệnh: python manage.py test attempts.tests.test_worker","Test đạt: worker chốt bài và chấm, lượt chuyển GRADED"
+S3-23-05,Automatic Grading - chấm lại (FR-11),1. Chạy test test_cham_lai_bai_cham_loi,"Lần chấm ngay sau khi nộp bị lỗi, bài dừng ở SUBMITTED
+Lệnh: python manage.py test attempts.tests.test_worker","Test đạt: worker chấm lại thành công, lượt chuyển GRADED, điểm 2.00"
+S3-23-06,Automatic Grading - chấm vẫn lỗi (FR-11),1. Chạy test test_cham_van_loi_thi_giu_submitted_va_log_khong_co_dap_an,"Tính điểm tiếp tục lỗi
+Lệnh: python manage.py test attempts.tests.test_worker","Test đạt: bài giữ SUBMITTED để vòng sau thử lại; log có mã bài, không có nội dung đáp án"
+S3-23-07,Tiến trình nền - không trùng (NFR-REL-03),"1. Chạy test test_chay_hai_lan_khong_nop_cham_trung
+2. Chạy test test_hai_worker_chay_cung_luc_khong_trung","Chạy worker 2 lần liên tiếp; 2 worker chạy cùng lúc (PostgreSQL)
+Lệnh: python manage.py test attempts.tests.test_worker",Test đạt: chỉ 1 lượt được chốt và chỉ có 1 kết quả
+S3-23-08,Tiến trình nền - khóa từng lượt (NFR-REL-03),1. Chạy test test_luot_dang_bi_giu_thi_bo_qua_roi_vong_sau_xu_ly,"Một tiến trình khác đang giữ khóa lượt thi
+Lệnh: python manage.py test attempts.tests.test_worker",Test đạt: worker bỏ qua lượt đó (không bị treo); vòng sau xử lý được và chuyển GRADED
+S3-23-09,Tiến trình nền - lỗi một lượt (NFR-REL-03),1. Chạy test test_mot_bai_loi_khong_chan_bai_khac,"2 lượt quá hạn, chốt lượt thứ nhất bị lỗi
+Lệnh: python manage.py test attempts.tests.test_worker",Test đạt: lượt còn lại vẫn được chốt; lượt lỗi được xử lý ở vòng sau
+S3-23-10,Tiến trình nền - dừng an toàn,"1. Chạy python manage.py run_worker trong src
+2. Bấm Ctrl+C",Không có,"Hiện 'Worker đã dừng.' và thoát, không có traceback"
+S3-23-11,Tiến trình nền - khởi động lại,"1. Chạy docker compose stop worker
+2. Student bắt đầu đề 1 phút rồi đóng trình duyệt; chờ quá hạn
+3. Chạy docker compose start worker
+4. Xem docker compose logs worker","Đề '[S3-23] Đề 1 phút'
+Tài khoản: student2@demo.example","Worker khởi động lại hiện 'Worker đã chạy, mỗi 5 giây một vòng.' rồi 'Worker: chốt 1, chấm lại 0, bỏ qua 0, lỗi 0'; lượt thi chuyển GRADED"
+S3-23-12,Tiến trình nền - mất kết nối database,1. Chạy test test_loi_database_trong_vong_khong_lam_dung_worker,"Vòng xử lý báo lỗi kết nối
+Lệnh: python manage.py test attempts.tests.test_worker","Test đạt: worker ghi log lỗi, chạy tiếp vòng sau, không thoát"
