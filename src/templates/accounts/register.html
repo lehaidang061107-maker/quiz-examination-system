@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Đăng ký{% endblock %}
+{% block auth_title %}Đăng ký tài khoản Student{% endblock %}
+{% block auth_subtitle %}Vui lòng nhập thông tin để tiếp tục{% endblock %}
+
+{% block auth_content %}
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger py-2 small">
+      {{ form.non_field_errors.0 }}
+    </div>
+  {% endif %}
+
+  <div class="mb-3">
+    <label for="id_full_name" class="form-label small fw-semibold">Họ và tên</label>
+    <input type="text" name="full_name" id="id_full_name"
+           value="{{ form.full_name.value|default:'' }}"
+           placeholder="Nhập họ và tên" required class="form-control">
+    {% if form.full_name.errors %}
+      <div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>
+    {% endif %}
+  </div>
+
+  <div class="mb-3">
+    <label for="id_email" class="form-label small fw-semibold">Email</label>
+    <input type="email" name="email" id="id_email"
+           value="{{ form.email.value|default:'' }}"
+           placeholder="name@example.com" required class="form-control">
+    {% if form.email.errors %}
+      <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+    {% endif %}
+  </div>
+
+  <div class="mb-3">
+    <label for="id_password" class="form-label small fw-semibold">Mật khẩu</label>
+    <input type="password" name="password" id="id_password"
+           placeholder="Ít nhất 8 ký tự, gồm chữ và số" required class="form-control">
+    {% if form.password.errors %}
+      <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+    {% endif %}
+  </div>
+
+  <div class="mb-3">
+    <label for="id_confirm_password" class="form-label small fw-semibold">Xác nhận mật khẩu</label>
+    <input type="password" name="confirm_password" id="id_confirm_password"
+           placeholder="Nhập lại mật khẩu" required class="form-control">
+    {% if form.confirm_password.errors %}
+      <div class="text-danger small mt-1">{{ form.confirm_password.errors.0 }}</div>
+    {% endif %}
+  </div>
+
+  <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">Đăng ký</button>
+</form>
+
+{% url 'accounts:login' as login_url %}
+<div class="text-center mt-3 small text-muted">
+  Đã có tài khoản?
+  <a href="{{ login_url|default:'#' }}" class="text-decoration-none fw-semibold">Đăng nhập</a>
+</div>
+{% endblock %}
