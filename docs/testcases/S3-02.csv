@@ -1,0 +1,49 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-02-01,Register Student (FR-01),"1. Mở trang Đăng ký (/accounts/register/)
+2. Nhập Họ và tên, Email, Mật khẩu, Xác nhận mật khẩu
+3. Bấm 'Đăng ký'","Họ và tên: Nguyễn Văn A
+Email: svmoi@demo.example
+Mật khẩu: Kiemthu2026
+Xác nhận mật khẩu: Kiemthu2026",Hiện thông báo 'Đăng ký tài khoản thành công! Vui lòng đăng nhập.' và chuyển tới trang Đăng nhập; đăng nhập được bằng tài khoản vừa tạo với vai trò Sinh viên
+S3-02-02,Register Student (FR-01),"1. Mở trang Đăng ký (/accounts/register/)
+2. Nhập Họ và tên, Email, Mật khẩu, Xác nhận mật khẩu
+3. Bấm 'Đăng ký'","Họ và tên: Nguyễn Văn A
+Email: student1@demo.example
+Mật khẩu: Kiemthu2026
+Xác nhận mật khẩu: Kiemthu2026",Hiện lỗi dưới ô Email: 'Email này đã được sử dụng. Vui lòng chọn email khác.'; không tạo tài khoản
+S3-02-03,Register Student (FR-01),"1. Mở trang Đăng ký (/accounts/register/)
+2. Nhập Họ và tên, Email, Mật khẩu, Xác nhận mật khẩu
+3. Bấm 'Đăng ký'","Họ và tên: Nguyễn Văn A
+Email:   SVMOI2@Demo.Example  
+Mật khẩu: Kiemthu2026
+Xác nhận mật khẩu: Kiemthu2026",Đăng ký thành công; tài khoản được lưu với email 'svmoi2@demo.example'
+S3-02-04,Register Student (FR-01),"1. Mở trang Đăng ký (/accounts/register/)
+2. Nhập Họ và tên, Email, Mật khẩu, Xác nhận mật khẩu
+3. Bấm 'Đăng ký'","Họ và tên: Nguyễn Văn A
+Email: svmoi@demo.example
+Mật khẩu: abc123
+Xác nhận mật khẩu: abc123",Hiện lỗi dưới ô Mật khẩu: 'Mật khẩu phải có độ dài tối thiểu từ 8 ký tự trở lên.'
+S3-02-05,Register Student (FR-01),"1. Mở trang Đăng ký (/accounts/register/)
+2. Nhập Họ và tên, Email, Mật khẩu, Xác nhận mật khẩu
+3. Bấm 'Đăng ký'","Họ và tên: Nguyễn Văn A
+Email: svmoi@demo.example
+Mật khẩu: abcdefgh
+Xác nhận mật khẩu: abcdefgh",Hiện lỗi dưới ô Mật khẩu: 'Mật khẩu phải bao gồm cả chữ và số.'
+S3-02-06,Register Student (FR-01),"1. Mở trang Đăng ký (/accounts/register/)
+2. Nhập Họ và tên, Email, Mật khẩu, Xác nhận mật khẩu
+3. Bấm 'Đăng ký'","Họ và tên: Nguyễn Văn A
+Email: svmoi@demo.example
+Mật khẩu: Kiemthu2026
+Xác nhận mật khẩu: Khac12345",Hiện lỗi dưới ô Xác nhận mật khẩu: 'Mật khẩu xác nhận không khớp.'; không tạo tài khoản
+S3-02-07,Register Student (FR-01),"1. Mở trang Đăng ký (/accounts/register/)
+2. Để trống Họ và tên, nhập các ô còn lại
+3. Bấm 'Đăng ký'","Họ và tên: (để trống)
+Email: svmoi@demo.example
+Mật khẩu: Kiemthu2026
+Xác nhận mật khẩu: Kiemthu2026",Hiện lỗi dưới ô Họ và tên: 'Trường này là bắt buộc.'; không tạo tài khoản
+S3-02-08,Register Student (FR-01),"1. Mở trang Đăng ký (/accounts/register/)
+2. Nhập Họ và tên, Email, Mật khẩu, Xác nhận mật khẩu
+3. Bấm 'Đăng ký'","Họ và tên: Nguyễn Văn A
+Email: svmoi@demo.example
+Mật khẩu: password1
+Xác nhận mật khẩu: password1",Hiện lỗi dưới ô Mật khẩu: 'Mật khẩu này quá phổ biến.'; không tạo tài khoản

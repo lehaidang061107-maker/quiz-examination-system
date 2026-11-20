@@ -1,26 +1,26 @@
-﻿# Guidelines cho dự án nhóm
+﻿# Course Requirements
 
 <!-- toc -->
 
 **Mục lục**
 
-- [1. Yêu cầu chung](#1-yêu-cầu-chung)
-  - [Giai đoạn 1 — Phân tích và đặc tả yêu cầu](#giai-đoạn-1--phân-tích-và-đặc-tả-yêu-cầu)
-  - [Giai đoạn 2 — Thiết kế](#giai-đoạn-2--thiết-kế)
-  - [Giai đoạn 3 — Triển khai](#giai-đoạn-3--triển-khai)
-  - [Giai đoạn 4 — Kiểm thử](#giai-đoạn-4--kiểm-thử)
-- [2. Cấu trúc tài liệu đặc tả yêu cầu và thiết kế](#2-cấu-trúc-tài-liệu-đặc-tả-yêu-cầu-và-thiết-kế)
-- [3. Công cụ được gợi ý trong guidelines](#3-công-cụ-được-gợi-ý-trong-guidelines)
+- [1. Overview](#1-overview)
+  - [Phase 1 — Requirements Analysis & Specification](#phase-1--requirements-analysis--specification)
+  - [Phase 2 — Design](#phase-2--design)
+  - [Phase 3 — Implementation](#phase-3--implementation)
+  - [Phase 4 — Testing](#phase-4--testing)
+- [2. SRS & Design Document Structure](#2-srs--design-document-structure)
+- [3. Recommended Tools](#3-recommended-tools)
 
 <!-- /toc -->
 
 Yêu cầu thực hiện dự án theo hướng dẫn môn Công nghệ phần mềm.
 
-## 1. Yêu cầu chung
+## 1. Overview
 
 Theo guidelines của môn học, nhóm cần cùng phân tích, thiết kế, triển khai và kiểm thử một ứng dụng phần mềm qua **bốn giai đoạn** dưới đây.
 
-### Giai đoạn 1 — Phân tích và đặc tả yêu cầu
+### Phase 1 — Requirements Analysis & Specification
 
 - Mô tả yêu cầu chức năng (Functional Requirements) bằng ngôn ngữ tự nhiên.
 - Mô tả yêu cầu phi chức năng (Non-Functional Requirements) bằng ngôn ngữ tự nhiên.
@@ -30,7 +30,7 @@ Theo guidelines của môn học, nhóm cần cùng phân tích, thiết kế, t
 
 **Kết quả cần có:** tài liệu yêu cầu và bộ sơ đồ phản ánh phạm vi hệ thống đã thống nhất.
 
-### Giai đoạn 2 — Thiết kế
+### Phase 2 — Design
 
 - **Thiết kế giao diện (GUI):** thiết kế giao diện đồ họa và các luồng tương tác của người dùng.
 - **Thiết kế kiến trúc phần mềm:** áp dụng kiến trúc hoặc mẫu thiết kế phù hợp đã học trong môn.
@@ -38,7 +38,7 @@ Theo guidelines của môn học, nhóm cần cùng phân tích, thiết kế, t
 
 **Kết quả cần có:** thiết kế giao diện, mô tả kiến trúc và mô hình dữ liệu làm cơ sở triển khai.
 
-### Giai đoạn 3 — Triển khai
+### Phase 3 — Implementation
 
 - Sử dụng ngôn ngữ lập trình, ví dụ Python, C++ hoặc Java.
 - Áp dụng kiến trúc phần mềm phù hợp đã học trong môn.
@@ -46,7 +46,7 @@ Theo guidelines của môn học, nhóm cần cùng phân tích, thiết kế, t
 
 **Kết quả cần có:** ứng dụng triển khai theo yêu cầu, mã nguồn được quản lý phiên bản và hướng dẫn chạy.
 
-### Giai đoạn 4 — Kiểm thử
+### Phase 4 — Testing
 
 - Xây dựng và thực thi các ca kiểm thử (test case).
 - Thực hiện kiểm thử đơn vị (unit testing).
@@ -54,7 +54,7 @@ Theo guidelines của môn học, nhóm cần cùng phân tích, thiết kế, t
 
 **Kết quả cần có:** bộ test case, kết quả kiểm thử, unit test và danh sách lỗi kèm tình trạng xử lý.
 
-## 2. Cấu trúc tài liệu đặc tả yêu cầu và thiết kế
+## 2. SRS & Design Document Structure
 
 Tài liệu cần trình bày đủ **bảy phần theo thứ tự** trong guidelines:
 
@@ -70,7 +70,7 @@ Tài liệu cần trình bày đủ **bảy phần theo thứ tự** trong guide
 
 Nhóm nên trình bày mô tả kiến trúc trong phần thiết kế của cùng tài liệu hoặc trong phụ lục/tài liệu liên kết, để đáp ứng yêu cầu thiết kế kiến trúc ở giai đoạn 2.
 
-## 3. Công cụ được gợi ý trong guidelines
+## 3. Recommended Tools
 
 | Mục đích | Công cụ gợi ý |
 | --- | --- |
@@ -85,4 +85,4 @@ Nhóm nên trình bày mô tả kiến trúc trong phần thiết kế của cù
 
 Guidelines cho phép sử dụng công cụ khác. Danh sách trên là gợi ý, không phải yêu cầu bắt buộc sử dụng tất cả công cụ.
 
-Kế hoạch áp dụng cho nhóm 5 người được trình bày trong [PROJECT_PLAN.md](PROJECT_PLAN.md).
+Kế hoạch áp dụng cho nhóm 5 người được trình bày trong [project-plan.md](project-plan.md).
