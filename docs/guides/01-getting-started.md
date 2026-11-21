@@ -81,7 +81,8 @@ python manage.py runserver
 Cần tự nộp bài khi hết giờ và chấm lại bài lỗi thì mở thêm một terminal, chạy `python manage.py run_worker`
 trong `src` (Ctrl+C để dừng). Chạy bằng Docker thì service `worker` đã tự bật.
 
-Mở http://127.0.0.1:8000/accounts/login/. Đang chạy cách 1 thì tắt website Docker trước: `docker compose stop web`.
+Mở http://127.0.0.1:8000/accounts/login/. Đang chạy Option A thì tắt website và worker Docker trước:
+`docker compose stop web worker` (để worker trong Docker không chạy code cũ trên cùng database).
 Tắt database khi xong việc: `docker compose stop db` (dữ liệu vẫn giữ).
 
 ## Demo Accounts & Seed Data

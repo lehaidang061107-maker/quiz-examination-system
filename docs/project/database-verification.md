@@ -2,8 +2,10 @@
 
 Kết quả kiểm tra phần database (giai đoạn 3, trước khi làm chức năng website).
 
-**Đạt toàn bộ 19 bài kiểm tra** (`python manage.py test`). Thử nhập 37 kiểu dữ liệu sai,
+**Lần kiểm tra database đạt toàn bộ 19 bài kiểm tra.** Thử nhập 37 kiểu dữ liệu sai,
 database đều chặn đúng, và mỗi kiểu bị chặn bởi đúng ràng buộc dành cho nó.
+
+**Hiện tại (22/11/2026):** cả dự án có 213 bài kiểm tra (database + chức năng website), chạy `python manage.py test` đều đạt.
 
 | Đã kiểm tra | Kết quả |
 | --- | --- |
@@ -20,7 +22,9 @@ database đều chặn đúng, và mỗi kiểu bị chặn bởi đúng ràng b
 **Tự kiểm tra lại:** bật Docker, vào thư mục `src`, chạy `python manage.py test`;
 cuối màn hình có `OK` là đạt. Kiểm thử chạy trên database tạm riêng rồi tự xóa, không đụng dữ liệu bạn đang dùng.
 
-Code kiểm thử: `src/config/tests/`.
+Code kiểm thử database: `src/config/tests/`. Kiểm thử chức năng nằm trong `src/<app>/tests/` của từng phần
+(đăng nhập, khóa tạm, phân quyền, quản lý tài khoản, ngân hàng câu hỏi, làm bài, tự lưu, nộp bài, tự nộp khi hết giờ,
+chấm điểm, xem kết quả).
 
-**Chưa kiểm tra:** chức năng website (đăng nhập, phân quyền, phát hành đề, nộp và chấm bài, công bố điểm),
-500 sinh viên thi cùng lúc.
+**Chưa kiểm tra:** trang quản lý đề thi của giảng viên (tạo, phát hành, giao đề, đóng đề, công bố điểm) vì chưa có
+giao diện, hiện chỉ có test ở mức Model; 500 sinh viên thi cùng lúc (S3-10); sao lưu và khôi phục (S3-25).

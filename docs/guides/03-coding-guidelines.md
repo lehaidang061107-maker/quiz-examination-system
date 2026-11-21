@@ -16,7 +16,6 @@
 
 Website viết bằng **Python + Django**, dữ liệu lưu trong **PostgreSQL**.
 Cả nhóm dùng chung bộ này; không tự chọn công nghệ khác (ví dụ Flask, SQLite).
-Mục ghi **(chờ xác nhận)** là đề xuất, nhóm cần đồng ý trước khi áp dụng.
 
 ## 1. Tech Stack
 
@@ -32,7 +31,7 @@ Mục ghi **(chờ xác nhận)** là đề xuất, nhóm cần đồng ý trư�
 | Khóa tạm khi nhập sai | Tự viết | Sai 5 lần liên tiếp thì khóa 15 phút; khác với Admin khóa tài khoản |
 | Mật khẩu | Mã hóa có sẵn của Django | Ít nhất 8 ký tự, có cả chữ và số |
 | Chống giả mạo form (CSRF) | Có sẵn của Django | Mọi form gửi đi có `{% csrf_token %}` |
-| Tự nộp bài khi hết giờ | Lệnh chạy nền `python manage.py run_worker`, kiểm tra mỗi 5 giây **(chờ xác nhận)** | Khóa từng bài khi xử lý để không nộp/chấm trùng |
+| Tự nộp bài khi hết giờ | Lệnh chạy nền `python manage.py run_worker` (service `worker` trong Docker), kiểm tra mỗi 5 giây | Khóa từng bài khi xử lý để không nộp/chấm trùng; chấm lại bài chấm lỗi |
 | Kiểm thử | `python manage.py test` | Django tự tạo database thử riêng, không đụng dữ liệu thật |
 | Cấu hình bí mật | File `.env` trên máy mình (mẫu: `.env.example`) | `SECRET_KEY`, mật khẩu không viết trong code, không đưa lên GitHub |
 
@@ -121,7 +120,7 @@ Admin/Teacher/Student là proxy model của `User` (cùng bảng `users`); lấy
 | Lớp | File | Phương thức |
 | --- | --- | --- |
 | User | `accounts/models.py` | `login(request, email, password)`, `logout(request)`, `is_active` |
-| Admin | `accounts/models.py` | `create_user`, `update_user`, `lock_user`, `delete_user` |
+| Admin | `accounts/models.py` | `create_user`, `update_user`, `lock_user`, `delete_user` (+ `unlock_user`) |
 | Teacher | `accounts/models.py` | `manage_questions`, `create_exam`, `manage_exam`, `assign_students`, `view_results` |
 | Student | `accounts/models.py` | `view_available_exams`, `start_exam`, `save_answer`, `submit_exam`, `view_result` |
 | Question | `questions/models.py` | `add_option`, `validate_options`, `create_revision`, `archive` (+ `activate`, `option_errors`, `is_locked`) |
@@ -129,9 +128,9 @@ Admin/Teacher/Student là proxy model của `User` (cùng bảng `users`); lấy
 | Exam | `exams/models.py` | `add_question`, `publish`, `can_start`, `publish_results` (+ `apply_settings`, `close`, `cannot_start_reason`) |
 | ExamQuestion | `exams/models.py` | `set_position`, `set_points` |
 | ExamParticipant | `exams/models.py` | `grant_access`, `revoke_access`, `can_participate` |
-| Submission | `attempts/models.py` | `save_answer`, `submit`, `auto_submit`, `grade`, `is_editable` |
+| Submission | `attempts/models.py` | `save_answer`, `submit`, `auto_submit`, `grade`, `is_editable` (+ `start`) |
 | SubmissionAnswer | `attempts/models.py` | `select_option`, `clear_selection` |
-| Result | `results/models.py` | `calculate`, `can_view` |
+| Result | `results/models.py` | `calculate`, `can_view` (+ `answered_count`, `wrong_count`, `blank_count`, `completion_time`) |
 
 Phương thức trong ngoặc `(+ …)` là phần thêm để giao diện dùng, không có trong sơ đồ. Muốn thêm phương thức
 mới vào lớp nào thì báo PM để cập nhật sơ đồ lớp cho khớp.
@@ -155,8 +154,8 @@ mới vào lớp nào thì báo PM để cập nhật sơ đồ lớp cho khớp
 - Sửa hay thêm tiêu đề `##`/`###` trong file `.md`: chạy `python scripts/update_toc.py` để cập nhật mục lục.
 - Ràng buộc Django không viết được (khóa ngoại nhiều cột, chặn `NaN`, trigger `updated_at`) để trong file `0002_db_rules.py` của từng app.
 - Database đã tự chặn dữ liệu trùng, liên kết sai, giá trị không hợp lệ. Code website **phải tự kiểm tra** thêm:
-  không khóa Admin cuối cùng; câu hỏi kích hoạt phải có ≥ 2 phương án và đúng 1 đáp án đúng; không sửa đề đã
-  phát hành; hạn nộp và tự nộp; chấm đúng điểm; chỉ công bố điểm khi đủ điều kiện.
+  không khóa Admin cuối cùng; Admin không tự khóa/xóa chính mình; câu hỏi kích hoạt phải có ≥ 2 phương án và
+  đúng 1 đáp án đúng; không sửa đề đã phát hành; hạn nộp và tự nộp; chấm đúng điểm; chỉ công bố điểm khi đủ điều kiện.
 
 ## 4. Deployment, Load Testing & Backup
 
