@@ -1,7 +1,59 @@
 ﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
-S3-04-01,Admin user list search filter paginate,"1. Đăng nhập Admin; 2. Truy cập /accounts/admin/users/ với tham số q, role, status, page","q=sv, role=STUDENT, status=ACTIVE, page=1","Hiển thị danh sách tài khoản khớp bộ lọc và phân trang đúng theo user_id"
-S3-04-02,Non-admin access denied,"1. Đăng nhập Student hoặc Teacher; 2. Truy cập /accounts/admin/users/","role=STUDENT hoặc TEACHER","Từ chối truy cập (redirect về trang chủ / không mở trang quản trị)"
-S3-04-03,Admin create user,"1. Đăng nhập Admin; 2. POST /accounts/admin/users/create/","full_name, email, password, role","Tạo tài khoản mới thành công và chuyển hướng về danh sách người dùng"
-S3-04-04,Role change revokes sessions,"1. Student đang có session hoạt động; 2. Admin đổi role sang TEACHER","role=TEACHER","Cập nhật vai trò và thu hồi các session cũ của người dùng đó"
-S3-04-05,Lock user and revoke sessions,"1. User đang có session hoạt động; 2. Admin xác nhận khóa tài khoản","action=lock","Khóa tài khoản thành công và thu hồi các session hoạt động của user"
-S3-04-06,Delete user confirmation flow,"1. Admin mở trang xác nhận xóa user; 2. Submit POST xác nhận","action=delete","Xóa hoặc ngừng hoạt động tài khoản thành công và chuyển về danh sách"
+S3-04-01,Manage User Accounts (FR-04),"1. Đăng nhập Admin
+2. Bấm menu 'Quản lý tài khoản'
+3. Nhập ô tìm kiếm, chọn vai trò
+4. Bấm 'Lọc'","Tài khoản: admin@demo.example / Kiemthu2026
+Tìm kiếm: student
+Vai trò: Sinh viên","Trang 'Quản lý tài khoản' chỉ hiện 3 dòng student1@demo.example, student2@demo.example, student3@demo.example, vai trò 'Sinh viên'"
+S3-04-02,Manage User Accounts - sai quyền (NFR-SEC-02),"1. Đăng nhập Student
+2. Gõ thẳng đường dẫn /accounts/admin/users/ trên thanh địa chỉ",Tài khoản: student1@demo.example / Kiemthu2026,Hiện trang 'Không có quyền truy cập' (Mã lỗi 403) với câu 'Bạn không có quyền truy cập trang này.'; menu không có mục 'Quản lý tài khoản'
+S3-04-03,Manage User Accounts (FR-04),"1. Đăng nhập Admin, vào 'Quản lý tài khoản'
+2. Bấm '+ Thêm tài khoản'
+3. Nhập thông tin
+4. Bấm 'Tạo tài khoản'","Họ và tên: Sinh viên mới
+Email: sv.moi@demo.example
+Mật khẩu: Kiemthu2026
+Vai trò: Sinh viên","Quay về danh sách, hiện thông báo 'Đã tạo tài khoản sv.moi@demo.example.'; danh sách có dòng sv.moi@demo.example, trạng thái 'Hoạt động'"
+S3-04-04,Manage User Accounts (FR-04),"1. Đăng nhập Admin, vào 'Quản lý tài khoản'
+2. Bấm '+ Thêm tài khoản'
+3. Nhập email đã có
+4. Bấm 'Tạo tài khoản'","Họ và tên: Trùng email
+Email: student1@demo.example
+Mật khẩu: Kiemthu2026
+Vai trò: Sinh viên","Ở lại trang 'Thêm tài khoản mới', dưới ô Email hiện 'Email đã được sử dụng.'; không tạo thêm tài khoản"
+S3-04-05,Manage User Accounts (FR-04),"1. Đăng nhập Admin, vào 'Quản lý tài khoản'
+2. Bấm '+ Thêm tài khoản'
+3. Dán họ tên dài 101 ký tự
+4. Bấm 'Tạo tài khoản'","Họ và tên: 101 chữ 'A'
+Email: ten.dai@demo.example
+Mật khẩu: Kiemthu2026
+Vai trò: Sinh viên","Ô Họ và tên chỉ giữ 100 ký tự (không nhận ký tự thứ 101); bấm 'Tạo tài khoản' thì hiện 'Đã tạo tài khoản ten.dai@demo.example.', không báo lỗi máy chủ (500)"
+S3-04-06,Manage User Accounts (FR-04),"1. Ở trình duyệt thứ hai (cửa sổ ẩn danh), đăng nhập sv.moi@demo.example
+2. Ở trình duyệt Admin, bấm 'Sửa' dòng sv.moi@demo.example
+3. Đổi vai trò, bấm 'Lưu thay đổi'
+4. Ở trình duyệt thứ hai bấm F5","Tài khoản tạo ở S3-04-03
+Vai trò mới: Giảng viên",Trình duyệt Admin hiện 'Vai trò đã thay đổi nên đã thu hồi 1 phiên đăng nhập hiện tại.' và 'Đã cập nhật tài khoản sv.moi@demo.example.'; trình duyệt thứ hai bị chuyển về trang Đăng nhập
+S3-04-07,"Manage User Accounts (FR-04, BR-22)","1. Đăng nhập Admin, vào 'Quản lý tài khoản'
+2. Bấm 'Sửa' dòng student1@demo.example
+3. Đổi vai trò, bấm 'Lưu thay đổi'","Tài khoản: student1@demo.example (đã có bài làm)
+Vai trò mới: Giảng viên",Hiện 'Tài khoản đã có dữ liệu thi/câu hỏi nên không đổi được vai trò. Hãy khóa hoặc ngừng sử dụng.'; vai trò vẫn là 'Sinh viên'
+S3-04-08,"Manage User Accounts (FR-04, BR-22)","1. Ở trình duyệt thứ hai, đăng nhập student3@demo.example
+2. Ở trình duyệt Admin, bấm 'Khóa' dòng student3@demo.example
+3. Bấm 'Xác nhận khóa tài khoản'
+4. Ở trình duyệt thứ hai bấm F5
+5. Đăng nhập lại student3@demo.example",Tài khoản: student3@demo.example / Kiemthu2026,"Admin thấy 'Đã khóa tài khoản student3@demo.example và thu hồi 1 phiên.', trạng thái 'Bị khóa', có nút 'Mở khóa'; trình duyệt thứ hai về trang Đăng nhập; đăng nhập lại hiện 'Tài khoản đã bị khóa hoặc ngừng sử dụng. Vui lòng liên hệ quản trị viên.'"
+S3-04-09,Manage User Accounts (FR-04),"1. Đăng nhập Admin, vào 'Quản lý tài khoản'
+2. Bấm 'Mở khóa' dòng student3@demo.example
+3. Bấm 'Xác nhận mở khóa tài khoản'
+4. Đăng xuất, đăng nhập bằng student3@demo.example","Tài khoản bị khóa ở S3-04-08
+Mật khẩu: Kiemthu2026","Hiện 'Đã mở khóa tài khoản student3@demo.example.', trạng thái 'Hoạt động'; student3 đăng nhập được và vào Trang chủ"
+S3-04-10,"Manage User Accounts (FR-04, BR-15)","1. Đăng nhập Admin, vào 'Quản lý tài khoản'
+2. Bấm 'Xóa' dòng sv.moi@demo.example
+3. Bấm 'Xác nhận xóa tài khoản'",Tài khoản: sv.moi@demo.example,"Hiện 'Đã xử lý xóa/ngừng hoạt động tài khoản sv.moi@demo.example (thu hồi 0 phiên).'; dòng vẫn còn trong danh sách, trạng thái 'Ngừng sử dụng', không còn nút 'Khóa', 'Xóa'"
+S3-04-11,Manage User Accounts - kiểm tra phía máy chủ (NFR-SEC-09),"1. Đăng nhập Admin
+2. Gõ thẳng đường dẫn /accounts/admin/users/<mã của sv.moi>/lock/
+3. Bấm 'Xác nhận khóa tài khoản'",Tài khoản đã ngừng sử dụng ở S3-04-10,"Quay về danh sách, hiện 'Chỉ khóa được tài khoản đang hoạt động.'; trạng thái vẫn là 'Ngừng sử dụng'"
+S3-04-12,"Manage User Accounts (FR-04, BR-22)","1. Đăng nhập Admin, vào 'Quản lý tài khoản'
+2. Xem dòng admin@demo.example
+3. Gõ thẳng đường dẫn /accounts/admin/users/<mã của admin>/lock/
+4. Bấm 'Xác nhận khóa tài khoản'",Tài khoản: admin@demo.example,"Dòng admin@demo.example không có nút 'Khóa', 'Xóa'; sau bước 4 hiện 'Không thể khóa hoặc xóa chính tài khoản bạn đang dùng.', Admin vẫn đang đăng nhập"

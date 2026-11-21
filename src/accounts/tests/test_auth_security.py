@@ -132,12 +132,11 @@ class AuthAndSecurityTests(TestCase):
                 reverse("accounts:admin_user_create"),
                 reverse("accounts:admin_user_update", args=[self.other_student.pk]),
                 reverse("accounts:admin_user_lock", args=[self.other_student.pk]),
+                reverse("accounts:admin_user_unlock", args=[self.other_student.pk]),
                 reverse("accounts:admin_user_delete", args=[self.other_student.pk]),
             ):
                 resp = c.get(url)
-                self.assertIn(resp.status_code, (302, 403))
-                if resp.status_code == 302:
-                    self.assertNotIn("admin/users", resp["Location"])
+                self.assertEqual(resp.status_code, 403)
 
         c_student = Client()
         c_student.post(reverse("accounts:login"), {"email": self.student.email, "password": PASSWORD})
@@ -149,7 +148,7 @@ class AuthAndSecurityTests(TestCase):
                 "role": Role.ADMIN,
             },
         )
-        self.assertIn(post_idor.status_code, (302, 403))
+        self.assertEqual(post_idor.status_code, 403)
         self.other_student.refresh_from_db()
         self.assertEqual(self.other_student.full_name, "Sinh Viên Hai")
         self.assertEqual(self.other_student.role, Role.STUDENT)

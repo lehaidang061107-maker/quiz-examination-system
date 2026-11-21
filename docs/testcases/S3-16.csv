@@ -1,12 +1,12 @@
 ﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
-S3-16-01,View Assigned Exams,"1. Đăng nhập bằng tài khoản Student.
+S3-16-01,View Exam List (FR-08),"1. Đăng nhập bằng tài khoản Student.
 2. Mở trang Bài thi.",Tài khoản Student được giao đề,"Danh sách hiển thị các đề đang phát hành hoặc đã đóng được giao cho sinh viên, kèm thời lượng, giờ mở/đóng và trạng thái."
-S3-16-02,View Assigned Exams,"1. Đăng nhập bằng Student không được giao đề nào.
+S3-16-02,View Exam List (FR-08),"1. Đăng nhập bằng Student không được giao đề nào.
 2. Mở trang Bài thi.",Tài khoản Student chưa được giao đề,Hiển thị thông báo Hiện tại bạn chưa được giao bài thi nào.
-S3-16-03,View Assigned Exams,"1. Giảng viên tạo đề không giới hạn thời lượng và giao cho sinh viên.
+S3-16-03,View Exam List (FR-08),"1. Giảng viên tạo đề không giới hạn thời lượng và giao cho sinh viên.
 2. Sinh viên mở trang Bài thi.",Thời lượng: (trống),Cột Thời lượng hiển thị Không giới hạn.
-S3-16-04,Start Exam,"1. Mở trang Bài thi.
+S3-16-04,Take Exam - bắt đầu làm bài (FR-09),"1. Mở trang Bài thi.
 2. Nhấn Bắt đầu làm bài ở đề Sẵn sàng thi.
 3. Xác nhận.",Tài khoản Student được giao đề,Tạo 1 lượt làm bài và chuyển sang phòng thi.
-S3-16-05,Start Exam,1. Nhấn Bắt đầu làm bài 2 lần liên tiếp (hoặc ở 2 tab).,Tài khoản Student được giao đề,Chỉ tạo đúng 1 lượt làm bài; cả 2 lần đều vào cùng một phòng thi.
-S3-16-06,Start Exam,1. Gửi yêu cầu bắt đầu làm bài cho đề nháp hoặc đề không được giao.,Đề ở trạng thái DRAFT hoặc không có trong danh sách giao,"Không tạo lượt làm bài, quay về trang Bài thi kèm thông báo lỗi."
+S3-16-05,Take Exam - bắt đầu làm bài (FR-09),1. Nhấn Bắt đầu làm bài 2 lần liên tiếp (hoặc ở 2 tab).,Tài khoản Student được giao đề,Chỉ tạo đúng 1 lượt làm bài; cả 2 lần đều vào cùng một phòng thi.
+S3-16-06,Take Exam - bắt đầu làm bài (FR-09),1. Gửi yêu cầu bắt đầu làm bài cho đề nháp hoặc đề không được giao.,Đề ở trạng thái DRAFT hoặc không có trong danh sách giao,"Không tạo lượt làm bài, quay về trang Bài thi kèm thông báo lỗi."

@@ -1,7 +1,4 @@
-from functools import wraps
-
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import IntegrityError, transaction
@@ -10,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
+from .decorators import role_required
 from .forms import AdminUserCreateForm, AdminUserUpdateForm, StudentRegisterForm
 from .models import Admin, Role, User, UserStatus
 from .services import revoke_user_sessions
@@ -91,16 +89,7 @@ def register_view(request):
 # ---------------- S3-04: Admin Account Management & Session Revocation ----------------
 
 
-def _admin_required(view_func):
-    @login_required
-    @wraps(view_func)
-    def _wrapped(request, *args, **kwargs):
-        if getattr(request.user, "role", None) != Role.ADMIN:
-            messages.error(request, "Chỉ Quản trị viên mới có quyền truy cập chức năng này.")
-            return redirect("home")
-        return view_func(request, *args, **kwargs)
-
-    return _wrapped
+_admin_required = role_required(Role.ADMIN)  # vai trò khác -> 403, chưa đăng nhập -> trang Đăng nhập
 
 
 def _get_admin_actor(user) -> Admin:
@@ -231,6 +220,31 @@ def admin_user_lock_view(request, user_id: int):
             "target_user": target_user,
             "action": "lock",
             "action_label": "Khóa tài khoản",
+        },
+    )
+
+
+@_admin_required
+def admin_user_unlock_view(request, user_id: int):
+    target_user = get_object_or_404(User, pk=user_id)
+    actor = _get_admin_actor(request.user)
+
+    if request.method == "POST":
+        try:
+            actor.unlock_user(target_user.pk)
+            messages.success(request, f"Đã mở khóa tài khoản {target_user.email}.")
+        except ValidationError as exc:
+            for m in exc.messages:
+                messages.error(request, m)
+        return redirect("accounts:admin_user_list")
+
+    return render(
+        request,
+        "accounts/admin/user_confirm_action.html",
+        {
+            "target_user": target_user,
+            "action": "unlock",
+            "action_label": "Mở khóa tài khoản",
         },
     )
 
