@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load results_extras %}
+
+{% block title %}Kết quả: {{ exam.title }}{% endblock %}
+{% block page_title %}Kết quả: {{ exam.title }}{% endblock %}
+{% block page_subtitle %}Nộp lúc {{ submission.submitted_at|date:"d/m/Y H:i" }}{% endblock %}
+{% block page_actions %}
+  <a href="{% url 'results:student_list' %}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
+{% endblock %}
+
+{% block content %}
+{% if state == "graded" and result %}
+  <div class="row g-3">
+    <div class="col-12 col-md-4">
+      <div class="border rounded p-3 h-100">
+        <div class="small text-muted">Điểm</div>
+        <div class="h3 fw-bold mb-0">{{ result.score }} / {{ result.max_score }}</div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="border rounded p-3 h-100">
+        <div class="small text-muted">Số câu</div>
+        <div>Đúng: <strong>{{ result.correct_count }}</strong> / {{ result.total_questions }}</div>
+        <div>Sai: <strong>{{ result.wrong_count }}</strong></div>
+        <div>Bỏ trống: <strong>{{ result.blank_count }}</strong></div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="border rounded p-3 h-100">
+        <div class="small text-muted">Thời gian làm bài</div>
+        <div class="fw-semibold">{{ result.completion_time|duration }}</div>
+      </div>
+    </div>
+  </div>
+{% elif state == "unpublished" %}
+  <div class="alert alert-secondary mb-0">Kết quả chưa được công bố.</div>
+{% else %}
+  <div class="alert alert-info mb-0">Bài thi đang được chấm. Vui lòng quay lại sau.</div>
+{% endif %}
+{% endblock %}

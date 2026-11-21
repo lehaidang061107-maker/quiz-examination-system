@@ -1,0 +1,5 @@
+{% if state == "graded" %}<span class="badge text-bg-success">Đã chấm</span>
+{% elif state == "unpublished" %}<span class="badge text-bg-secondary">Kết quả chưa được công bố</span>
+{% elif state == "grading" %}<span class="badge text-bg-info">Đang chấm</span>
+{% elif state == "in_progress" %}<span class="badge text-bg-warning">Đang làm bài</span>
+{% else %}<span class="badge text-bg-light border">Chưa làm bài</span>{% endif %}

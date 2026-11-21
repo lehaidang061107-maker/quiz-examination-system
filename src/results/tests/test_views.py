@@ -1,0 +1,194 @@
+"""S3-24: Xem kết quả thi theo quyền và điều kiện công bố (FR-13, BR-10, BR-19)."""
+from datetime import timedelta
+
+from django.test import TestCase
+from django.urls import reverse
+from django.utils import timezone
+
+from accounts.models import Role
+from attempts.models import Submission, SubmissionStatus
+from config.tests.factories import correct_option, make_open_exam, make_question, make_user, wrong_option
+from results.templatetags.results_extras import duration
+
+
+class ResultViewsBase(TestCase):
+    """Đề 3 câu x 2 điểm. Sinh viên A: đúng 1, sai 1, bỏ trống 1 -> 2,00/6,00 (định dạng số tiếng Việt)."""
+
+    def setUp(self):
+        self.teacher = make_user(Role.TEACHER, name="Giảng viên chính")
+        self.other_teacher = make_user(Role.TEACHER)
+        self.student = make_user(name="An Nguyễn")
+        self.classmate = make_user(name="Bình Trần")
+        self.questions = [
+            make_question(self.teacher, content=f"Câu {i}", options=("DapAnDungXYZ", "Sai 1", "Sai 2"))
+            for i in range(3)
+        ]
+        self.exam = make_open_exam(self.teacher, [self.student, self.classmate], self.questions)
+        self.submission = self.answer_and_submit(self.student, right=[0], wrong=[1])
+
+    def answer_and_submit(self, student, right=(), wrong=()):
+        submission = student.start_exam(self.exam.pk)
+        version = submission.version
+        for index in right:
+            question = self.questions[index]
+            version = submission.save_answer(question.pk, correct_option(question).pk, version)
+        for index in wrong:
+            question = self.questions[index]
+            version = submission.save_answer(question.pk, wrong_option(question).pk, version)
+        submission.submit()
+        submission.refresh_from_db()
+        return submission
+
+    def close_and_publish(self):
+        self.exam.close()
+        self.exam.publish_results()
+        self.exam.refresh_from_db()
+
+    def mark_submitted_not_graded(self, student):
+        """Bài đã nộp nhưng chưa chấm xong (ví dụ chấm lỗi, worker sẽ chấm lại)."""
+        submission = student.start_exam(self.exam.pk)
+        Submission.objects.filter(pk=submission.pk).update(
+            status=SubmissionStatus.SUBMITTED, submitted_at=timezone.now()
+        )
+        return submission
+
+
+class TeacherResultTests(ResultViewsBase):
+    def test_teacher_xem_danh_sach_de_minh_phu_trach(self):
+        self.client.force_login(self.teacher)
+        response = self.client.get(reverse("results:teacher_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.exam.title)
+        exam = response.context["exams"][0]
+        self.assertEqual((exam.participant_total, exam.graded_total, exam.grading_total), (2, 1, 0))
+
+    def test_teacher_khac_khong_thay_de_khong_phu_trach(self):
+        self.client.force_login(self.other_teacher)
+        response = self.client.get(reverse("results:teacher_list"))
+
+        self.assertEqual(len(response.context["exams"]), 0)
+        self.assertContains(response, "Bạn chưa có đề thi nào đã phát hành.")
+
+    def test_teacher_xem_chi_tiet_truoc_khi_cong_bo(self):
+        self.client.force_login(self.teacher)
+        response = self.client.get(reverse("results:teacher_exam", args=[self.exam.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "2,00 / 6,00")
+        self.assertContains(response, "Sinh viên chưa xem được điểm (chưa công bố)")
+        row = next(r for r in response.context["rows"] if r["student"].pk == self.student.pk)
+        self.assertEqual((row["result"].correct_count, row["result"].wrong_count, row["result"].blank_count),
+                         (1, 1, 1))
+
+    def test_teacher_thay_sinh_vien_chua_lam_bai(self):
+        self.client.force_login(self.teacher)
+        response = self.client.get(reverse("results:teacher_exam", args=[self.exam.pk]))
+
+        row = next(r for r in response.context["rows"] if r["student"].pk == self.classmate.pk)
+        self.assertEqual(row["state"], "not_started")
+        self.assertContains(response, "Chưa làm bài")
+
+    def test_bai_chua_cham_hien_dang_cham_khong_hien_diem_0(self):
+        self.mark_submitted_not_graded(self.classmate)
+        self.client.force_login(self.teacher)
+        response = self.client.get(reverse("results:teacher_exam", args=[self.exam.pk]))
+
+        row = next(r for r in response.context["rows"] if r["student"].pk == self.classmate.pk)
+        self.assertEqual(row["state"], "grading")
+        self.assertIsNone(row["result"])
+        self.assertContains(response, "Đang chấm")
+        self.assertNotContains(response, "0,00 / 6,00")
+
+    def test_teacher_doi_id_sang_de_nguoi_khac_bi_403(self):
+        self.client.force_login(self.other_teacher)
+        response = self.client.get(reverse("results:teacher_exam", args=[self.exam.pk]))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_student_vao_trang_teacher_bi_403(self):
+        self.client.force_login(self.student)
+
+        self.assertEqual(self.client.get(reverse("results:teacher_list")).status_code, 403)
+        self.assertEqual(self.client.get(reverse("results:teacher_exam", args=[self.exam.pk])).status_code, 403)
+
+
+class StudentResultTests(ResultViewsBase):
+    def test_chua_cong_bo_khong_hien_diem(self):
+        self.client.force_login(self.student)
+        detail = self.client.get(reverse("results:student_detail", args=[self.exam.pk]))
+        history = self.client.get(reverse("results:student_list"))
+
+        self.assertEqual(detail.status_code, 200)
+        self.assertContains(detail, "Kết quả chưa được công bố.")
+        self.assertIsNone(detail.context["result"])
+        self.assertNotContains(detail, "2,00")
+        self.assertContains(history, "Kết quả chưa được công bố")
+        self.assertNotContains(history, "2,00")
+
+    def test_sau_cong_bo_xem_duoc_diem_va_so_cau(self):
+        self.close_and_publish()
+        self.client.force_login(self.student)
+        response = self.client.get(reverse("results:student_detail", args=[self.exam.pk]))
+
+        self.assertContains(response, "2,00 / 6,00")
+        self.assertContains(response, "Đúng: <strong>1</strong> / 3", html=False)
+        self.assertContains(response, "Sai: <strong>1</strong>", html=False)
+        self.assertContains(response, "Bỏ trống: <strong>1</strong>", html=False)
+        self.assertContains(self.client.get(reverse("results:student_list")), "2,00 / 6,00")
+
+    def test_khong_lo_dap_an_dung(self):
+        self.close_and_publish()
+        self.client.force_login(self.student)
+        response = self.client.get(reverse("results:student_detail", args=[self.exam.pk]))
+
+        self.assertNotContains(response, "DapAnDungXYZ")
+
+    def test_student_doi_id_sang_de_khong_co_bai_bi_403(self):
+        other_exam = make_open_exam(self.teacher, [self.classmate], [make_question(self.teacher)])
+        self.client.force_login(self.student)
+        response = self.client.get(reverse("results:student_detail", args=[other_exam.pk]))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_chi_thay_bai_cua_minh(self):
+        self.answer_and_submit(self.classmate, right=[0, 1, 2])
+        self.close_and_publish()
+        self.client.force_login(self.student)
+        response = self.client.get(reverse("results:student_list"))
+
+        self.assertEqual(len(response.context["rows"]), 1)
+        self.assertContains(response, "2,00 / 6,00")
+        self.assertNotContains(response, "6,00 / 6,00")
+
+    def test_bai_da_nop_chua_cham_hien_dang_cham(self):
+        self.mark_submitted_not_graded(self.classmate)
+        self.client.force_login(self.classmate)
+        response = self.client.get(reverse("results:student_detail", args=[self.exam.pk]))
+
+        self.assertEqual(response.context["state"], "grading")
+        self.assertContains(response, "Bài thi đang được chấm.")
+
+    def test_bai_dang_lam_chuyen_ve_danh_sach_bai_thi(self):
+        self.classmate.start_exam(self.exam.pk)
+        self.client.force_login(self.classmate)
+        response = self.client.get(reverse("results:student_detail", args=[self.exam.pk]))
+
+        self.assertRedirects(response, reverse("attempts:exam_list"))
+
+    def test_teacher_vao_trang_student_bi_403(self):
+        self.client.force_login(self.teacher)
+
+        self.assertEqual(self.client.get(reverse("results:student_list")).status_code, 403)
+
+    def test_chua_dang_nhap_chuyen_ve_trang_dang_nhap(self):
+        response = self.client.get(reverse("results:student_list"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("accounts:login"), response["Location"])
+
+
+class DurationFilterTests(TestCase):
+    def test_dinh_dang_thoi_gian(self):
+        self.assertEqual(duration(timedelta(minutes=12, seconds=5)), "12 phút 05 giây")
+        self.assertEqual(duration(timedelta(hours=1, minutes=2, seconds=3)), "1 giờ 02 phút 03 giây")
