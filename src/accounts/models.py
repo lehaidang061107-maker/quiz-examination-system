@@ -16,6 +16,7 @@ from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import models, transaction
+from django.db.models import Count, Q
 from django.db.models.functions import Now
 from django.utils import timezone
 
@@ -328,6 +329,11 @@ class Teacher(User):
         return list(
             Result.objects.filter(submission__exam=exam)
             .select_related("submission__student")
+            .annotate(
+                answered_total=Count(
+                    "submission__answers", filter=Q(submission__answers__selected_option__isnull=False)
+                )
+            )
             .order_by("submission__student__full_name")
         )
 

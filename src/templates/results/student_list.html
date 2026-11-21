@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Lịch sử bài thi{% endblock %}
+{% block page_title %}Lịch sử bài thi{% endblock %}
+{% block page_subtitle %}Các bài thi bạn đã nộp{% endblock %}
+
+{% block content %}
+{% if rows %}
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Tên bài thi</th>
+          <th>Nộp lúc</th>
+          <th>Trạng thái</th>
+          <th class="text-end">Điểm</th>
+          <th class="text-end">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td class="fw-semibold">{{ row.exam.title }}</td>
+            <td class="small">{{ row.submission.submitted_at|date:"d/m/Y H:i" }}</td>
+            <td>{% include "results/_state_badge.html" with state=row.state %}</td>
+            <td class="text-end fw-semibold">
+              {% if row.result %}{{ row.result.score }} / {{ row.result.max_score }}{% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{% url 'results:student_detail' row.exam.pk %}" class="btn btn-sm btn-outline-primary">Xem chi tiết</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="text-center py-4 text-muted">Bạn chưa nộp bài thi nào.</div>
+{% endif %}
+{% endblock %}

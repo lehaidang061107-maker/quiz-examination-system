@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load results_extras %}
+
+{% block title %}Kết quả: {{ exam.title }}{% endblock %}
+{% block page_title %}Kết quả: {{ exam.title }}{% endblock %}
+{% block page_subtitle %}
+  {{ exam.get_status_display }} ·
+  {% if exam.results_published %}Đã công bố điểm cho sinh viên{% else %}Sinh viên chưa xem được điểm (chưa công bố){% endif %}
+{% endblock %}
+{% block page_actions %}
+  <a href="{% url 'results:teacher_list' %}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
+{% endblock %}
+
+{% block content %}
+{% if rows %}
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Sinh viên</th>
+          <th>Trạng thái</th>
+          <th class="text-end">Điểm</th>
+          <th class="text-center">Đúng</th>
+          <th class="text-center">Sai</th>
+          <th class="text-center">Bỏ trống</th>
+          <th>Nộp lúc</th>
+          <th>Thời gian làm</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ row.student.full_name }}</div>
+              <div class="small text-muted">{{ row.student.email }}</div>
+            </td>
+            <td>{% include "results/_state_badge.html" with state=row.state %}</td>
+            {% if row.result %}
+              <td class="text-end fw-semibold">{{ row.result.score }} / {{ row.result.max_score }}</td>
+              <td class="text-center">{{ row.result.correct_count }}</td>
+              <td class="text-center">{{ row.result.wrong_count }}</td>
+              <td class="text-center">{{ row.result.blank_count }}</td>
+              <td class="small">{{ row.submission.submitted_at|date:"d/m/Y H:i" }}</td>
+              <td class="small">{{ row.result.completion_time|duration }}</td>
+            {% else %}
+              <td class="text-end text-muted">—</td>
+              <td class="text-center text-muted">—</td>
+              <td class="text-center text-muted">—</td>
+              <td class="text-center text-muted">—</td>
+              <td class="small">{{ row.submission.submitted_at|date:"d/m/Y H:i"|default:"—" }}</td>
+              <td class="small text-muted">—</td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="text-center py-4 text-muted">Đề thi này chưa được giao cho sinh viên nào.</div>
+{% endif %}
+{% endblock %}

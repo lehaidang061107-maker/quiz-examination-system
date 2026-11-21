@@ -73,8 +73,8 @@ class HomeTests(TestCase):
     def test_menu_chua_lam_hien_sap_co(self):
         self.client.force_login(make_user(Role.TEACHER))
         response = self.client.get(reverse("home"))
-        self.assertContains(response, 'aria-disabled="true"', count=2)  # 2 mục Teacher chưa có trang
-        self.assertContains(response, "Sắp có", count=2)
+        self.assertContains(response, 'aria-disabled="true"', count=1)  # còn Quản lý kỳ thi chưa có trang
+        self.assertContains(response, "Sắp có", count=1)
         self.assertContains(response, 'class="nav-link active"', count=1)  # Trang chủ đang chọn
 
     def test_so_lieu_trang_chu_giang_vien(self):

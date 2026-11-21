@@ -1,0 +1,39 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-24-01,View Exam Results (FR-13),"1. Đăng nhập Teacher
+2. Bấm menu 'Kết quả thi'","Teacher có đề đã phát hành, 2 sinh viên được giao, 1 bài đã chấm","Hiện danh sách đề của Teacher với cột Được giao = 2, Đang làm = 0, Đang chấm = 0, Đã chấm = 1 và trạng thái công bố"
+S3-24-02,"View Exam Results (FR-13), BR-10","1. Đăng nhập Teacher khác (không phụ trách đề)
+2. Bấm menu 'Kết quả thi'",Teacher không có đề nào đã phát hành,Không thấy đề của Teacher khác; hiện 'Bạn chưa có đề thi nào đã phát hành.'
+S3-24-03,View Exam Results (FR-13),"1. Đăng nhập Teacher
+2. Mở 'Kết quả thi'
+3. Bấm 'Xem kết quả' ở đề chưa công bố điểm","Đề 3 câu x 2 điểm
+Sinh viên: đúng 1, sai 1, bỏ trống 1","Teacher vẫn xem được: điểm 2,00 / 6,00, Đúng 1, Sai 1, Bỏ trống 1, giờ nộp, thời gian làm; dòng phụ đề ghi 'Sinh viên chưa xem được điểm (chưa công bố)'"
+S3-24-04,View Exam Results (FR-13),"1. Đăng nhập Teacher
+2. Mở kết quả của đề",Có sinh viên được giao nhưng chưa bắt đầu làm,"Dòng của sinh viên đó hiện trạng thái 'Chưa làm bài', các cột điểm để '—'"
+S3-24-05,View Exam Results (FR-13),"1. Sinh viên nộp bài nhưng hệ thống chưa chấm xong
+2. Teacher mở kết quả của đề","Bài ở trạng thái SUBMITTED, chưa có kết quả","Dòng của sinh viên hiện 'Đang chấm', không hiện 0,00 điểm"
+S3-24-06,"View Exam Results (FR-13), BR-10","1. Đăng nhập Teacher B
+2. Gõ URL /results/teacher/exam/<id>/ của đề do Teacher A phụ trách",ID đề của Teacher A,"Trả về trang 403, không hiện kết quả"
+S3-24-07,"View Exam Results (FR-13), BR-10","1. Đăng nhập Student
+2. Gõ URL /results/teacher/",Tài khoản Student,Trả về trang 403
+S3-24-08,"View Exam Results (FR-13), BR-19","1. Đăng nhập Student đã nộp bài
+2. Bấm menu 'Lịch sử bài thi'
+3. Bấm 'Xem chi tiết'",Đề đã chấm nhưng chưa công bố điểm,"Lịch sử hiện 'Kết quả chưa được công bố', cột Điểm '—'; trang chi tiết hiện 'Kết quả chưa được công bố.' và không có điểm"
+S3-24-09,"View Exam Results (FR-13), BR-19","1. Teacher đóng đề và công bố điểm
+2. Đăng nhập Student
+3. Mở 'Lịch sử bài thi' rồi bấm 'Xem chi tiết'","Đề 3 câu x 2 điểm
+Sinh viên: đúng 1, sai 1, bỏ trống 1","Hiện điểm 2,00 / 6,00; Đúng: 1 / 3, Sai: 1, Bỏ trống: 1 và thời gian làm bài"
+S3-24-10,"View Exam Results (FR-13), BR-19","1. Đề đã công bố điểm
+2. Student mở trang chi tiết kết quả",Đáp án đúng của các câu: 'DapAnDungXYZ',Trang không hiện nội dung câu hỏi hay đáp án đúng
+S3-24-11,"View Exam Results (FR-13), BR-10","1. Đăng nhập Student
+2. Gõ URL /results/me/exam/<id>/ của đề mình không làm",ID đề không có bài của Student,Trả về trang 403
+S3-24-12,"View Exam Results (FR-13), BR-10","1. Hai sinh viên cùng nộp bài, đề đã công bố
+2. Sinh viên A mở 'Lịch sử bài thi'","A được 2,00 / 6,00
+B được 6,00 / 6,00","Chỉ thấy 1 dòng của A (2,00 / 6,00), không thấy điểm của B"
+S3-24-13,View Exam Results (FR-13),"1. Sinh viên nộp bài nhưng hệ thống chưa chấm xong
+2. Sinh viên mở trang chi tiết kết quả",Bài ở trạng thái SUBMITTED,"Hiện 'Bài thi đang được chấm. Vui lòng quay lại sau.', không hiện 0 điểm"
+S3-24-14,View Exam Results (FR-13),"1. Sinh viên đang làm bài (chưa nộp)
+2. Gõ URL /results/me/exam/<id>/",Bài ở trạng thái IN_PROGRESS,Chuyển về trang 'Danh sách bài thi' kèm thông báo 'Bạn chưa nộp bài thi này.'
+S3-24-15,"View Exam Results (FR-13), BR-10","1. Đăng nhập Teacher
+2. Gõ URL /results/me/",Tài khoản Teacher,Trả về trang 403
+S3-24-16,View Exam Results (FR-13),"1. Chưa đăng nhập
+2. Gõ URL /results/me/",Không có phiên đăng nhập,Chuyển tới trang Đăng nhập
