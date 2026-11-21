@@ -80,13 +80,9 @@ def start_exam(request, exam_id):
         messages.warning(request, "Bạn đã hoàn thành bài thi này rồi.")
         return redirect("attempts:exam_list")
 
-    reason = exam.cannot_start_reason(request.user)
-    if reason:
-        messages.error(request, reason)
-        return redirect("attempts:exam_list")
-
     try:
-        submission = Submission.start(exam=exam, student=request.user)
+        # Model kiểm tra quyền dự thi, lịch thi và tạo lượt (Student.startExam trong sơ đồ lớp).
+        submission = request.user.as_role().start_exam(exam.pk)
     except ValidationError as exc:
         msg = exc.messages[0] if getattr(exc, "messages", None) else str(exc)
         messages.error(request, msg)
