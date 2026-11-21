@@ -3,6 +3,8 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 import re
 
+from .models import Role
+
 class StudentRegisterForm(forms.Form):
     full_name = forms.CharField(
         max_length=100,
@@ -47,3 +49,41 @@ class StudentRegisterForm(forms.Form):
         if password and confirm_password and password != confirm_password:
             self.add_error('confirm_password', "Mật khẩu xác nhận không khớp.")
         return cleaned_data
+
+
+class AdminUserCreateForm(forms.Form):
+    full_name = forms.CharField(
+        label="Họ và tên",
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Nguyễn Văn A"}),
+    )
+    email = forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(attrs={"class": "form-control", "placeholder": "name@example.com"}),
+    )
+    password = forms.CharField(
+        label="Mật khẩu",
+        widget=forms.PasswordInput(attrs={"class": "form-control"}),
+    )
+    role = forms.ChoiceField(
+        label="Vai trò",
+        choices=Role.choices,
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+
+
+class AdminUserUpdateForm(forms.Form):
+    full_name = forms.CharField(
+        label="Họ và tên",
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+    email = forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(attrs={"class": "form-control"}),
+    )
+    role = forms.ChoiceField(
+        label="Vai trò",
+        choices=Role.choices,
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )

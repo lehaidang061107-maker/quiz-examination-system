@@ -1,0 +1,7 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-04-01,Admin user list search filter paginate,"1. Đăng nhập Admin; 2. Truy cập /accounts/admin/users/ với tham số q, role, status, page","q=sv, role=STUDENT, status=ACTIVE, page=1","Hiển thị danh sách tài khoản khớp bộ lọc và phân trang đúng theo user_id"
+S3-04-02,Non-admin access denied,"1. Đăng nhập Student hoặc Teacher; 2. Truy cập /accounts/admin/users/","role=STUDENT hoặc TEACHER","Từ chối truy cập (redirect về trang chủ / không mở trang quản trị)"
+S3-04-03,Admin create user,"1. Đăng nhập Admin; 2. POST /accounts/admin/users/create/","full_name, email, password, role","Tạo tài khoản mới thành công và chuyển hướng về danh sách người dùng"
+S3-04-04,Role change revokes sessions,"1. Student đang có session hoạt động; 2. Admin đổi role sang TEACHER","role=TEACHER","Cập nhật vai trò và thu hồi các session cũ của người dùng đó"
+S3-04-05,Lock user and revoke sessions,"1. User đang có session hoạt động; 2. Admin xác nhận khóa tài khoản","action=lock","Khóa tài khoản thành công và thu hồi các session hoạt động của user"
+S3-04-06,Delete user confirmation flow,"1. Admin mở trang xác nhận xóa user; 2. Submit POST xác nhận","action=delete","Xóa hoặc ngừng hoạt động tài khoản thành công và chuyển về danh sách"
