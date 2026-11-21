@@ -1,8 +1,8 @@
 ﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
-S3-18-01,Auto Save Answer,"1. Trong phòng thi, chọn một phương án.",Tài khoản Student được giao đề,Trạng thái chuyển Đang lưu... rồi Đã lưu; tải lại trang vẫn thấy đáp án đã chọn.
-S3-18-02,Auto Save Answer - Conflict,"1. Mở phòng thi ở 2 tab.
+S3-18-01,Take Exam - tự lưu đáp án (FR-09),"1. Trong phòng thi, chọn một phương án.",Tài khoản Student được giao đề,Trạng thái chuyển Đang lưu... rồi Đã lưu; tải lại trang vẫn thấy đáp án đã chọn.
+S3-18-02,"Take Exam - tự lưu, mở nhiều tab (FR-09, BR-20)","1. Mở phòng thi ở 2 tab.
 2. Chọn đáp án ở tab 1.
 3. Chọn đáp án khác ở tab 2.",Tài khoản Student được giao đề,Tab 2 nhận thông báo dữ liệu đã được cập nhật ở nơi khác và tự tải lại trạng thái mới nhất.
-S3-18-03,Auto Save Answer - Invalid Data,1. Gửi yêu cầu lưu đáp án với body JSON không phải object.,"Body: [1, 2, 3]","Hệ thống trả về lỗi 400, không lưu đáp án."
-S3-18-04,Auto Save Answer - Finalized,"1. Nộp bài ở tab 1.
+S3-18-03,"Take Exam - tự lưu, dữ liệu sai (FR-09)",1. Gửi yêu cầu lưu đáp án với body JSON không phải object.,"Body: [1, 2, 3]","Hệ thống trả về lỗi 400, không lưu đáp án."
+S3-18-04,"Take Exam - tự lưu sau khi đã chốt bài (FR-09, NFR-SEC-06)","1. Nộp bài ở tab 1.
 2. Chọn đáp án ở tab 2 còn mở.",Tài khoản Student được giao đề,Tab 2 nhận thông báo bài thi đã kết thúc và chuyển về trang Bài thi.

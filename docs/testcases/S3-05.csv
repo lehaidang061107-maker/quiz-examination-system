@@ -1,7 +1,29 @@
 ﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
-S3-05-01,Register valid and reject invalid input,"1. POST /accounts/register/ hợp lệ; 2. Thử trùng email và mật khẩu yếu","email trùng, mật khẩu yếu","Đăng ký hợp lệ chuyển về login và hash mật khẩu; trùng email hoặc mật khẩu yếu bị từ chối"
-S3-05-02,Login logout session and cookies,"1. POST login hợp lệ; 2. Kiểm tra cookie và Session; 3. POST logout","email hợp lệ, password hợp lệ","Cookie có HttpOnly/SameSite=Lax, tạo Session hợp lệ; logout xóa Session và chuyển về login"
-S3-05-03,Temporary lock after 5 failed attempts,"1. POST login sai mật khẩu 5 lần; 2. Thử đăng nhập lại với mật khẩu đúng","5 lần sai mật khẩu","Tài khoản bị khóa tạm / locked_until sau 5 lần sai và chặn đăng nhập kể cả khi đúng mật khẩu"
-S3-05-04,Expired session rejected,"1. Cho expire_date của Session lùi về quá khứ; 2. Gửi request với session_key đó","session_key hết hạn","Từ chối phiên hết hạn và chuyển hướng về trang đăng nhập"
-S3-05-05,Role boundary and IDOR prevention,"1. Đăng nhập Student/Teacher; 2. Truy cập URL admin và POST đổi thông tin user khác","user_id của user khác","Chặn truy cập sai vai trò và dữ liệu của user khác không bị sửa/xóa"
-S3-05-06,CSRF XSS SQLi and info disclosure,"1. Kiểm tra CSRF token & POST thiếu CSRF; 2. Gửi payload SQLi/XSS; 3. Kiểm tra response","missing CSRF, payload SQLi/XSS","Thiếu CSRF trả 403; SQLi/XSS không gây lỗi 500 và bị escape; không lộ mật khẩu/hash"
+S3-05-01,Bảo vệ mật khẩu (NFR-SEC-03),"1. Đăng ký tài khoản Student mới
+2. Mở Beekeeper/DBeaver, xem bảng users, cột password_hash của email vừa tạo","Họ tên: Kiểm thử bảo mật
+Email: baomat@demo.example
+Mật khẩu: Kiemthu2026","Cột password_hash bắt đầu bằng 'pbkdf2_sha256$', không chứa chuỗi 'Kiemthu2026'"
+S3-05-02,"Bảo vệ phiên (NFR-SEC-08), Logout (FR-03)","1. Đăng nhập Student
+2. F12 > Application > Cookies > http://127.0.0.1:8000, xem dòng sessionid
+3. Bấm 'Đăng xuất'
+4. Bấm nút Back của trình duyệt rồi F5",Tài khoản: student1@demo.example / Kiemthu2026,"Cookie sessionid có HttpOnly được đánh dấu, SameSite = Lax; đăng xuất về trang Đăng nhập với 'Bạn đã đăng xuất.'; Back + F5 vẫn ở trang Đăng nhập"
+S3-05-03,Login - khóa tạm (NFR-SEC-07),"1. Mở trang Đăng nhập
+2. Nhập sai mật khẩu 5 lần liên tiếp
+3. Nhập đúng mật khẩu, bấm 'Đăng nhập'","Email: student2@demo.example
+Mật khẩu sai: SaiMatKhau1
+Mật khẩu đúng: Kiemthu2026",5 lần đầu hiện 'Email hoặc mật khẩu không đúng.'; bước 3 hiện 'Bạn đã nhập sai 5 lần. Vui lòng thử lại sau 15 phút.' và không vào được Trang chủ
+S3-05-04,Hết phiên (NFR-SEC-01),"1. Đăng nhập Student
+2. Không thao tác gì trong 31 phút
+3. Bấm menu 'Danh sách bài thi'",Tài khoản: student1@demo.example / Kiemthu2026,Bị chuyển về trang Đăng nhập; đăng nhập lại thì quay về trang 'Danh sách bài thi'
+S3-05-05,"Phân quyền (NFR-SEC-02, NFR-SEC-09)","1. Đăng nhập Teacher
+2. Gõ thẳng đường dẫn /accounts/admin/users/<mã của student1>/edit/",Tài khoản: teacher@demo.example / Kiemthu2026,Hiện trang 'Không có quyền truy cập' (Mã lỗi 403) với câu 'Bạn không có quyền truy cập trang này.'; thông tin student1 không đổi
+S3-05-06,Chống XSS (NFR-SEC-05),"1. Mở trang Đăng ký, nhập họ tên có mã script, bấm 'Đăng ký'
+2. Đăng nhập Admin, vào 'Quản lý tài khoản', tìm email vừa đăng ký","Họ tên: <script>alert(1)</script>
+Email: xss@demo.example
+Mật khẩu: Kiemthu2026","Đăng ký thành công; ở danh sách, cột Họ và tên hiện nguyên chữ '<script>alert(1)</script>', không bật hộp thoại alert"
+S3-05-07,Chống SQL Injection (NFR-SEC-05),"1. Mở trang Đăng nhập
+2. Nhập email chứa câu SQL, bấm 'Đăng nhập'","Email: ' OR '1'='1' --
+Mật khẩu: abc","Hiện 'Email hoặc mật khẩu không đúng.', không đăng nhập được, không báo lỗi máy chủ (500)"
+S3-05-08,Chống giả mạo form (CSRF),"1. Mở trang Đăng nhập
+2. F12 > Elements, xóa thẻ input ẩn csrfmiddlewaretoken trong form
+3. Nhập đúng email, mật khẩu, bấm 'Đăng nhập'",Tài khoản: student1@demo.example / Kiemthu2026,Hiện trang 'Forbidden (403)' với dòng 'CSRF verification failed. Request aborted.'; không đăng nhập được

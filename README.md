@@ -58,9 +58,9 @@ quiz-examination-system/
 │   ├── accounts/             Tài khoản, đăng ký, đăng nhập, phân quyền; lệnh seed_demo, dev_login
 │   ├── questions/            Ngân hàng câu hỏi
 │   ├── exams/                Đề thi
-│   ├── attempts/             Lượt làm bài
+│   ├── attempts/             Lượt làm bài, nộp bài, chấm điểm; lệnh run_worker (tự nộp khi hết giờ)
 │   ├── results/              Kết quả, điểm
-│   ├── templates/            Giao diện HTML: base.html, trang lỗi 403/404
+│   ├── templates/            Giao diện HTML: base.html, trang lỗi 403/404, thư mục riêng cho từng app
 │   └── static/css/           CSS chung (app.css)
 ├── docs/
 │   ├── guides/               Developer guides (4 file đánh số)
@@ -69,7 +69,7 @@ quiz-examination-system/
 │   └── ...                   Đặc tả (Word), sơ đồ (.drawio), thiết kế Figma
 ├── tests/                    Kiểm thử tích hợp và hệ thống (giai đoạn 4)
 ├── scripts/                  Script hỗ trợ: gộp test case, cập nhật mục lục
-├── Dockerfile, compose.yaml  Chạy website (web) và PostgreSQL (db) bằng Docker
+├── Dockerfile, compose.yaml  Chạy website (web), tiến trình nền (worker) và PostgreSQL (db) bằng Docker
 ├── requirements.txt          Thư viện Python
 └── .env.example              Mẫu file .env (file .env thật không đưa lên GitHub)
 ```

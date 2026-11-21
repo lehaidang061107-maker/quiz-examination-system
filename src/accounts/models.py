@@ -242,17 +242,35 @@ class Admin(User):
 
     def lock_user(self, user_id):
         """lockUser(id): Admin khóa tài khoản (status=LOCKED); phiên của người đó mất ngay."""
-        self._change_status(user_id, UserStatus.LOCKED)
+        self._change_status(user_id, UserStatus.LOCKED, allowed_from=[UserStatus.ACTIVE],
+                            wrong_status="Chỉ khóa được tài khoản đang hoạt động.")
+
+    def unlock_user(self, user_id):
+        """Mở khóa tài khoản Admin đã khóa (LOCKED -> ACTIVE), xóa luôn khóa tạm do nhập sai mật khẩu."""
+        with transaction.atomic():
+            user = User.objects.select_for_update().get(pk=user_id)
+            if user.status != UserStatus.LOCKED:
+                raise ValidationError("Chỉ mở khóa được tài khoản đang bị khóa.")
+            user.status = UserStatus.ACTIVE
+            user.failed_login_count = 0
+            user.locked_until = None
+            user.save(update_fields=["status", "failed_login_count", "locked_until"])
+        return user
 
     def delete_user(self, user_id):
         """deleteUser(id): xóa nghiệp vụ (status=DELETED), giữ dữ liệu lịch sử (BR-15)."""
-        self._change_status(user_id, UserStatus.DELETED)
+        self._change_status(user_id, UserStatus.DELETED, allowed_from=[UserStatus.ACTIVE, UserStatus.LOCKED],
+                            wrong_status="Tài khoản đã ngừng sử dụng.")
 
-    def _change_status(self, user_id, status):
+    def _change_status(self, user_id, status, allowed_from, wrong_status):
         from attempts.models import SubmissionStatus
 
+        if user_id == self.pk:
+            raise ValidationError("Không thể khóa hoặc xóa chính tài khoản bạn đang dùng.")
         with transaction.atomic():
             user = User.objects.select_for_update().get(pk=user_id)
+            if user.status not in allowed_from:
+                raise ValidationError(wrong_status)
             self._check_not_last_admin(user)
             user.status = status
             user.save(update_fields=["status"])

@@ -1,7 +1,7 @@
 """Tiến trình nền tự nộp và chấm lại bài (S3-23): python manage.py run_worker
 
 Mỗi vòng: chốt các lượt quá hạn / đề đã đóng / bị thu hồi quyền, rồi chấm lại bài còn SUBMITTED.
-Mặc định chạy mỗi 5 giây (chờ nhóm xác nhận, xem docs/guides/03-coding-guidelines.md); đổi bằng --interval.
+Mặc định chạy mỗi 5 giây (xem docs/guides/03-coding-guidelines.md); đổi bằng --interval.
 Dừng an toàn bằng Ctrl+C hoặc docker compose stop: vòng đang chạy làm xong rồi mới thoát.
 Database mất kết nối thì ghi lỗi và thử lại ở vòng sau, không thoát.
 """
