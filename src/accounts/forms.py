@@ -3,6 +3,8 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 import re
 
+from .models import Role
+
 class StudentRegisterForm(forms.Form):
     full_name = forms.CharField(
         max_length=100,
@@ -47,7 +49,6 @@ class StudentRegisterForm(forms.Form):
         if password and confirm_password and password != confirm_password:
             self.add_error('confirm_password', "Mật khẩu xác nhận không khớp.")
         return cleaned_data
-from .models import Role
 
 
 class AdminUserCreateForm(forms.Form):

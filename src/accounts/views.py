@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST
 
 from .forms import AdminUserCreateForm, AdminUserUpdateForm, StudentRegisterForm
 from .models import Admin, Role, User, UserStatus
-from .services import handle_user_exam_attempts, revoke_user_sessions
+from .services import revoke_user_sessions
 
 
 def _is_safe_next_url(next_url, request):
@@ -215,12 +215,9 @@ def admin_user_lock_view(request, user_id: int):
 
     if request.method == "POST":
         try:
-            exam_notes = handle_user_exam_attempts(target_user)
             actor.lock_user(target_user.pk)
             revoked = revoke_user_sessions(target_user.pk)
             msg = f"Đã khóa tài khoản {target_user.email} và thu hồi {revoked} phiên."
-            if exam_notes:
-                msg += " " + " ".join(exam_notes)
             messages.success(request, msg)
         except ValidationError as exc:
             for m in exc.messages:
@@ -245,12 +242,9 @@ def admin_user_delete_view(request, user_id: int):
 
     if request.method == "POST":
         try:
-            exam_notes = handle_user_exam_attempts(target_user)
             actor.delete_user(target_user.pk)
             revoked = revoke_user_sessions(target_user.pk)
             msg = f"Đã xử lý xóa/ngừng hoạt động tài khoản {target_user.email} (thu hồi {revoked} phiên)."
-            if exam_notes:
-                msg += " " + " ".join(exam_notes)
             messages.success(request, msg)
         except ValidationError as exc:
             for m in exc.messages:
