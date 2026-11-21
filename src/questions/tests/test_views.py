@@ -471,6 +471,168 @@ class QuestionEditorViewTests(TestCase):
         question.refresh_from_db()
         self.assertEqual(question.content, "Câu hỏi phiên bản cũ")
 
+    def test_editing_revision_does_not_change_original_exam_question(self):
+        original = make_question(
+            self.teacher,
+            content="Câu hỏi gốc",
+        )
+        original_options = list(
+            original.options.order_by("display_order")
+        )
+
+        exam = make_open_exam(
+            self.teacher,
+            [self.student],
+            [original],
+        )
+
+        revision_response = self.client.post(
+            reverse(
+                "questions:revision",
+                args=[original.question_id],
+            )
+        )
+
+        revision = Question.objects.exclude(
+            question_id=original.question_id,
+        ).get(teacher=self.teacher)
+
+        self.assertEqual(revision_response.status_code, 302)
+
+        revision_options = list(
+            revision.options.order_by("display_order")
+        )
+
+        edit_response = self.client.post(
+            reverse(
+                "questions:edit",
+                args=[revision.question_id],
+            ),
+            {
+                "content": "Câu hỏi phiên bản mới",
+                "option_id": [
+                    str(option.option_id)
+                    for option in revision_options
+                ],
+                "option_content": [
+                    "Phương án mới A",
+                    "Phương án mới B",
+                    "Phương án mới C",
+                ],
+                "correct_option": "1",
+                "action": "activate",
+            },
+        )
+
+        self.assertRedirects(
+            edit_response,
+            reverse("questions:list"),
+        )
+
+        original.refresh_from_db()
+        revision.refresh_from_db()
+
+        self.assertEqual(original.content, "Câu hỏi gốc")
+        self.assertEqual(
+            list(
+                original.options.order_by("display_order").values_list(
+                    "content",
+                    "is_correct",
+                )
+            ),
+            [
+                (option.content, option.is_correct)
+                for option in original_options
+            ],
+        )
+
+        self.assertEqual(revision.content, "Câu hỏi phiên bản mới")
+        self.assertEqual(revision.status, QuestionStatus.ACTIVE)
+
+        exam_question = exam.exam_questions.get()
+        self.assertEqual(
+            exam_question.question_id,
+            original.question_id,
+        )
+
+    def test_teacher_cannot_view_edit_page_of_locked_question(self):
+        question = make_question(
+            self.teacher,
+            content="Câu hỏi gốc đã phát hành",
+        )
+        make_open_exam(
+            self.teacher,
+            [self.student],
+            [question],
+        )
+
+        edit_url = reverse(
+            "questions:edit",
+            args=[question.question_id],
+        )
+
+        response = self.client.get(edit_url, follow=True)
+
+        self.assertRedirects(response, reverse("questions:list"))
+        self.assertContains(
+            response,
+            "Câu hỏi đã dùng trong đề đã phát hành",
+        )
+
+    def test_teacher_cannot_update_locked_question_directly(self):
+        question = make_question(
+            self.teacher,
+            content="Câu hỏi gốc đã phát hành",
+        )
+        original_options = list(
+            question.options.order_by("display_order")
+        )
+        make_open_exam(
+            self.teacher,
+            [self.student],
+            [question],
+        )
+
+        edit_url = reverse(
+            "questions:edit",
+            args=[question.question_id],
+        )
+
+        response = self.client.post(
+            edit_url,
+            {
+                "content": "Nội dung bị sửa trái phép",
+                "option_id": [
+                    str(option.option_id)
+                    for option in original_options
+                ],
+                "option_content": [
+                    "Phương án bị sửa"
+                    for option in original_options
+                ],
+                "correct_option": "0",
+                "action": "activate",
+            },
+            follow=True,
+        )
+
+        self.assertRedirects(response, reverse("questions:list"))
+
+        question.refresh_from_db()
+        self.assertEqual(
+            question.content,
+            "Câu hỏi gốc đã phát hành",
+        )
+        self.assertEqual(
+            list(
+                question.options.order_by("display_order").values_list(
+                    "content",
+                    flat=True,
+                )
+            ),
+            [option.content for option in original_options],
+        )
+
     def test_cannot_create_revision_of_unlocked_question(self):
         question = make_question(
             self.teacher,
@@ -523,6 +685,7 @@ class QuestionEditorViewTests(TestCase):
             Question.objects.filter(teacher=other_teacher).count(),
             1,
         )
+
     def test_can_edit_draft_saved_without_options(self):
         self.client.post(
             self.create_url,

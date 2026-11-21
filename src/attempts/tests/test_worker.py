@@ -196,20 +196,25 @@ class WorkerLockingTests(TransactionTestCase):
 
     def test_luot_dang_bi_giu_thi_bo_qua_roi_vong_sau_xu_ly(self):
         locked, release = threading.Event(), threading.Event()
+        lock_errors = []
 
         def hold_lock():
             try:
+                connection.ensure_connection()
                 with transaction.atomic():
                     Submission.objects.select_for_update().get(pk=self.submission.pk)
                     locked.set()
-                    release.wait(10)
+                    release.wait(30)
+            except Exception as exc:
+                lock_errors.append(exc)
             finally:
                 connection.close()
 
         holder = threading.Thread(target=hold_lock)
         holder.start()
-        locked.wait(10)
         try:
+            acquired = locked.wait(60)
+            self.assertTrue(acquired, f"Luồng phụ không lấy được khóa Submission. Lỗi: {lock_errors!r}")
             stats = process_once()  # không bị treo chờ khóa
             self.assertEqual((stats.skipped, stats.finalized), (1, 0))
         finally:
