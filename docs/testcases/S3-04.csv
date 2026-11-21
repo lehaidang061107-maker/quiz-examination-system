@@ -1,7 +1,7 @@
-TC_ID,Module,Scenario,Precondition,Steps,Expected_Result
-TC_S304_01,S3-04,Chặn người dùng không phải Admin truy cập quản lý tài khoản,Đăng nhập bằng tài khoản STUDENT hoặc TEACHER,Truy cập /accounts/admin/users/,Chuyển hướng về trang chủ và báo không có quyền truy cập
-TC_S304_02,S3-04,Tìm kiếm lọc và phân trang danh sách tài khoản,Đăng nhập bằng Admin có nhiều tài khoản,Nhập từ khóa tìm kiếm / chọn vai trò / trạng thái / chuyển trang,Hiển thị đúng danh sách tài khoản theo bộ lọc và phân trang
-TC_S304_03,S3-04,Admin tạo tài khoản mới hợp lệ,Đăng nhập bằng Admin,Mở trang tạo tài khoản và gửi form hợp lệ,Tạo tài khoản thành công và quay về danh sách tài khoản
-TC_S304_04,S3-04,Admin cập nhật thông tin và đổi vai trò thu hồi phiên,Đăng nhập bằng Admin; target user đang có phiên hoạt động,Sửa thông tin/vai trò của target user và lưu,Cập nhật thành công và thu hồi các phiên đang hoạt động của target user
-TC_S304_05,S3-04,Khóa tài khoản có xác nhận và thu hồi phiên,Đăng nhập bằng Admin; target user đang có phiên hoạt động,Mở trang xác nhận khóa và gửi POST xác nhận,Khóa tài khoản và thu hồi toàn bộ phiên đang hoạt động của tài khoản đó
-TC_S304_06,S3-04,Xóa/ngừng hoạt động tài khoản có xác nhận và bảo toàn dữ liệu thi,Đăng nhập bằng Admin,Mở trang xác nhận xóa và gửi POST xác nhận,Xử lý xóa/ngừng hoạt động theo quy tắc không mất dữ liệu lịch sử và chốt lượt thi nếu có
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-04-01,Admin user list search filter paginate,"1. Đăng nhập Admin; 2. Truy cập /accounts/admin/users/ với tham số q, role, status, page","q=sv, role=STUDENT, status=ACTIVE, page=1","Hiển thị danh sách tài khoản khớp bộ lọc và phân trang đúng theo user_id"
+S3-04-02,Non-admin access denied,"1. Đăng nhập Student hoặc Teacher; 2. Truy cập /accounts/admin/users/","role=STUDENT hoặc TEACHER","Từ chối truy cập (redirect về trang chủ / không mở trang quản trị)"
+S3-04-03,Admin create user,"1. Đăng nhập Admin; 2. POST /accounts/admin/users/create/","full_name, email, password, role","Tạo tài khoản mới thành công và chuyển hướng về danh sách người dùng"
+S3-04-04,Role change revokes sessions,"1. Student đang có session hoạt động; 2. Admin đổi role sang TEACHER","role=TEACHER","Cập nhật vai trò và thu hồi các session cũ của người dùng đó"
+S3-04-05,Lock user and revoke sessions,"1. User đang có session hoạt động; 2. Admin xác nhận khóa tài khoản","action=lock","Khóa tài khoản thành công và thu hồi các session hoạt động của user"
+S3-04-06,Delete user confirmation flow,"1. Admin mở trang xác nhận xóa user; 2. Submit POST xác nhận","action=delete","Xóa hoặc ngừng hoạt động tài khoản thành công và chuyển về danh sách"
