@@ -57,8 +57,12 @@
           <td>{{ u.get_status_display|default:u.status }}</td>
           <td class="d-flex flex-wrap gap-1">
             <a href="{% url 'accounts:admin_user_update' u.pk %}" class="btn btn-sm btn-outline-primary">Sửa</a>
-            <a href="{% url 'accounts:admin_user_lock' u.pk %}" class="btn btn-sm btn-outline-warning">Khóa</a>
-            <a href="{% url 'accounts:admin_user_delete' u.pk %}" class="btn btn-sm btn-outline-danger">Xóa</a>
+            {% if u.status == "ACTIVE" %}
+              <a href="{% url 'accounts:admin_user_lock' u.pk %}" class="btn btn-sm btn-outline-warning">Khóa</a>
+            {% endif %}
+            {% if u.status != "DELETED" %}
+              <a href="{% url 'accounts:admin_user_delete' u.pk %}" class="btn btn-sm btn-outline-danger">Xóa</a>
+            {% endif %}
           </td>
         </tr>
       {% empty %}
@@ -75,7 +79,7 @@
     <ul class="pagination justify-content-end mb-0">
       {% if page_obj.has_previous %}
         <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&role={{ role }}&status={{ status }}">Trước</a>
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q|urlencode }}&role={{ role|urlencode }}&status={{ status|urlencode }}">Trước</a>
         </li>
       {% endif %}
       <li class="page-item disabled">
@@ -83,7 +87,7 @@
       </li>
       {% if page_obj.has_next %}
         <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&role={{ role }}&status={{ status }}">Sau</a>
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q|urlencode }}&role={{ role|urlencode }}&status={{ status|urlencode }}">Sau</a>
         </li>
       {% endif %}
     </ul>

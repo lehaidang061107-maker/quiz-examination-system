@@ -11,7 +11,7 @@ from accounts.models import Role
 MENU = {
     Role.ADMIN: [
         ("Trang chủ", "home"),
-        ("Quản lý tài khoản", "accounts:user_list"),          # S3-04
+        ("Quản lý tài khoản", "accounts:admin_user_list"),          # S3-04
     ],
     Role.TEACHER: [
         ("Trang chủ", "home"),

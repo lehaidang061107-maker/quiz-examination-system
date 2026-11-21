@@ -107,3 +107,10 @@ class AdminAccountManagementViewTests(TestCase):
 
         post_resp = self.client.post(reverse("accounts:admin_user_delete", args=[self.teacher.pk]))
         self.assertRedirects(post_resp, reverse("accounts:admin_user_list"))
+        self.teacher.refresh_from_db()
+        self.assertEqual(self.teacher.status, UserStatus.DELETED)
+
+    def test_admin_menu_links_to_user_list(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, f'href="{reverse("accounts:admin_user_list")}"')
