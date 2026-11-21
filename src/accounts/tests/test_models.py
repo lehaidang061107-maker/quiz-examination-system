@@ -98,9 +98,37 @@ class AdminTests(TestCase):
             self.admin.create_user({"full_name": "", "email": "trung@test.example", "password": "123", "role": "X"})
         self.assertEqual(set(ctx.exception.message_dict), {"full_name", "email", "password", "role"})
 
-    def test_khong_khoa_duoc_admin_cuoi_cung(self):
+    def test_khong_ha_quyen_duoc_admin_cuoi_cung(self):
         with self.assertRaisesMessage(ValidationError, "quản trị viên đang hoạt động cuối cùng"):
+            self.admin.update_user(self.admin.pk, {"role": Role.TEACHER})
+
+    def test_khong_tu_khoa_hoac_tu_xoa_chinh_minh(self):
+        with self.assertRaisesMessage(ValidationError, "chính tài khoản bạn đang dùng"):
             self.admin.lock_user(self.admin.pk)
+        with self.assertRaisesMessage(ValidationError, "chính tài khoản bạn đang dùng"):
+            self.admin.delete_user(self.admin.pk)
+
+    def test_khong_khoa_tai_khoan_da_ngung_su_dung(self):
+        student = make_user()
+        self.admin.delete_user(student.pk)
+        with self.assertRaisesMessage(ValidationError, "Chỉ khóa được tài khoản đang hoạt động."):
+            self.admin.lock_user(student.pk)
+        with self.assertRaisesMessage(ValidationError, "Tài khoản đã ngừng sử dụng."):
+            self.admin.delete_user(student.pk)
+        student.refresh_from_db()
+        self.assertEqual(student.status, UserStatus.DELETED)
+
+    def test_mo_khoa_tai_khoan_bi_khoa(self):
+        student = make_user()
+        self.admin.lock_user(student.pk)
+        User.objects.filter(pk=student.pk).update(failed_login_count=3, locked_until=timezone.now())
+        self.admin.unlock_user(student.pk)
+        student.refresh_from_db()
+        self.assertEqual(student.status, UserStatus.ACTIVE)
+        self.assertEqual(student.failed_login_count, 0)
+        self.assertIsNone(student.locked_until)
+        with self.assertRaisesMessage(ValidationError, "Chỉ mở khóa được tài khoản đang bị khóa."):
+            self.admin.unlock_user(student.pk)
 
     def test_xoa_tai_khoan_chi_danh_dau_deleted(self):
         student = make_user()

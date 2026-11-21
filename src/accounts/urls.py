@@ -13,5 +13,6 @@ urlpatterns = [
     path("admin/users/create/", views.admin_user_create_view, name="admin_user_create"),
     path("admin/users/<int:user_id>/edit/", views.admin_user_update_view, name="admin_user_update"),
     path("admin/users/<int:user_id>/lock/", views.admin_user_lock_view, name="admin_user_lock"),
+    path("admin/users/<int:user_id>/unlock/", views.admin_user_unlock_view, name="admin_user_unlock"),
     path("admin/users/<int:user_id>/delete/", views.admin_user_delete_view, name="admin_user_delete"),
 ]

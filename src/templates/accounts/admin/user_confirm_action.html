@@ -9,13 +9,17 @@
   Bạn có chắc chắn muốn <strong>{{ action_label|lower }}</strong> cho tài khoản
   <strong>{{ target_user.full_name }}</strong> ({{ target_user.email }}) không?
   <div class="small mt-2">
-    Các phiên đăng nhập hiện tại của tài khoản này sẽ bị thu hồi ngay sau khi xác nhận.
+    {% if action == "unlock" %}
+      Tài khoản sẽ đăng nhập lại được bằng mật khẩu cũ.
+    {% else %}
+      Các phiên đăng nhập hiện tại của tài khoản này sẽ bị thu hồi ngay sau khi xác nhận.
+    {% endif %}
   </div>
 </div>
 
 <form method="post" class="d-flex gap-2">
   {% csrf_token %}
-  <button type="submit" class="btn btn-danger">Xác nhận {{ action_label|lower }}</button>
+  <button type="submit" class="btn {% if action == 'unlock' %}btn-success{% else %}btn-danger{% endif %}">Xác nhận {{ action_label|lower }}</button>
   <a href="{% url 'accounts:admin_user_list' %}" class="btn btn-outline-secondary">Hủy</a>
 </form>
 {% endblock %}

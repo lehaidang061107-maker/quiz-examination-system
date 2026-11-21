@@ -57,10 +57,12 @@
           <td>{{ u.get_status_display|default:u.status }}</td>
           <td class="d-flex flex-wrap gap-1">
             <a href="{% url 'accounts:admin_user_update' u.pk %}" class="btn btn-sm btn-outline-primary">Sửa</a>
-            {% if u.status == "ACTIVE" %}
+            {% if u.status == "ACTIVE" and u.pk != user.pk %}
               <a href="{% url 'accounts:admin_user_lock' u.pk %}" class="btn btn-sm btn-outline-warning">Khóa</a>
+            {% elif u.status == "LOCKED" %}
+              <a href="{% url 'accounts:admin_user_unlock' u.pk %}" class="btn btn-sm btn-outline-success">Mở khóa</a>
             {% endif %}
-            {% if u.status != "DELETED" %}
+            {% if u.status != "DELETED" and u.pk != user.pk %}
               <a href="{% url 'accounts:admin_user_delete' u.pk %}" class="btn btn-sm btn-outline-danger">Xóa</a>
             {% endif %}
           </td>
