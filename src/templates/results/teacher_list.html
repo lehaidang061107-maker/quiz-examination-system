@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Kết quả thi{% endblock %}
+{% block page_title %}Kết quả thi{% endblock %}
+{% block page_subtitle %}Các đề thi bạn phụ trách{% endblock %}
+
+{% block content %}
+{% if exams %}
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Tên đề thi</th>
+          <th>Trạng thái đề</th>
+          <th class="text-center">Được giao</th>
+          <th class="text-center">Đang làm</th>
+          <th class="text-center">Đang chấm</th>
+          <th class="text-center">Đã chấm</th>
+          <th>Công bố điểm</th>
+          <th class="text-end">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for exam in exams %}
+          <tr>
+            <td class="fw-semibold">{{ exam.title }}</td>
+            <td>{{ exam.get_status_display }}</td>
+            <td class="text-center">{{ exam.participant_total }}</td>
+            <td class="text-center">{{ exam.in_progress_total }}</td>
+            <td class="text-center">{{ exam.grading_total }}</td>
+            <td class="text-center">{{ exam.graded_total }}</td>
+            <td>
+              {% if exam.results_published %}
+                <span class="badge text-bg-success">Đã công bố</span>
+              {% else %}
+                <span class="badge text-bg-secondary">Chưa công bố</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{% url 'results:teacher_exam' exam.pk %}" class="btn btn-sm btn-outline-primary">Xem kết quả</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="text-center py-4 text-muted">Bạn chưa có đề thi nào đã phát hành.</div>
+{% endif %}
+{% endblock %}

@@ -62,3 +62,27 @@ class Result(models.Model):
         if user.role == Role.STUDENT:
             return self.submission.student_id == user.pk and exam.results_published
         return False
+
+    # ----- Chi tiết hiển thị (UC View Exam Results, bước 4) -----
+
+    @property
+    def answered_count(self):
+        """Số câu đã chọn đáp án. Dùng số đếm sẵn nếu truy vấn đã annotate `answered_total`."""
+        cached = getattr(self, "answered_total", None)
+        if cached is not None:
+            return cached
+        return self.submission.answers.filter(selected_option__isnull=False).count()
+
+    @property
+    def wrong_count(self):
+        return self.answered_count - self.correct_count
+
+    @property
+    def blank_count(self):
+        return self.total_questions - self.answered_count
+
+    @property
+    def completion_time(self):
+        """Thời gian làm bài = lúc nộp - lúc bắt đầu (bài tự nộp đã ghi submitted_at = hạn nộp)."""
+        submission = self.submission
+        return submission.submitted_at - submission.started_at
