@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Xác nhận {{ action_label }}{% endblock %}
+{% block page_title %}Xác nhận {{ action_label }}{% endblock %}
+{% block page_subtitle %}Thao tác này ảnh hưởng trực tiếp đến quyền truy cập và phiên đăng nhập của người dùng{% endblock %}
+
+{% block content %}
+<div class="alert alert-warning" style="max-width: 600px;">
+  Bạn có chắc chắn muốn <strong>{{ action_label|lower }}</strong> cho tài khoản
+  <strong>{{ target_user.full_name }}</strong> ({{ target_user.email }}) không?
+  <div class="small mt-2">
+    Các phiên đăng nhập hiện tại của tài khoản này sẽ bị thu hồi ngay sau khi xác nhận.
+  </div>
+</div>
+
+<form method="post" class="d-flex gap-2">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Xác nhận {{ action_label|lower }}</button>
+  <a href="{% url 'accounts:admin_user_list' %}" class="btn btn-outline-secondary">Hủy</a>
+</form>
+{% endblock %}
