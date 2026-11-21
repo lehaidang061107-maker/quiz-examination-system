@@ -2,7 +2,6 @@
 
 Chạy riêng: cd src && python manage.py test attempts.tests.test_worker
 """
-
 import signal
 import threading
 from datetime import timedelta
@@ -126,68 +125,57 @@ class WorkerTests(AttemptTestCase):
         self.assertIn("chốt 1", out.getvalue())
         self.assertEqual(self.status(), SubmissionStatus.GRADED)
 
-
-
     def test_lenh_dung_an_toan_khi_nhan_tin_hieu(self):
         out = StringIO()
-        handlers = {}
-        original_signal = signal.signal
 
-        def fake_signal(sig, handler):
-            previous = original_signal(sig, handler)
-            if getattr(handler, "__name__", "") == "request_stop":
-                handlers[sig] = handler
-            return previous
-
-        def fake_wait(timeout=None):
+        def send_stop(handlers, timeout):
             handlers[signal.SIGINT](signal.SIGINT, None)
             return True
 
+        self.run_worker_with_signal(out, send_stop)
+
+        self.assertIn("Worker đã dừng.", out.getvalue())
+
+    def run_worker_with_signal(self, out, wait_callback):
+        original_signal = signal.signal
+        handlers = {}
+
+        def capture_signal(sig, handler):
+            if handler is not None:
+                handlers[sig] = handler
+            return original_signal(sig, handler)
+
+        def fake_wait(timeout=None):
+            return wait_callback(handlers, timeout)
+
         with mock.patch(
             "attempts.management.commands.run_worker.signal.signal",
-            side_effect=fake_signal,
+            side_effect=capture_signal,
         ), mock.patch(
             "threading.Event.wait",
             side_effect=fake_wait,
         ):
             call_command("run_worker", "--interval", "0.1", stdout=out)
 
-        self.assertIn("Worker đã dừng.", out.getvalue())
-
-
-
     def test_loi_database_trong_vong_khong_lam_dung_worker(self):
         out = StringIO()
         calls = []
-        handlers = {}
-        original_signal = signal.signal
-
-        def fake_signal(sig, handler):
-            previous = original_signal(sig, handler)
-            if getattr(handler, "__name__", "") == "request_stop":
-                handlers[sig] = handler
-            return previous
 
         def boom():
             calls.append(1)
             raise RuntimeError("mất kết nối giả lập")
 
-        def fake_wait(timeout=None):
+        def send_stop_after_retries(handlers, timeout):
             if len(calls) >= 2:
                 handlers[signal.SIGINT](signal.SIGINT, None)
-            return True
+                return True
+            return False
 
         with mock.patch(
-            "attempts.management.commands.run_worker.signal.signal",
-            side_effect=fake_signal,
-        ), mock.patch(
             "attempts.management.commands.run_worker.process_once",
             side_effect=boom,
-        ), mock.patch(
-            "threading.Event.wait",
-            side_effect=fake_wait,
         ), self.assertLogs("attempts.worker", "ERROR"):
-            call_command("run_worker", "--interval", "0.1", stdout=out)
+            self.run_worker_with_signal(out, send_stop_after_retries)
 
         self.assertGreaterEqual(len(calls), 2)
         self.assertIn("Worker đã dừng.", out.getvalue())
@@ -206,47 +194,32 @@ class WorkerLockingTests(TransactionTestCase):
             started_at=past, deadline_at=past + timedelta(minutes=30)
         )
 
-
     def test_luot_dang_bi_giu_thi_bo_qua_roi_vong_sau_xu_ly(self):
         locked, release = threading.Event(), threading.Event()
         lock_errors = []
 
         def hold_lock():
             try:
-
                 connection.ensure_connection()
-
                 with transaction.atomic():
-
                     Submission.objects.select_for_update().get(pk=self.submission.pk)
-
                     locked.set()
-
                     release.wait(30)
-
             except Exception as exc:
                 lock_errors.append(exc)
-
             finally:
                 connection.close()
 
-
         holder = threading.Thread(target=hold_lock)
         holder.start()
-
         try:
             acquired = locked.wait(60)
-            self.assertTrue(
-                acquired,
-                f"Luồng phụ không lấy được khóa Submission. Lỗi: {lock_errors!r}",
-            )
-
-            stats = process_once()
+            self.assertTrue(acquired, f"Luồng phụ không lấy được khóa Submission. Lỗi: {lock_errors!r}")
+            stats = process_once()  # không bị treo chờ khóa
             self.assertEqual((stats.skipped, stats.finalized), (1, 0))
         finally:
             release.set()
             holder.join()
-
         self.assertEqual(process_once().finalized, 1)
         self.submission.refresh_from_db()
         self.assertEqual(self.submission.status, SubmissionStatus.GRADED)
