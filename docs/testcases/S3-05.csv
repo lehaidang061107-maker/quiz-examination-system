@@ -1,0 +1,7 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-05-01,Register valid and reject invalid input,"1. POST /accounts/register/ hợp lệ; 2. Thử trùng email và mật khẩu yếu","email trùng, mật khẩu yếu","Đăng ký hợp lệ chuyển về login và hash mật khẩu; trùng email hoặc mật khẩu yếu bị từ chối"
+S3-05-02,Login logout session and cookies,"1. POST login hợp lệ; 2. Kiểm tra cookie và Session; 3. POST logout","email hợp lệ, password hợp lệ","Cookie có HttpOnly/SameSite=Lax, tạo Session hợp lệ; logout xóa Session và chuyển về login"
+S3-05-03,Temporary lock after 5 failed attempts,"1. POST login sai mật khẩu 5 lần; 2. Thử đăng nhập lại với mật khẩu đúng","5 lần sai mật khẩu","Tài khoản bị khóa tạm / locked_until sau 5 lần sai và chặn đăng nhập kể cả khi đúng mật khẩu"
+S3-05-04,Expired session rejected,"1. Cho expire_date của Session lùi về quá khứ; 2. Gửi request với session_key đó","session_key hết hạn","Từ chối phiên hết hạn và chuyển hướng về trang đăng nhập"
+S3-05-05,Role boundary and IDOR prevention,"1. Đăng nhập Student/Teacher; 2. Truy cập URL admin và POST đổi thông tin user khác","user_id của user khác","Chặn truy cập sai vai trò và dữ liệu của user khác không bị sửa/xóa"
+S3-05-06,CSRF XSS SQLi and info disclosure,"1. Kiểm tra CSRF token & POST thiếu CSRF; 2. Gửi payload SQLi/XSS; 3. Kiểm tra response","missing CSRF, payload SQLi/XSS","Thiếu CSRF trả 403; SQLi/XSS không gây lỗi 500 và bị escape; không lộ mật khẩu/hash"
