@@ -222,3 +222,37 @@ class AttemptsFlowAndConcurrencyTests(TestCase):
 
         self.assertContains(res, '<h1 class="h4 fw-bold mb-1">Đề kiểm thử S3-20</h1>', html=False)
         self.assertContains(res, 'id="btn-submit-exam"')
+
+    def test_take_exam_does_not_expose_correct_answer_metadata(self):
+        """S3-09: HTML phòng thi không tiết lộ metadata xác định đáp án đúng."""
+        sub = Submission.start(exam=self.exam, student=self.student)
+
+        res = self.client.get(reverse("attempts:take_exam", args=[sub.pk]))
+
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, self.opt_wrong.content)
+        self.assertContains(res, self.opt_right.content)
+        self.assertNotContains(res, "is_correct")
+        self.assertNotContains(res, "correct_option")
+        self.assertNotContains(res, "Đáp án đúng")
+
+    def test_save_answer_api_does_not_return_grading_data(self):
+        """S3-09: API lưu đáp án chỉ trả trạng thái lưu và version."""
+        sub = Submission.start(exam=self.exam, student=self.student)
+        save_url = reverse("attempts:save_answer_api", args=[sub.pk])
+
+        res = self.client.post(
+            save_url,
+            data=json.dumps(
+                {
+                    "question_id": self.question.pk,
+                    "option_id": self.opt_right.pk,
+                    "version": 0,
+                }
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(set(res.json().keys()), {"ok", "version"})
+        self.assertTrue(res.json()["ok"])
