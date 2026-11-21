@@ -1,24 +1,12 @@
-﻿from datetime import timedelta
+from datetime import timedelta
 from django.conf import settings
 from django.contrib.sessions.models import Session
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from accounts.forms import StudentRegisterForm
 from accounts.models import Role, User, UserStatus
 from config.tests.factories import PASSWORD, make_user
-
-
-def _register_confirm_field() -> str:
-    form = StudentRegisterForm()
-    for candidate in ("password_confirm", "confirm_password", "password2", "re_password"):
-        if candidate in form.fields:
-            return candidate
-    for name in form.fields:
-        if "password" in name and name != "password":
-            return name
-    return "password_confirm"
 
 
 class AuthAndSecurityTests(TestCase):
@@ -27,7 +15,6 @@ class AuthAndSecurityTests(TestCase):
         self.other_student = make_user(role=Role.STUDENT, email="sv2@test.example", name="Sinh Viên Hai")
         self.teacher = make_user(role=Role.TEACHER, email="gv1@test.example", name="Giảng Viên Một")
         self.admin = make_user(role=Role.ADMIN, email="admin1@test.example", name="Quản Trị Viên")
-        self.confirm_field = _register_confirm_field()
 
     # --- 1. Auth lifecycle: đăng ký, đăng nhập, đăng xuất, khóa sau 5 lần sai, hết phiên ---
 
@@ -40,7 +27,7 @@ class AuthAndSecurityTests(TestCase):
                 "full_name": "Sinh Viên Mới",
                 "email": "sv.moi@test.example",
                 "password": PASSWORD,
-                self.confirm_field: PASSWORD,
+                "confirm_password": PASSWORD,
             },
         )
         self.assertEqual(
@@ -61,7 +48,7 @@ class AuthAndSecurityTests(TestCase):
                 "full_name": "Trùng Email",
                 "email": "sv.moi@test.example",
                 "password": PASSWORD,
-                self.confirm_field: PASSWORD,
+                "confirm_password": PASSWORD,
             },
         )
         self.assertEqual(resp_dup.status_code, 200)
@@ -74,7 +61,7 @@ class AuthAndSecurityTests(TestCase):
                 "full_name": "Mật Khẩu Yếu",
                 "email": "weak@test.example",
                 "password": "123",
-                self.confirm_field: "123",
+                "confirm_password": "123",
             },
         )
         self.assertEqual(resp_weak.status_code, 200)
@@ -203,15 +190,16 @@ class AuthAndSecurityTests(TestCase):
                 "full_name": xss_name,
                 "email": "xss.user@test.example",
                 "password": PASSWORD,
-                self.confirm_field: PASSWORD,
                 "role": Role.STUDENT,
             },
         )
-        self.assertNotEqual(resp_create.status_code, 500)
+        self.assertRedirects(resp_create, reverse("accounts:admin_user_list"))
+        self.assertTrue(User.objects.filter(email="xss.user@test.example", full_name=xss_name).exists())
 
         list_resp = admin_client.get(reverse("accounts:admin_user_list"))
         self.assertEqual(list_resp.status_code, 200)
         self.assertNotIn(xss_name, list_resp.content.decode("utf-8"))
+        self.assertContains(list_resp, "&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;")
 
     @override_settings(DEBUG=False)
     def test_no_password_or_secret_leaked_in_auth_responses(self):
