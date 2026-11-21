@@ -2,7 +2,6 @@
 
 Chạy riêng: cd src && python manage.py test attempts.tests.test_worker
 """
-import os
 import signal
 import threading
 from datetime import timedelta
@@ -127,15 +126,36 @@ class WorkerTests(AttemptTestCase):
         self.assertEqual(self.status(), SubmissionStatus.GRADED)
 
     def test_lenh_dung_an_toan_khi_nhan_tin_hieu(self):
-        # Ctrl+C / docker stop: vòng đang chạy làm xong rồi thoát, không văng lỗi.
         out = StringIO()
-        with mock.patch("threading.Event.wait", side_effect=lambda timeout=None: self.send_stop()):
-            call_command("run_worker", "--interval", "0.1", stdout=out)
+
+        def send_stop(handlers, timeout):
+            handlers[signal.SIGINT](signal.SIGINT, None)
+            return True
+
+        self.run_worker_with_signal(out, send_stop)
+
         self.assertIn("Worker đã dừng.", out.getvalue())
 
-    def send_stop(self):
-        os.kill(os.getpid(), signal.SIGINT)
-        return True
+    def run_worker_with_signal(self, out, wait_callback):
+        original_signal = signal.signal
+        handlers = {}
+
+        def capture_signal(sig, handler):
+            if handler is not None:
+                handlers[sig] = handler
+            return original_signal(sig, handler)
+
+        def fake_wait(timeout=None):
+            return wait_callback(handlers, timeout)
+
+        with mock.patch(
+            "attempts.management.commands.run_worker.signal.signal",
+            side_effect=capture_signal,
+        ), mock.patch(
+            "threading.Event.wait",
+            side_effect=fake_wait,
+        ):
+            call_command("run_worker", "--interval", "0.1", stdout=out)
 
     def test_loi_database_trong_vong_khong_lam_dung_worker(self):
         out = StringIO()
@@ -145,10 +165,18 @@ class WorkerTests(AttemptTestCase):
             calls.append(1)
             raise RuntimeError("mất kết nối giả lập")
 
-        with mock.patch("attempts.management.commands.run_worker.process_once", side_effect=boom), \
-                mock.patch("threading.Event.wait", side_effect=lambda timeout=None: len(calls) >= 2 and self.send_stop()), \
-                self.assertLogs("attempts.worker", "ERROR"):
-            call_command("run_worker", "--interval", "0.1", stdout=out)
+        def send_stop_after_retries(handlers, timeout):
+            if len(calls) >= 2:
+                handlers[signal.SIGINT](signal.SIGINT, None)
+                return True
+            return False
+
+        with mock.patch(
+            "attempts.management.commands.run_worker.process_once",
+            side_effect=boom,
+        ), self.assertLogs("attempts.worker", "ERROR"):
+            self.run_worker_with_signal(out, send_stop_after_retries)
+
         self.assertGreaterEqual(len(calls), 2)
         self.assertIn("Worker đã dừng.", out.getvalue())
 
@@ -168,20 +196,25 @@ class WorkerLockingTests(TransactionTestCase):
 
     def test_luot_dang_bi_giu_thi_bo_qua_roi_vong_sau_xu_ly(self):
         locked, release = threading.Event(), threading.Event()
+        lock_errors = []
 
         def hold_lock():
             try:
+                connection.ensure_connection()
                 with transaction.atomic():
                     Submission.objects.select_for_update().get(pk=self.submission.pk)
                     locked.set()
-                    release.wait(10)
+                    release.wait(30)
+            except Exception as exc:
+                lock_errors.append(exc)
             finally:
                 connection.close()
 
         holder = threading.Thread(target=hold_lock)
         holder.start()
-        locked.wait(10)
         try:
+            acquired = locked.wait(60)
+            self.assertTrue(acquired, f"Luồng phụ không lấy được khóa Submission. Lỗi: {lock_errors!r}")
             stats = process_once()  # không bị treo chờ khóa
             self.assertEqual((stats.skipped, stats.finalized), (1, 0))
         finally:
