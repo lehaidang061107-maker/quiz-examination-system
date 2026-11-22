@@ -51,3 +51,7 @@ S3-11-11,"Manage Exams (FR-07), NFR-SEC-09","1. Đăng nhập Teacher B
 2. Gõ thẳng đường dẫn /exams/<mã đề của Teacher A>/ và /exams/<mã đề của Teacher A>/edit/",Đề nháp thuộc Teacher A,Cả hai đường dẫn hiện trang 403; đề của Teacher A không bị đổi
 S3-11-12,"Manage Exams (FR-07), BR-02","1. Đăng nhập Student
 2. Gõ thẳng đường dẫn /exams/",Tài khoản Student,Hiện trang 403 'Bạn không có quyền truy cập trang này.'
+S3-11-13,"Manage Exams (FR-07), NFR-PER-05","1. Đăng nhập Teacher đã có 25 đề thi
+2. Bấm menu 'Quản lý kỳ thi'
+3. Chọn lọc 'Nháp', bấm 'Lọc'
+4. Bấm 'Sau' ở cuối danh sách",Teacher có 25 đề nháp,"Mỗi trang tối đa 20 đề, hiện '1/2'; trang 2 có 5 đề còn lại; bộ lọc 'Nháp' vẫn được giữ khi chuyển trang"

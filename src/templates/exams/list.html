@@ -64,6 +64,7 @@
       </tbody>
     </table>
   </div>
+  {% include "partials/pagination.html" with label="Phân trang đề thi" %}
 {% elif selected_status %}
   <div class="text-center py-4 text-muted">Không có đề thi nào ở trạng thái này.</div>
 {% else %}

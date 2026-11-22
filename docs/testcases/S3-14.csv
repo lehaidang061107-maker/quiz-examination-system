@@ -24,3 +24,8 @@ S3-14-11,Manage Exams (FR-07),"1. Đóng đề, công bố điểm, lưu trữ
 2. Xem log máy chủ (docker compose logs web)",Teacher thực hiện 3 thao tác,"Log có 3 dòng [AUDIT] ghi thời điểm, thao tác ('đóng đề', 'công bố điểm', 'lưu trữ đề'), user_id/email Teacher và exam_id"
 S3-14-12,"Manage Exams (FR-07), NFR-SEC-09","1. Đăng nhập Teacher B
 2. Gửi yêu cầu đóng đề / công bố điểm cho đề của Teacher A",Đề thuộc Teacher A,Hiện trang 403; trạng thái đề không đổi
+S3-14-13,"Manage Exams (FR-07), BR-17","1. Teacher phát hành đề có giờ đóng sau 2 phút, cấp quyền cho Student A
+2. Student A bắt đầu làm bài, chọn 1 đáp án rồi đóng trình duyệt
+3. Chờ qua giờ đóng khoảng 10 giây (worker đang chạy)
+4. Teacher mở lại trang chi tiết đề
+5. Bấm 'Công bố điểm'","Đề có giờ đóng; Student A đang làm bài","Đề tự chuyển sang 'Đã đóng' mà Teacher không cần bấm 'Đóng đề'; bài của Student A được nộp tại giờ đóng bằng đáp án đã lưu và đã chấm; công bố điểm thành công; docker compose logs worker có dòng 'hệ thống tự đóng đề'"

@@ -150,13 +150,16 @@ class Exam(models.Model):
             return "Bạn đã làm đề thi này."
         return None
 
-    def close(self):
-        """Đóng đề PUBLISHED -> CLOSED; bài đang làm được nộp bằng đáp án đã lưu (BR-17, BR-18)."""
+    def close(self, at=None):
+        """Đóng đề PUBLISHED -> CLOSED; bài đang làm được nộp bằng đáp án đã lưu (BR-17, BR-18).
+
+        at: thời điểm hiệu lực khi hệ thống tự đóng lúc hết lịch (closes_at); giảng viên đóng tay thì là lúc bấm.
+        """
         from attempts.models import SubmissionStatus
 
         if self.status != ExamStatus.PUBLISHED:
             raise ValidationError("Chỉ đóng được đề đang phát hành.")
-        now = timezone.now()
+        now = at or timezone.now()
         self.status = ExamStatus.CLOSED
         self.save(update_fields=["status"])
         for submission in self.submissions.filter(status=SubmissionStatus.IN_PROGRESS):

@@ -79,6 +79,7 @@
       <button type="submit" name="action" value="grant" class="btn btn-primary btn-sm">Cấp quyền cho sinh viên đã chọn</button>
     {% endif %}
   </form>
+  {% include "partials/pagination.html" with label="Phân trang sinh viên" %}
 {% elif search %}
   <div class="text-muted">Không tìm thấy sinh viên phù hợp.</div>
 {% else %}
