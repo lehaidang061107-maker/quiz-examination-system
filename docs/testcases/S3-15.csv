@@ -1,0 +1,36 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-15-01,Luồng tích hợp: Manage Accounts (FR-04) → Manage Questions (FR-05),"1. Đăng nhập Admin, tạo 1 Teacher và 2 Student ở 'Quản lý tài khoản'
+2. Đăng nhập Teacher, tạo 2 câu hỏi và bấm 'Tạo và kích hoạt'","Teacher: gv@flow.example
+Câu 1: 2 + 2 = ? (đúng: 4)
+Câu 2: Thủ đô Việt Nam? (đúng: Hà Nội)",Hiện 'Đã tạo tài khoản ...' cho từng tài khoản; hiện 'Tạo và kích hoạt câu hỏi thành công.' cho từng câu
+S3-15-02,Luồng tích hợp: Create Exam (FR-06) → Manage Exams (FR-07),"1. Teacher tạo đề 'Kiểm tra tích hợp', thời lượng 30
+2. Bấm 'Chọn câu hỏi', thêm 2 câu, điểm 5
+3. Bấm 'Phân công sinh viên', cấp quyền cho Student 1
+4. Bấm 'Phát hành'","Điểm mỗi câu: 5
+Sinh viên: Student 1","Lần lượt hiện 'Đã tạo đề thi nháp.', 'Đã thêm 2 câu hỏi vào đề.', 'Đã cấp quyền dự thi cho 1 sinh viên.', 'Đã phát hành đề thi.'"
+S3-15-03,"Luồng tích hợp: View Exam List (FR-08), BR-18","1. Đăng nhập Student 2 (không được giao)
+2. Mở 'Danh sách bài thi'",Đề 'Kiểm tra tích hợp' chỉ giao cho Student 1,Student 2 không thấy đề; gửi yêu cầu bắt đầu bằng đường dẫn thì hiện 'Bạn không được giao đề thi này.'
+S3-15-04,"Luồng tích hợp: Take Exam (FR-09), BR-20","1. Đăng nhập Student 1, bắt đầu làm đề
+2. Chọn đáp án đúng câu 1, đáp án sai câu 2
+3. Mở cùng bài ở tab thứ hai, đổi đáp án ở tab cũ","Câu 1: 4
+Câu 2: Huế",Mỗi lần chọn được lưu tự động; tab cũ báo bài đã được lưu ở nơi khác và không ghi đè; trang làm bài không lộ đáp án đúng
+S3-15-05,"Luồng tích hợp: Submit Exam (FR-10), Automatic Grading (FR-11)",1. Student 1 bấm 'Nộp bài' và xác nhận,Bài đã chọn 2 câu,"Hiện ""Đã nộp bài thi 'Kiểm tra tích hợp' thành công!""; bài được chấm ngay (Đã chấm)"
+S3-15-06,"Luồng tích hợp: View Exam Results (FR-13), BR-10","1. Student 1 mở 'Lịch sử bài thi', xem đề
+2. Teacher mở 'Kết quả thi' của đề",Điểm chưa công bố,"Student chưa thấy điểm; Teacher thấy 5,00 / 10,00"
+S3-15-07,"Luồng tích hợp: Manage Exams (FR-07), BR-19","1. Teacher bấm 'Công bố điểm' khi đề còn Đã phát hành (gửi yêu cầu bằng đường dẫn)
+2. Bấm 'Đóng đề'
+3. Bấm 'Công bố điểm'
+4. Student 1 mở lại kết quả",Đề có 1 bài Đã chấm,"Bước 1 hiện 'Chỉ công bố điểm sau khi đã đóng đề.'; bước 2 'Đã đóng đề thi.'; bước 3 'Đã công bố điểm. Sinh viên đã xem được kết quả của mình.'; bước 4 Student thấy 5,00 / 10,00"
+S3-15-08,"Luồng tích hợp: Manage Exams (FR-07), BR-17","1. Teacher bấm 'Lưu trữ'
+2. Student 1 mở lại kết quả","Đề Đã đóng, điểm đã công bố","Hiện 'Đã lưu trữ đề thi.'; Student vẫn thấy 5,00 / 10,00"
+S3-15-09,"Phân quyền xuyên module, BR-02, NFR-SEC-09","1. Đăng nhập Student, Admin, Teacher khác lần lượt
+2. Gõ thẳng các đường dẫn quản lý đề, phân công, đóng đề, công bố điểm, ngân hàng câu hỏi, kết quả của đề",Đề thuộc Teacher gv@flow.example,Tất cả hiện trang 403; trạng thái đề không đổi; Teacher mở trang 'Danh sách bài thi' của Student cũng bị 403
+S3-15-10,"Phân quyền xuyên module, NFR-SEC-09","1. Đăng nhập Student 2
+2. Gõ thẳng đường dẫn bài làm của Student 1 /attempts/submission/<mã bài>/",Bài làm thuộc Student 1,Hiện trang 404; không xem được bài của người khác
+S3-15-11,"Login/Logout (FR-02, FR-03)","1. Đăng xuất
+2. Bấm Back hoặc gõ lại /exams/",Teacher vừa đăng xuất,"Chuyển về trang Đăng nhập, không dùng lại phiên cũ"
+S3-15-12,Dữ liệu mẫu (seed_demo),"1. Chạy python manage.py seed_demo
+2. Đăng nhập teacher@demo.example, mở 'Quản lý kỳ thi' và từng đề
+3. Đăng nhập teacher2@demo.example mở 'Quản lý kỳ thi'",Mật khẩu demo trong .env,"teacher@demo.example thấy 4 đề [Demo S3-21] và mở được trang chi tiết, phân công; teacher2 không thấy đề của teacher@demo.example"
+S3-15-13,Giao diện máy tính và điện thoại (NFR-USA-02),"1. Mở các trang Quản lý kỳ thi, Tạo đề, Chọn câu hỏi, Phân công, Chi tiết đề
+2. F12 → Toggle device toolbar → 390 × 844",Đề có 3 câu và 3 sinh viên,Trang không bị tràn ngang; bảng rộng cuộn ngang trong khung riêng; nút bấm và menu ☰ dùng được
