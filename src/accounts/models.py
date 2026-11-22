@@ -205,6 +205,28 @@ class User(AbstractBaseUser):
                        self.pk, self.email, revoked, _client_ip(request))
         return revoked
 
+    def is_temporarily_locked(self):
+        """Đang bị khóa tạm do nhập sai mật khẩu (NFR-SEC-07), khác status=LOCKED do Admin đặt."""
+        return bool(self.locked_until and self.locked_until > timezone.now())
+
+    def activity_summary(self):
+        """Số liệu nghiệp vụ gắn với tài khoản, hiển thị ở trang chi tiết cho Admin (chỉ đọc)."""
+        from attempts.models import SubmissionStatus
+
+        if self.role == Role.TEACHER:
+            return [
+                ("Câu hỏi đã tạo", self.questions.count()),
+                ("Đề thi đã tạo", self.exams.count()),
+            ]
+        if self.role == Role.STUDENT:
+            submissions = self.submissions.all()
+            return [
+                ("Đề được phân công", self.exam_assignments.filter(is_active=True).count()),
+                ("Bài đã nộp", submissions.exclude(status=SubmissionStatus.IN_PROGRESS).count()),
+                ("Bài đang làm", submissions.filter(status=SubmissionStatus.IN_PROGRESS).count()),
+            ]
+        return []
+
     def as_role(self):
         """Trả về đúng lớp con theo vai trò, ví dụ request.user.as_role() -> Teacher."""
         cls = {Role.ADMIN: Admin, Role.TEACHER: Teacher, Role.STUDENT: Student}[self.role]
@@ -279,6 +301,9 @@ class Admin(User):
         """updateUser(id, data): sửa họ tên, email, vai trò (BR-22)."""
         with transaction.atomic():
             user = User.objects.select_for_update().get(pk=user_id)
+            if user.status == UserStatus.DELETED:
+                # Tài khoản ngừng sử dụng chỉ còn để giữ tham chiếu lịch sử, không sửa nữa (UC 4.4).
+                raise ValidationError("Tài khoản đã ngừng sử dụng nên không thể sửa.")
             before = {"full_name": user.full_name, "email": user.email, "role": user.role}
             if "full_name" in data:
                 if not (data["full_name"] or "").strip():
@@ -329,6 +354,34 @@ class Admin(User):
         audit_log.info("mở khóa tài khoản | admin_id=%s | user_id=%s (%s)", self.pk, user.pk, user.email)
         return user
 
+    def reset_password(self, user_id, new_password):
+        """resetPassword(id, mật khẩu mới): đặt lại mật khẩu khi người dùng quên (S3-36).
+
+        Cùng quy tắc mật khẩu như đăng ký, lưu dạng băm, xóa bộ đếm sai và khóa tạm do nhập sai
+        (không đụng tới status=LOCKED do Admin đặt), hủy mọi phiên của tài khoản đó.
+        Trả về số phiên đã hủy.
+        """
+        from accounts.services import revoke_user_sessions
+
+        if user_id == self.pk:
+            raise ValidationError("Hãy dùng trang Đổi mật khẩu để đổi mật khẩu của chính bạn.")
+        with transaction.atomic():
+            user = User.objects.select_for_update().get(pk=user_id)
+            if user.status == UserStatus.DELETED:
+                raise ValidationError("Tài khoản đã ngừng sử dụng nên không thể đặt lại mật khẩu.")
+            try:
+                validate_password(new_password, user)
+            except ValidationError as exc:
+                raise ValidationError({"new_password": exc.messages})
+            user.set_password(new_password)
+            user.failed_login_count = 0
+            user.locked_until = None
+            user.save(update_fields=["password", "failed_login_count", "locked_until"])
+        revoked = revoke_user_sessions(user.pk)
+        audit_log.info("đặt lại mật khẩu | admin_id=%s | user_id=%s (%s) | hủy %s phiên",
+                       self.pk, user.pk, user.email, revoked)
+        return revoked
+
     def delete_user(self, user_id):
         """deleteUser(id): xóa nghiệp vụ (status=DELETED), giữ dữ liệu lịch sử (BR-15)."""
         self._change_status(user_id, UserStatus.DELETED, allowed_from=[UserStatus.ACTIVE, UserStatus.LOCKED],
@@ -353,8 +406,9 @@ class Admin(User):
             "%s | admin_id=%s | user_id=%s (%s) | tự nộp %s bài đang làm",
             action, self.pk, user.pk, user.email, len(in_progress),
         )
+        reason = "account_locked" if status == UserStatus.LOCKED else "account_deleted"
         for submission in in_progress:
-            submission.auto_submit(at=timezone.now(), reason="account_locked")
+            submission.auto_submit(at=timezone.now(), reason=reason)
 
     @staticmethod
     def _check_not_last_admin(user):

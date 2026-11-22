@@ -96,7 +96,7 @@ chủ, người làm (`user_id`/`admin_id`), đối tượng và kết quả. **
 
 | Nhóm (logger) | Ghi khi | Ví dụ |
 | --- | --- | --- |
-| `accounts.audit` | Đăng nhập (thành công / thất bại kèm lý do), đăng xuất, đăng ký Student, đổi mật khẩu; Admin tạo, sửa, khóa, mở khóa, xóa tài khoản | `đăng nhập thất bại \| email=... \| sai mật khẩu lần 2 \| ip=...` |
+| `accounts.audit` | Đăng nhập (thành công / thất bại kèm lý do), đăng xuất, đăng ký Student, đổi mật khẩu; Admin tạo, sửa, khóa, mở khóa, xóa tài khoản, đặt lại mật khẩu | `đăng nhập thất bại \| email=... \| sai mật khẩu lần 2 \| ip=...` |
 | `attempts.audit` | Mỗi lần nộp bài: nộp tay, hoặc tự nộp kèm lý do (hết giờ, đề đã đóng, bị thu hồi quyền, tài khoản bị khóa) | `nộp bài \| submission_id=... \| tự nộp (hết giờ) \| submitted_at=...` |
 | `exams.audit` | Giảng viên đóng đề, lưu trữ đề, công bố điểm; hệ thống tự đóng đề khi hết lịch | `công bố điểm \| user_id=... \| exam_id=... \| 30 bài` |
 

@@ -145,6 +145,35 @@ class AdminTests(TestCase):
         submission.refresh_from_db()
         self.assertEqual(submission.status, "GRADED")  # nộp bằng đáp án đã lưu rồi chấm luôn
 
+    def test_khoa_va_xoa_ghi_dung_ly_do_tu_nop(self):
+        teacher = make_user(Role.TEACHER)
+        question = make_question(teacher)
+        for action, reason in ((self.admin.lock_user, "tài khoản bị khóa"),
+                               (self.admin.delete_user, "tài khoản ngừng sử dụng")):
+            student = make_user()
+            exam = make_open_exam(teacher, [student], [question])
+            student.start_exam(exam.pk)
+            with self.assertLogs("attempts.audit", level="INFO") as logs:
+                action(student.pk)
+            self.assertIn(f"tự nộp ({reason})", "\n".join(logs.output))
+
+    def test_khong_sua_tai_khoan_da_ngung_su_dung(self):
+        student = make_user()
+        self.admin.delete_user(student.pk)
+        with self.assertRaisesMessage(ValidationError, "đã ngừng sử dụng nên không thể sửa"):
+            self.admin.update_user(student.pk, {"full_name": "Tên mới", "email": "moi@test.example"})
+        student.refresh_from_db()
+        self.assertNotEqual(student.full_name, "Tên mới")
+
+    def test_so_lieu_hoat_dong_theo_vai_tro(self):
+        teacher, student = make_user(Role.TEACHER), make_user()
+        exam = make_open_exam(teacher, [student], [make_question(teacher)])
+        student.start_exam(exam.pk)
+        self.assertEqual(dict(teacher.activity_summary()), {"Câu hỏi đã tạo": 1, "Đề thi đã tạo": 1})
+        self.assertEqual(dict(student.activity_summary()),
+                         {"Đề được phân công": 1, "Bài đã nộp": 0, "Bài đang làm": 1})
+        self.assertEqual(self.admin.activity_summary(), [])
+
     def test_khong_doi_vai_tro_khi_da_co_du_lieu(self):
         teacher = make_user(Role.TEACHER)
         make_question(teacher)

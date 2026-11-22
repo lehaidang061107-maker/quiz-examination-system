@@ -89,6 +89,26 @@ class AdminUserUpdateForm(forms.Form):
     )
 
 
+class AdminResetPasswordForm(forms.Form):
+    """S3-36: Admin đặt lại mật khẩu. Quy tắc mật khẩu kiểm tra ở Admin.reset_password()."""
+    new_password = forms.CharField(
+        label="Mật khẩu mới",
+        help_text="Ít nhất 8 ký tự, gồm cả chữ và số.",
+        widget=forms.PasswordInput(attrs={"class": "form-control", "autocomplete": "new-password"}),
+    )
+    confirm_password = forms.CharField(
+        label="Nhập lại mật khẩu mới",
+        widget=forms.PasswordInput(attrs={"class": "form-control", "autocomplete": "new-password"}),
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("new_password") and cleaned.get("confirm_password") \
+                and cleaned["new_password"] != cleaned["confirm_password"]:
+            self.add_error("confirm_password", "Mật khẩu xác nhận không khớp.")
+        return cleaned
+
+
 class ChangePasswordForm(forms.Form):
     """S3-35: đổi mật khẩu. Kiểm tra mật khẩu hiện tại và quy tắc mật khẩu nằm ở User.change_password()."""
     current_password = forms.CharField(

@@ -167,3 +167,34 @@ class AdminAccountManagementViewTests(TestCase):
         self.assertContains(resp, "Không thể khóa hoặc xóa chính tài khoản bạn đang dùng.")
         self.admin.refresh_from_db()
         self.assertEqual(self.admin.status, UserStatus.ACTIVE)
+
+    def test_admin_views_user_detail(self):
+        self.client.force_login(self.admin)
+        list_resp = self.client.get(reverse("accounts:admin_user_list"))
+        self.assertContains(list_resp, reverse("accounts:admin_user_detail", args=[self.teacher.pk]))
+        resp = self.client.get(reverse("accounts:admin_user_detail", args=[self.teacher.pk]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, self.teacher.email)
+        self.assertContains(resp, "Câu hỏi đã tạo")
+        self.assertContains(resp, "Chưa đăng nhập")
+        self.assertContains(resp, reverse("accounts:admin_user_update", args=[self.teacher.pk]))
+
+    def test_non_admin_cannot_view_user_detail(self):
+        self.client.force_login(self.teacher)
+        resp = self.client.get(reverse("accounts:admin_user_detail", args=[self.student.pk]))
+        self.assertEqual(resp.status_code, 403)
+
+    def test_deleted_user_cannot_be_edited(self):
+        self.client.force_login(self.admin)
+        self.client.post(reverse("accounts:admin_user_delete", args=[self.student.pk]))
+        detail = self.client.get(reverse("accounts:admin_user_detail", args=[self.student.pk]))
+        self.assertContains(detail, "đã ngừng sử dụng")
+        self.assertNotContains(detail, reverse("accounts:admin_user_update", args=[self.student.pk]))
+
+        edit_url = reverse("accounts:admin_user_update", args=[self.student.pk])
+        get_resp = self.client.get(edit_url)
+        self.assertRedirects(get_resp, reverse("accounts:admin_user_detail", args=[self.student.pk]))
+        self.client.post(edit_url, {"full_name": "Đổi tên", "email": "doi@example.com", "role": Role.STUDENT})
+        self.student.refresh_from_db()
+        self.assertEqual(self.student.email, "student1@example.com")
+        self.assertEqual(self.student.full_name, "Student One")

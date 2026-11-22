@@ -8,7 +8,13 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from .decorators import login_required_any_role, role_required
-from .forms import AdminUserCreateForm, AdminUserUpdateForm, ChangePasswordForm, StudentRegisterForm
+from .forms import (
+    AdminResetPasswordForm,
+    AdminUserCreateForm,
+    AdminUserUpdateForm,
+    ChangePasswordForm,
+    StudentRegisterForm,
+)
 from .models import Admin, Role, User, UserStatus, audit_log
 from .services import revoke_user_sessions
 
@@ -163,8 +169,25 @@ def admin_user_create_view(request):
 
 
 @_admin_required
+def admin_user_detail_view(request, user_id: int):
+    target_user = get_object_or_404(User, pk=user_id)
+    return render(
+        request,
+        "accounts/admin/user_detail.html",
+        {
+            "target_user": target_user,
+            "activity": target_user.activity_summary(),
+            "temporarily_locked": target_user.is_temporarily_locked(),
+        },
+    )
+
+
+@_admin_required
 def admin_user_update_view(request, user_id: int):
     target_user = get_object_or_404(User, pk=user_id)
+    if target_user.status == UserStatus.DELETED:
+        messages.error(request, "Tài khoản đã ngừng sử dụng nên không thể sửa.")
+        return redirect("accounts:admin_user_detail", user_id=target_user.pk)
     old_role = target_user.role
     actor = _get_admin_actor(request.user)
 
@@ -197,6 +220,35 @@ def admin_user_update_view(request, user_id: int):
         "accounts/admin/user_form.html",
         {"form": form, "mode": "edit", "target_user": target_user},
     )
+
+
+@_admin_required
+def admin_user_reset_password_view(request, user_id: int):
+    """S3-36: Admin đặt lại mật khẩu cho tài khoản khác."""
+    target_user = get_object_or_404(User, pk=user_id)
+    detail_url = redirect("accounts:admin_user_detail", user_id=target_user.pk)
+    if target_user.pk == request.user.pk:
+        messages.info(request, "Hãy dùng trang Đổi mật khẩu để đổi mật khẩu của chính bạn.")
+        return redirect("accounts:change_password")
+    if target_user.status == UserStatus.DELETED:
+        messages.error(request, "Tài khoản đã ngừng sử dụng nên không thể đặt lại mật khẩu.")
+        return detail_url
+
+    actor = _get_admin_actor(request.user)
+    form = AdminResetPasswordForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        try:
+            revoked = actor.reset_password(target_user.pk, form.cleaned_data["new_password"])
+            messages.success(
+                request,
+                f"Đã đặt lại mật khẩu cho {target_user.email} và thu hồi {revoked} phiên đăng nhập. "
+                "Hãy gửi mật khẩu mới cho người dùng.",
+            )
+            return detail_url
+        except ValidationError as exc:
+            _apply_validation_errors(form, exc)
+
+    return render(request, "accounts/admin/user_reset_password.html", {"form": form, "target_user": target_user})
 
 
 @_admin_required
