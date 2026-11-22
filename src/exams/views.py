@@ -9,14 +9,16 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count, Q
 from django.shortcuts import redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from accounts.decorators import role_required
-from accounts.models import Role
+from accounts.models import Role, Student, UserStatus
+from attempts.models import Submission, SubmissionStatus
 from questions.models import QuestionStatus
 
 from .forms import ExamForm
-from .models import Exam, ExamStatus
+from .models import Exam, ExamParticipant, ExamStatus
 
 STATUS_FILTERS = [(value, label) for value, label in ExamStatus.choices]
 PAGE_SIZE = 20  # NFR-PER-05: danh sách dài phải phân trang
@@ -194,11 +196,11 @@ def _points(value):
     return value
 
 
-def _int(value):
+def _int(value, error="Câu hỏi không hợp lệ."):
     try:
         return int(value)
     except (TypeError, ValueError):
-        raise ValidationError("Câu hỏi không hợp lệ.")
+        raise ValidationError(error)
 
 
 @role_required(Role.TEACHER)
@@ -219,6 +221,102 @@ def exam_publish(request, exam_id):
     return redirect("exams:detail", exam_id=exam.pk)
 
 
+@role_required(Role.TEACHER)
+def exam_participants(request, exam_id):
+    """S3-13: cấp quyền dự thi cho Student ACTIVE và thu hồi quyền, giữ lịch sử phân công (BR-18)."""
+    teacher = request.user.as_role()
+    exam = teacher.manage_exam(exam_id)
+
+    if request.method == "POST":
+        action, _, target = request.POST.get("action", "").partition(":")
+        try:
+            with transaction.atomic():
+                exam = _lock_exam(exam)  # không cấp/thu hồi xen giữa lúc đề đang được đóng
+                if action == "grant":
+                    text = _grant(teacher, exam, request.POST.getlist("student_ids"))
+                elif action == "revoke":
+                    text = _revoke(exam, _int(target, "Sinh viên không hợp lệ."))
+                else:
+                    raise ValidationError("Thao tác không hợp lệ.")
+        except ValidationError as error:
+            for message in error.messages:
+                messages.error(request, message)
+        else:
+            messages.success(request, text)
+        return redirect(request.get_full_path())
+
+    search = request.GET.get("q", "").strip()
+    participants = {p.student_id: p for p in exam.participants.all()}
+    # Student ACTIVE (để cấp quyền) và mọi người đã từng được phân công (để xem lịch sử, kể cả đã bị khóa).
+    students = Student.objects.filter(Q(status=UserStatus.ACTIVE) | Q(pk__in=participants.keys()))
+    if search:
+        students = students.filter(Q(full_name__icontains=search) | Q(email__icontains=search))
+    # NFR-PER-05: hệ thống có thể tới 10.000 tài khoản, chỉ tải từng trang sinh viên.
+    page_obj = Paginator(students.order_by("full_name", "user_id"), PAGE_SIZE).get_page(request.GET.get("page"))
+    page_ids = [student.pk for student in page_obj.object_list]
+    submissions = {s.student_id: s for s in Submission.objects.filter(exam=exam, student_id__in=page_ids)}
+    rows = []
+    for student in page_obj.object_list:
+        participant = participants.get(student.pk)
+        rows.append({
+            "student": student,
+            "participant": participant,
+            "submission": submissions.get(student.pk),
+            "assigned": bool(participant and participant.is_active),
+        })
+    context = _detail_context(exam)
+    context.update({
+        "rows": rows,
+        "page_obj": page_obj,
+        "page_query": _page_query(request),
+        "search": search,
+        "can_change": _can_change_participants(exam),
+        "assigned_total": sum(1 for p in participants.values() if p.is_active),
+    })
+    return render(request, "exams/participants.html", context)
+
+
+def _can_change_participants(exam):
+    """Chỉ cấp/thu hồi khi đề DRAFT hoặc PUBLISHED chưa hết lịch (BR-18)."""
+    if exam.status not in (ExamStatus.DRAFT, ExamStatus.PUBLISHED):
+        return False
+    return not (exam.closes_at and exam.closes_at <= timezone.now())
+
+
+def _grant(teacher, exam, raw_ids):
+    if not raw_ids:
+        raise ValidationError("Vui lòng chọn ít nhất 1 sinh viên.")
+    invalid = "Có sinh viên không hợp lệ trong danh sách đã chọn."
+    ids = {_int(value, invalid) for value in raw_ids}
+    found = set(Student.objects.filter(pk__in=ids).values_list("pk", flat=True))
+    if found != ids:
+        raise ValidationError(invalid)
+    already = set(
+        ExamParticipant.objects.filter(exam=exam, student_id__in=ids, is_active=True).values_list("student_id", flat=True)
+    )
+    new_ids = sorted(ids - already)
+    if not new_ids:
+        raise ValidationError("Các sinh viên đã chọn đều đã được cấp quyền.")
+    teacher.assign_students(exam.pk, new_ids)  # kiểm tra Student ACTIVE và trạng thái đề, lỗi thì không cấp ai
+    return f"Đã cấp quyền dự thi cho {len(new_ids)} sinh viên."
+
+
+def _revoke(exam, student_id):
+    participant = ExamParticipant.objects.filter(exam=exam, student_id=student_id).select_related("student").first()
+    if participant is None:
+        raise ValidationError("Sinh viên chưa được cấp quyền cho đề này.")
+    if not participant.is_active:
+        raise ValidationError("Sinh viên đã bị thu hồi quyền trước đó.")
+    was_working = Submission.objects.filter(
+        exam=exam, student_id=student_id, status=SubmissionStatus.IN_PROGRESS
+    ).exists()
+    participant.revoke_access()
+    name = participant.student.full_name
+    if was_working:
+        return f"Đã thu hồi quyền của {name}. Bài đang làm đã được chốt và nộp bằng đáp án đã lưu."
+    return f"Đã thu hồi quyền của {name}."
+
+
 def _detail_context(exam):
     items = list(exam.exam_questions.select_related("question").order_by("position"))
     return {
@@ -226,6 +324,7 @@ def _detail_context(exam):
         "is_draft": exam.status == ExamStatus.DRAFT,
         "items": items,
         "total_points": sum((item.points for item in items), 0),
+        "participant_total": exam.participants.filter(is_active=True).count(),
     }
 
 

@@ -11,4 +11,5 @@ urlpatterns = [
     path("<int:exam_id>/edit/", views.exam_edit, name="edit"),
     path("<int:exam_id>/questions/", views.exam_questions, name="questions"),
     path("<int:exam_id>/publish/", views.exam_publish, name="publish"),
+    path("<int:exam_id>/participants/", views.exam_participants, name="participants"),
 ]
