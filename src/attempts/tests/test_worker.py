@@ -56,6 +56,32 @@ class WorkerTests(AttemptTestCase):
         self.assertEqual(process_once().finalized, 1)
         self.assertEqual(self.status(), SubmissionStatus.GRADED)
 
+    def test_de_het_lich_duoc_tu_dong_va_nop_tai_gio_dong(self):
+        # S3-14 (BR-17): đến closes_at hệ thống tự đóng đề, bài đang làm nộp tại giờ đóng.
+        now = timezone.now()
+        closes_at = now - timedelta(minutes=1)
+        Submission.objects.filter(pk=self.submission.pk).update(started_at=now - timedelta(minutes=10))
+        type(self.exam).objects.filter(pk=self.exam.pk).update(closes_at=closes_at)
+        with self.assertLogs("exams.audit", level="INFO") as logs:
+            stats = process_once()
+        self.assertEqual((stats.exams_closed, stats.failed), (1, 0))
+        self.exam.refresh_from_db()
+        self.assertEqual(self.exam.status, ExamStatus.CLOSED)
+        self.assertEqual(self.status(), SubmissionStatus.GRADED)
+        self.assertEqual(self.submission.submitted_at, closes_at)
+        self.assertIn("hệ thống tự đóng đề", logs.output[0])
+        # Đã đóng thì giảng viên công bố điểm được ngay, không cần bấm Đóng đề.
+        self.exam.publish_results()
+        self.assertTrue(self.exam.results_published)
+
+    def test_de_con_lich_hoac_khong_gioi_han_khong_bi_dong(self):
+        type(self.exam).objects.filter(pk=self.exam.pk).update(closes_at=timezone.now() + timedelta(hours=1))
+        self.assertEqual(process_once().exams_closed, 0)
+        type(self.exam).objects.filter(pk=self.exam.pk).update(closes_at=None)
+        self.assertEqual(process_once().exams_closed, 0)
+        self.exam.refresh_from_db()
+        self.assertEqual(self.exam.status, ExamStatus.PUBLISHED)
+
     def test_bi_thu_hoi_quyen_thi_chot_bai(self):
         ExamParticipant.objects.filter(exam=self.exam, student=self.student).update(is_active=False)
         self.assertEqual(process_once().finalized, 1)
