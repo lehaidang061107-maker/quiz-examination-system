@@ -75,6 +75,30 @@ class Exam(models.Model):
         self.opens_at = opens_at
         self.closes_at = closes_at
 
+    def duplicate(self):
+        """duplicate(): nhân bản thành đề nháp mới của cùng giảng viên (S3-33, BR-14).
+
+        Chép tên (thêm "(bản sao)"), mô tả, thời lượng, câu hỏi theo đúng thứ tự và điểm. Không chép
+        lịch thi, phân công, bài làm, công bố điểm. Câu hỏi đã lưu trữ thì bỏ qua (BR-14: không đưa
+        vào đề mới). Trả về (đề mới, số câu bị bỏ qua).
+        """
+        from questions.models import QuestionStatus
+
+        suffix = " (bản sao)"
+        title = self.title[: 200 - len(suffix)] + suffix
+        with transaction.atomic():
+            copy = Exam.objects.create(
+                teacher_id=self.teacher_id, title=title, description=self.description,
+                duration_minutes=self.duration_minutes,
+            )
+            items = list(self.exam_questions.select_related("question").order_by("position"))
+            kept = [item for item in items if item.question.status != QuestionStatus.ARCHIVED]
+            ExamQuestion.objects.bulk_create(
+                ExamQuestion(exam=copy, question_id=item.question_id, position=i + 1, points=item.points)
+                for i, item in enumerate(kept)
+            )
+        return copy, len(items) - len(kept)
+
     def add_question(self, question_id, points):
         """addQuestion(id, points): thêm câu hỏi của chính giảng viên vào cuối đề nháp."""
         from questions.models import Question, QuestionStatus

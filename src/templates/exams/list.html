@@ -71,6 +71,11 @@
               {% if exam.status == "DRAFT" %}
                 <a href="{% url 'exams:edit' exam.exam_id %}" class="btn btn-sm btn-outline-secondary">Sửa</a>
               {% endif %}
+              <form method="post" action="{% url 'exams:duplicate' exam.exam_id %}" class="d-inline"
+                    data-confirm="Nhân bản '{{ exam.title }}' thành một đề nháp mới?" data-confirm-ok="Nhân bản">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-secondary">Nhân bản</button>
+              </form>
             </td>
           </tr>
         {% endfor %}

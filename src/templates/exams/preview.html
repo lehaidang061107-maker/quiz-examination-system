@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Xem trước: {{ exam.title }}{% endblock %}
+{% block page_title %}Xem trước đề thi{% endblock %}
+{% block page_subtitle %}{{ exam.title }} · {{ items|length }} câu{% if exam.duration_minutes %} · {{ exam.duration_minutes }} phút{% endif %}{% endblock %}
+{% block page_actions %}
+  <a href="{% url 'exams:detail' exam.exam_id %}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
+{% endblock %}
+
+{% block content %}
+<div class="alert alert-info py-2 small">
+  Đây là cách sinh viên thấy đề khi làm bài. Chọn thử phương án không lưu gì và không tạo lượt làm bài.
+</div>
+{% for item in items %}
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center bg-light">
+      <span class="fw-bold">Câu {{ item.position }} / {{ items|length }}</span>
+      <span class="badge bg-primary">{{ item.points }} điểm</span>
+    </div>
+    <div class="card-body">
+      <p class="card-text fw-medium mb-3" style="white-space: pre-line;">{{ item.content|default:"(Chưa có nội dung)" }}</p>
+      <div class="list-group">
+        {% for option in item.options %}
+          <label class="list-group-item d-flex align-items-center gap-2" style="cursor: pointer;">
+            <input class="form-check-input m-0" type="radio" name="preview_{{ item.position }}">
+            <span>{{ option.content }}</span>
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% empty %}
+  <div class="text-muted py-3">Đề chưa có câu hỏi nào.</div>
+{% endfor %}
+{% endblock %}
