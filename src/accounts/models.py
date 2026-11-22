@@ -354,6 +354,34 @@ class Admin(User):
         audit_log.info("mở khóa tài khoản | admin_id=%s | user_id=%s (%s)", self.pk, user.pk, user.email)
         return user
 
+    def reset_password(self, user_id, new_password):
+        """resetPassword(id, mật khẩu mới): đặt lại mật khẩu khi người dùng quên (S3-36).
+
+        Cùng quy tắc mật khẩu như đăng ký, lưu dạng băm, xóa bộ đếm sai và khóa tạm do nhập sai
+        (không đụng tới status=LOCKED do Admin đặt), hủy mọi phiên của tài khoản đó.
+        Trả về số phiên đã hủy.
+        """
+        from accounts.services import revoke_user_sessions
+
+        if user_id == self.pk:
+            raise ValidationError("Hãy dùng trang Đổi mật khẩu để đổi mật khẩu của chính bạn.")
+        with transaction.atomic():
+            user = User.objects.select_for_update().get(pk=user_id)
+            if user.status == UserStatus.DELETED:
+                raise ValidationError("Tài khoản đã ngừng sử dụng nên không thể đặt lại mật khẩu.")
+            try:
+                validate_password(new_password, user)
+            except ValidationError as exc:
+                raise ValidationError({"new_password": exc.messages})
+            user.set_password(new_password)
+            user.failed_login_count = 0
+            user.locked_until = None
+            user.save(update_fields=["password", "failed_login_count", "locked_until"])
+        revoked = revoke_user_sessions(user.pk)
+        audit_log.info("đặt lại mật khẩu | admin_id=%s | user_id=%s (%s) | hủy %s phiên",
+                       self.pk, user.pk, user.email, revoked)
+        return revoked
+
     def delete_user(self, user_id):
         """deleteUser(id): xóa nghiệp vụ (status=DELETED), giữ dữ liệu lịch sử (BR-15)."""
         self._change_status(user_id, UserStatus.DELETED, allowed_from=[UserStatus.ACTIVE, UserStatus.LOCKED],

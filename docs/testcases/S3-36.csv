@@ -1,0 +1,24 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-36-01,Admin đặt lại mật khẩu (FR-04 mở rộng),"1. Ở trình duyệt A đăng nhập teacher@demo.example
+2. Ở trình duyệt B đăng nhập Admin, vào 'Quản lý tài khoản', bấm 'Xem' dòng teacher@demo.example
+3. Bấm 'Đặt lại mật khẩu', nhập mật khẩu mới và nhập lại, bấm 'Đặt lại mật khẩu'
+4. Tải lại trang ở trình duyệt A
+5. Đăng nhập teacher bằng mật khẩu cũ, rồi bằng mật khẩu mới","Admin: admin@demo.example / Kiemthu2026
+Mật khẩu mới: Matkhaumoi2026","Bước 3 quay về trang chi tiết, báo 'Đã đặt lại mật khẩu cho teacher@demo.example và thu hồi 1 phiên đăng nhập'; bước 4 trình duyệt A bị chuyển về trang Đăng nhập; bước 5 mật khẩu cũ bị từ chối, mật khẩu mới đăng nhập được"
+S3-36-02,Admin đặt lại mật khẩu (FR-04 mở rộng),"1. Đăng nhập Admin, mở trang Đặt lại mật khẩu của một Student
+2. Nhập mật khẩu ngắn hoặc chỉ có chữ, bấm 'Đặt lại mật khẩu'
+3. Nhập mật khẩu hợp lệ nhưng ô nhập lại khác, bấm 'Đặt lại mật khẩu'","Lần 1: abc12
+Lần 2: chiconchu
+Lần 3: Matkhaumoi2026 / Matkhaukhac2026","Bước 2 báo lỗi ở ô Mật khẩu mới (ít nhất 8 ký tự / phải có cả chữ và số); bước 3 báo 'Mật khẩu xác nhận không khớp.'; mật khẩu của Student không đổi"
+S3-36-03,"Admin đặt lại mật khẩu, NFR-SEC-07","1. Nhập sai mật khẩu student@demo.example 5 lần để bị khóa tạm 15 phút
+2. Đăng nhập Admin, mở trang chi tiết student@demo.example
+3. Đặt lại mật khẩu mới
+4. Đăng nhập Student bằng mật khẩu mới",student@demo.example; mật khẩu mới Matkhaumoi2026,"Bước 2 trang chi tiết hiện 'Khóa tạm … đến …' và 5 lần sai; sau bước 3 bộ đếm về 0, hết khóa tạm; bước 4 đăng nhập được ngay"
+S3-36-04,"Admin đặt lại mật khẩu, BR-22","1. Đăng nhập Admin
+2. Khóa một tài khoản Student, rồi đặt lại mật khẩu cho tài khoản đó
+3. Đăng nhập Student bằng mật khẩu mới
+4. Xóa (ngừng sử dụng) một tài khoản khác, mở trang chi tiết tài khoản đó
+5. Gõ thẳng /accounts/admin/users/<mã>/reset-password/",Một Student đang hoạt động và một tài khoản khác,"Bước 3 vẫn bị từ chối vì tài khoản đang bị Admin khóa (đặt lại mật khẩu không tự mở khóa); bước 4 không có nút 'Đặt lại mật khẩu'; bước 5 báo 'Tài khoản đã ngừng sử dụng nên không thể đặt lại mật khẩu.'"
+S3-36-05,"Phân quyền (NFR-SEC-02), NFR-MAI-03","1. Đăng nhập Teacher, gõ thẳng /accounts/admin/users/<mã student>/reset-password/
+2. Đăng nhập Admin, gõ đường dẫn đặt lại mật khẩu với mã của chính mình
+3. Sau khi đặt lại mật khẩu ở S3-36-01, chạy docker compose logs web | grep AUDIT",Tài khoản Teacher và Admin,"Bước 1 hiện trang 403; bước 2 chuyển sang trang Đổi mật khẩu kèm thông báo; bước 3 có dòng [AUDIT] 'đặt lại mật khẩu | admin_id=… | user_id=… | hủy … phiên', không có mật khẩu trong log"

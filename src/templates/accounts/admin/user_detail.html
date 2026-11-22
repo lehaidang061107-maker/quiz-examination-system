@@ -8,6 +8,9 @@
   <div class="d-flex flex-wrap gap-1">
     {% if target_user.status != "DELETED" %}
       <a href="{% url 'accounts:admin_user_update' target_user.pk %}" class="btn btn-sm btn-outline-primary">Sửa</a>
+      {% if target_user.pk != user.pk %}
+        <a href="{% url 'accounts:admin_user_reset_password' target_user.pk %}" class="btn btn-sm btn-outline-secondary">Đặt lại mật khẩu</a>
+      {% endif %}
     {% endif %}
     {% if target_user.status == "ACTIVE" and target_user.pk != user.pk %}
       <a href="{% url 'accounts:admin_user_lock' target_user.pk %}" class="btn btn-sm btn-outline-warning">Khóa</a>
