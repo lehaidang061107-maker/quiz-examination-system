@@ -26,6 +26,7 @@
 {% endblock %}
 
 {% block content %}
+<div id="offline-alert" class="alert alert-warning d-none" role="alert" aria-live="polite"></div>
 <div class="row g-4">
   <div class="col-lg-9">
     {% for item in question_items %}
@@ -75,7 +76,7 @@
           {% endfor %}
         </div>
         <hr />
-        <small class="text-muted d-block">Đáp án được tự động lưu ngay khi bạn chọn.</small>
+        <small class="text-muted d-block">Đáp án được tự động lưu sau khi bạn chọn khoảng 1 giây. Chỉ khi thấy "Đã lưu" thì máy chủ mới ghi nhận.</small>
       </div>
     </div>
   </div>
@@ -84,94 +85,169 @@
 
 {% block extra_js %}
 <script>
+/*
+ * Lưu đáp án tin cậy (NFR-REL-02, BR-20):
+ * - Đổi đáp án thì gom thao tác trong 1 giây rồi mới gửi lưu.
+ * - Đáp án chưa lưu được (mất mạng, máy chủ lỗi) giữ trong bộ nhớ trang, tự gửi lại mỗi 10 giây
+ *   và ngay khi có mạng trở lại.
+ * - Chỉ hiện "Đã lưu" sau khi máy chủ xác nhận; còn câu chờ lưu thì cảnh báo, rời trang thì hỏi lại.
+ * - Nộp bài: gửi hết câu còn chờ trước; không gửi được thì báo và cho nộp lại sau.
+ */
 (function () {
   const saveUrl = "{% url 'attempts:save_answer_api' submission.pk %}";
   const examListUrl = "{% url 'attempts:exam_list' %}";
   const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
   const saveStatusEl = document.getElementById("save-status");
+  const offlineAlert = document.getElementById("offline-alert");
   const submitForm = document.getElementById("submit-exam-form");
   const btnSubmit = document.getElementById("btn-submit-exam");
 
+  const DEBOUNCE_MS = 1000;
+  const RETRY_MS = 10000;
+
   let currentVersion = Number("{{ submission.version }}") || 0;
-  let saveQueue = Promise.resolve();
-  let isSubmitting = false;
+  const pending = new Map(); // questionId -> optionId (null = bỏ chọn) chưa được máy chủ xác nhận
+  let debounceTimer = null;
+  let flushing = null; // Promise của lần gửi đang chạy, tránh gửi song song làm lệch version
+  let lastError = "";
+  let finished = false; // đã nộp / đã bị chốt / đang tải lại: ngừng mọi thao tác lưu
 
   function setSaveStatus(text, badgeClass) {
     saveStatusEl.textContent = text;
     saveStatusEl.className = "badge " + badgeClass;
   }
 
-  function enqueueSave(questionId, optionId) {
-    setSaveStatus("Đang lưu...", "bg-warning text-dark");
+  function refreshStatus() {
+    if (pending.size === 0) {
+      setSaveStatus("Đã lưu", "bg-success");
+      offlineAlert.classList.add("d-none");
+      return;
+    }
+    if (lastError) {
+      setSaveStatus("Chưa lưu " + pending.size + " câu", "bg-danger");
+      offlineAlert.textContent = lastError + " Còn " + pending.size +
+        " câu chưa lưu, hệ thống sẽ tự gửi lại mỗi 10 giây. Đừng đóng hoặc tải lại trang.";
+      offlineAlert.classList.remove("d-none");
+    } else {
+      setSaveStatus("Đang lưu...", "bg-warning text-dark");
+    }
+  }
 
-    saveQueue = saveQueue.then(async () => {
-      if (isSubmitting) return;
-      try {
-        const response = await fetch(saveUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
-          },
-          body: JSON.stringify({
-            question_id: Number(questionId),
-            option_id: optionId !== null ? Number(optionId) : null,
-            version: currentVersion,
-          }),
-        });
+  function markAnswered(questionId, optionId) {
+    const navBtn = document.getElementById("nav-btn-" + questionId);
+    if (navBtn) {
+      navBtn.className = optionId !== null ? "btn btn-sm btn-primary" : "btn btn-sm btn-outline-secondary";
+    }
+  }
 
-        const data = await response.json();
+  function stopAndLeave(message, url) {
+    finished = true;
+    pending.clear();
+    alert(message);
+    if (url) window.location.href = url; else window.location.reload();
+  }
 
-        if (response.ok && data.ok) {
-          currentVersion = data.version;
-          setSaveStatus("Đã lưu", "bg-success");
-          const navBtn = document.getElementById("nav-btn-" + questionId);
-          if (navBtn) {
-            navBtn.className = optionId !== null ? "btn btn-sm btn-primary" : "btn btn-sm btn-outline-secondary";
-          }
-          return;
-        }
+  async function sendOne(questionId, optionId) {
+    // Trả về true nếu đã lưu (hoặc phải bỏ câu này), false nếu cần thử lại sau.
+    let response, data;
+    try {
+      response = await fetch(saveUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+        body: JSON.stringify({ question_id: Number(questionId), option_id: optionId, version: currentVersion }),
+      });
+      data = await response.json();
+    } catch (err) {
+      lastError = "Mất kết nối tới máy chủ.";
+      return false;
+    }
+    if (response.ok && data.ok) {
+      currentVersion = data.version;
+      if (pending.get(questionId) === optionId) pending.delete(questionId); // trong lúc gửi chưa đổi lại
+      return true;
+    }
+    if (data.finalized) {
+      stopAndLeave(data.error || "Bài thi đã kết thúc.", examListUrl);
+      return true;
+    }
+    if (data.stale || response.status === 409) {
+      stopAndLeave(data.error || "Bài làm đã được cập nhật ở nơi khác. Trang sẽ tải lại trạng thái mới nhất.");
+      return true;
+    }
+    if (response.status === 400) {
+      // Dữ liệu sai (câu/phương án không thuộc đề): gửi lại cũng không lưu được, bỏ câu này.
+      pending.delete(questionId);
+      lastError = data.error || "Không lưu được đáp án.";
+      return true;
+    }
+    lastError = data.error || "Máy chủ đang lỗi.";
+    return false; // 5xx, phiên hết hạn...: giữ lại để thử lại
+  }
 
-        if (data.finalized) {
-          isSubmitting = true;
-          alert(data.error || "Bài thi đã kết thúc.");
-          window.location.href = examListUrl;
-          return;
-        }
-
-        if (data.stale || response.status === 409) {
-          isSubmitting = true;
-          alert(data.error || "Dữ liệu đã được cập nhật ở nơi khác. Trang sẽ tải lại trạng thái mới nhất.");
-          window.location.reload();
-          return;
-        }
-
-        setSaveStatus(data.error || "Lỗi lưu bài", "bg-danger");
-      } catch (err) {
-        setSaveStatus("Mất kết nối mạng", "bg-danger");
+  function flush() {
+    clearTimeout(debounceTimer);
+    debounceTimer = null;
+    if (flushing) return flushing;
+    flushing = (async () => {
+      lastError = "";
+      for (const [questionId, optionId] of Array.from(pending.entries())) {
+        if (finished) break;
+        if (!(await sendOne(questionId, optionId))) break; // lỗi mạng: dừng, đợi lần thử lại sau
       }
-    });
-
-    return saveQueue;
+      if (!finished) refreshStatus();
+    })().finally(() => { flushing = null; });
+    return flushing;
   }
 
   document.querySelectorAll(".answer-radio").forEach((radio) => {
     radio.addEventListener("change", function () {
-      enqueueSave(this.dataset.questionId, this.value);
+      if (finished) return;
+      const questionId = this.dataset.questionId;
+      pending.set(questionId, Number(this.value));
+      markAnswered(questionId, this.value);
+      if (!lastError) setSaveStatus("Đang lưu...", "bg-warning text-dark");
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(flush, DEBOUNCE_MS);
     });
   });
+
+  setInterval(() => {
+    if (!finished && pending.size && !debounceTimer) flush();
+  }, RETRY_MS);
+  window.addEventListener("online", () => { if (pending.size) flush(); });
+  window.addEventListener("offline", () => {
+    lastError = "Mất kết nối mạng.";
+    if (pending.size) refreshStatus();
+  });
+  window.addEventListener("beforeunload", (event) => {
+    if (!finished && pending.size) {
+      event.preventDefault();
+      event.returnValue = ""; // trình duyệt hiện hộp hỏi "Rời trang?"
+    }
+  });
+
+  async function submitNow() {
+    await flush();
+    finished = true;
+    submitForm.submit();
+  }
 
   if (btnSubmit) {
     btnSubmit.addEventListener("click", async function (e) {
       e.preventDefault();
-      if (isSubmitting) return;
-      if (!confirm("Bạn chắc chắn muốn nộp bài thi này? Sau khi nộp sẽ không thể sửa đáp án.")) {
-        return;
-      }
-      isSubmitting = true;
+      if (finished) return;
+      if (!confirm("Bạn chắc chắn muốn nộp bài thi này? Sau khi nộp sẽ không thể sửa đáp án.")) return;
       btnSubmit.disabled = true;
       setSaveStatus("Đang đồng bộ...", "bg-warning text-dark");
-      await saveQueue;
+      await flush();
+      if (finished) return;
+      if (pending.size) {
+        // NFR-REL-03: chưa gửi được đáp án thì không nộp, báo rõ để Student thử lại.
+        alert("Còn " + pending.size + " câu chưa lưu được lên máy chủ. Kiểm tra kết nối mạng rồi bấm Nộp bài lại.");
+        btnSubmit.disabled = false;
+        return;
+      }
+      finished = true;
       submitForm.submit();
     });
   }
@@ -188,16 +264,13 @@
   }
 
   renderTimer(remaining);
-  const intervalId = setInterval(async () => {
+  const intervalId = setInterval(() => {
     remaining -= 1;
     renderTimer(remaining);
     if (remaining <= 0) {
       clearInterval(intervalId);
-      if (!isSubmitting) {
-        isSubmitting = true;
-        await saveQueue;
-        submitForm.submit();
-      }
+      // Hết giờ: gửi nốt câu còn chờ rồi nộp. Máy chủ vẫn tự nộp theo hạn nếu trang không gửi được (BR-21).
+      if (!finished) submitNow();
     }
   }, 1000);
   {% endif %}

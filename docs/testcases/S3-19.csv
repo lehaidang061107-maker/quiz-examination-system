@@ -10,3 +10,21 @@ S3-19-04,"Submit Exam - đề đã đóng (FR-10, BR-17)","1. Sinh viên đang l
 S3-19-05,"Submit Exam - bị thu hồi quyền (FR-10, BR-18)","1. Sinh viên đang làm bài.
 2. Giảng viên thu hồi quyền dự thi.
 3. Sinh viên tải lại trang.",Quyền dự thi bị thu hồi,"Bài được tự chốt, báo Quyền dự thi của bạn đã bị thu hồi."
+S3-19-06,"Take Exam (FR-09), NFR-REL-02","1. Student vào phòng thi
+2. Bấm chọn liên tiếp 2 phương án của câu 1 trong vòng dưới 1 giây
+3. Chờ khoảng 1 giây",Đề đang mở có ít nhất 2 câu,"Hiện 'Đang lưu...' rồi 'Đã lưu'; chỉ gửi lưu một lần với phương án chọn sau cùng; tải lại trang vẫn thấy phương án đó"
+S3-19-07,"Take Exam (FR-09), NFR-REL-02","1. Student vào phòng thi
+2. Tắt mạng (F12 > Network > Offline)
+3. Chọn đáp án câu 1 và câu 2
+4. Bấm 'Nộp bài', xác nhận
+5. Bật lại mạng, chờ tối đa 10 giây
+6. Tải lại trang",Đề đang mở có ít nhất 2 câu,"Bước 3: hiện 'Chưa lưu 2 câu' và cảnh báo vàng 'Mất kết nối...'; bước 4: báo 'Còn 2 câu chưa lưu được...', bài chưa bị nộp; bước 5: tự chuyển 'Đã lưu', cảnh báo biến mất; bước 6: hai câu vẫn được chọn đúng"
+S3-19-08,"Take Exam (FR-09), NFR-REL-02","1. Student tắt mạng, chọn đáp án một câu
+2. Bấm đóng tab hoặc F5",Đề đang mở,Trình duyệt hỏi xác nhận rời trang vì còn đáp án chưa lưu
+S3-19-09,"Submit Exam (FR-10), NFR-MAI-03","1. Student nộp bài
+2. Chạy docker compose logs web | grep AUDIT",Đề đang mở,"Có dòng '[AUDIT] nộp bài | submission_id=... | student_id=... | exam_id=... | nộp tay | submitted_at=...'; không có nội dung đáp án"
+S3-19-10,"Submit Exam (FR-10), NFR-SEC-10","1. Teacher thu hồi quyền của Student đang làm bài
+2. Chạy docker compose logs web | grep AUDIT",Student đang làm bài,Có dòng '[AUDIT] nộp bài ... | tự nộp (bị thu hồi quyền) | ...'
+S3-19-11,"View Exam List (FR-08), NFR-PER-05","1. Đăng nhập Student được giao 23 đề
+2. Mở 'Danh sách bài thi'
+3. Bấm 'Sau'",Student được giao 23 đề,"Trang 1 có 20 đề và hiện '1/2'; trang 2 có 3 đề còn lại"
