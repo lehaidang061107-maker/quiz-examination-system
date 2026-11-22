@@ -110,6 +110,25 @@ class QuestionListViewTests(TestCase):
         question = response.context["questions"][0]
         self.assertEqual(question.option_count, 3)
 
+    def test_o_so_tong_quan_ngan_hang(self):
+        draft = make_question(self.teacher, content="Câu nháp", activate=False)
+        used = make_question(self.teacher, content="Câu đã dùng")
+        make_question(self.teacher, content="Câu chưa dùng")
+        make_open_exam(self.teacher, [], [used])
+        # Câu đã phát hành mà còn nằm thêm trong một đề nháp vẫn tính là đã dùng.
+        self.teacher.create_exam({"title": "Đề nháp"}).add_question(used.pk, 1)
+        archived = make_question(self.teacher, content="Câu lưu trữ")
+        Question.objects.filter(pk=archived.pk).update(status=QuestionStatus.ARCHIVED)
+        make_question(make_user(Role.TEACHER), content="Câu người khác")
+
+        self.client.force_login(self.teacher)
+        response = self.client.get(self.url, {"status": QuestionStatus.DRAFT})
+
+        self.assertEqual(response.context["stats"], [
+            ("Tổng câu hỏi", 3), ("Đang dùng", 2), ("Nháp", 1), ("Đã dùng trong đề phát hành", 1),
+        ])
+        self.assertEqual(draft.status, QuestionStatus.DRAFT)
+
     def test_empty_question_list(self):
         self.client.force_login(self.teacher)
         response = self.client.get(self.url)
