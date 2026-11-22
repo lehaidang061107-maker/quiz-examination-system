@@ -163,8 +163,25 @@ def admin_user_create_view(request):
 
 
 @_admin_required
+def admin_user_detail_view(request, user_id: int):
+    target_user = get_object_or_404(User, pk=user_id)
+    return render(
+        request,
+        "accounts/admin/user_detail.html",
+        {
+            "target_user": target_user,
+            "activity": target_user.activity_summary(),
+            "temporarily_locked": target_user.is_temporarily_locked(),
+        },
+    )
+
+
+@_admin_required
 def admin_user_update_view(request, user_id: int):
     target_user = get_object_or_404(User, pk=user_id)
+    if target_user.status == UserStatus.DELETED:
+        messages.error(request, "Tài khoản đã ngừng sử dụng nên không thể sửa.")
+        return redirect("accounts:admin_user_detail", user_id=target_user.pk)
     old_role = target_user.role
     actor = _get_admin_actor(request.user)
 

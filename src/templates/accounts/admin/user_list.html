@@ -51,12 +51,15 @@
       {% for u in page_obj %}
         <tr>
           <td>{{ u.pk }}</td>
-          <td>{{ u.full_name }}</td>
+          <td><a href="{% url 'accounts:admin_user_detail' u.pk %}" class="text-decoration-none fw-semibold">{{ u.full_name }}</a></td>
           <td>{{ u.email }}</td>
           <td>{{ u.get_role_display|default:u.role }}</td>
           <td>{{ u.get_status_display|default:u.status }}</td>
           <td class="d-flex flex-wrap gap-1">
-            <a href="{% url 'accounts:admin_user_update' u.pk %}" class="btn btn-sm btn-outline-primary">Sửa</a>
+            <a href="{% url 'accounts:admin_user_detail' u.pk %}" class="btn btn-sm btn-outline-secondary">Xem</a>
+            {% if u.status != "DELETED" %}
+              <a href="{% url 'accounts:admin_user_update' u.pk %}" class="btn btn-sm btn-outline-primary">Sửa</a>
+            {% endif %}
             {% if u.status == "ACTIVE" and u.pk != user.pk %}
               <a href="{% url 'accounts:admin_user_lock' u.pk %}" class="btn btn-sm btn-outline-warning">Khóa</a>
             {% elif u.status == "LOCKED" %}

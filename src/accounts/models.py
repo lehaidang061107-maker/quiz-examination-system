@@ -205,6 +205,28 @@ class User(AbstractBaseUser):
                        self.pk, self.email, revoked, _client_ip(request))
         return revoked
 
+    def is_temporarily_locked(self):
+        """Đang bị khóa tạm do nhập sai mật khẩu (NFR-SEC-07), khác status=LOCKED do Admin đặt."""
+        return bool(self.locked_until and self.locked_until > timezone.now())
+
+    def activity_summary(self):
+        """Số liệu nghiệp vụ gắn với tài khoản, hiển thị ở trang chi tiết cho Admin (chỉ đọc)."""
+        from attempts.models import SubmissionStatus
+
+        if self.role == Role.TEACHER:
+            return [
+                ("Câu hỏi đã tạo", self.questions.count()),
+                ("Đề thi đã tạo", self.exams.count()),
+            ]
+        if self.role == Role.STUDENT:
+            submissions = self.submissions.all()
+            return [
+                ("Đề được phân công", self.exam_assignments.filter(is_active=True).count()),
+                ("Bài đã nộp", submissions.exclude(status=SubmissionStatus.IN_PROGRESS).count()),
+                ("Bài đang làm", submissions.filter(status=SubmissionStatus.IN_PROGRESS).count()),
+            ]
+        return []
+
     def as_role(self):
         """Trả về đúng lớp con theo vai trò, ví dụ request.user.as_role() -> Teacher."""
         cls = {Role.ADMIN: Admin, Role.TEACHER: Teacher, Role.STUDENT: Student}[self.role]
@@ -279,6 +301,9 @@ class Admin(User):
         """updateUser(id, data): sửa họ tên, email, vai trò (BR-22)."""
         with transaction.atomic():
             user = User.objects.select_for_update().get(pk=user_id)
+            if user.status == UserStatus.DELETED:
+                # Tài khoản ngừng sử dụng chỉ còn để giữ tham chiếu lịch sử, không sửa nữa (UC 4.4).
+                raise ValidationError("Tài khoản đã ngừng sử dụng nên không thể sửa.")
             before = {"full_name": user.full_name, "email": user.email, "role": user.role}
             if "full_name" in data:
                 if not (data["full_name"] or "").strip():
@@ -353,8 +378,9 @@ class Admin(User):
             "%s | admin_id=%s | user_id=%s (%s) | tự nộp %s bài đang làm",
             action, self.pk, user.pk, user.email, len(in_progress),
         )
+        reason = "account_locked" if status == UserStatus.LOCKED else "account_deleted"
         for submission in in_progress:
-            submission.auto_submit(at=timezone.now(), reason="account_locked")
+            submission.auto_submit(at=timezone.now(), reason=reason)
 
     @staticmethod
     def _check_not_last_admin(user):
