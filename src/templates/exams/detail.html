@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ exam.title }}{% endblock %}
+{% block page_title %}{{ exam.title }}{% endblock %}
+{% block page_subtitle %}Mã đề {{ exam.exam_id }} · {% include "exams/_status_badge.html" with status=exam.status %}{% endblock %}
+{% block page_actions %}
+  <div class="d-flex flex-wrap gap-2">
+    {% if is_draft %}
+      <a href="{% url 'exams:edit' exam.exam_id %}" class="btn btn-sm btn-outline-primary">Sửa thông tin</a>
+      <a href="{% url 'exams:questions' exam.exam_id %}" class="btn btn-sm btn-outline-primary">Chọn câu hỏi</a>
+      <form method="post" action="{% url 'exams:publish' exam.exam_id %}" class="m-0"
+            onsubmit="return confirm('Phát hành đề? Sau khi phát hành sẽ không sửa được câu hỏi, thứ tự và điểm.');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-primary">Phát hành</button>
+      </form>
+    {% endif %}
+    {% if exam.status == "PUBLISHED" %}
+      <form method="post" action="{% url 'exams:close' exam.exam_id %}" class="m-0"
+            onsubmit="return confirm('Đóng đề? Bài đang làm sẽ được nộp bằng đáp án đã lưu và không mở lại được đề.');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-warning">Đóng đề</button>
+      </form>
+    {% elif exam.status == "CLOSED" %}
+      {% if not exam.results_published %}
+        <form method="post" action="{% url 'exams:publish_results' exam.exam_id %}" class="m-0"
+              onsubmit="return confirm('Công bố điểm cho sinh viên? Chưa có thao tác thu hồi công bố.');">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-primary">Công bố điểm</button>
+        </form>
+      {% endif %}
+      <form method="post" action="{% url 'exams:archive' exam.exam_id %}" class="m-0"
+            onsubmit="return confirm('Lưu trữ đề thi?');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-outline-dark">Lưu trữ</button>
+      </form>
+    {% endif %}
+    <a href="{% url 'exams:participants' exam.exam_id %}" class="btn btn-sm btn-outline-primary">Phân công sinh viên</a>
+    <a href="{% url 'exams:list' %}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
+  </div>
+{% endblock %}
+
+{% block content %}
+<dl class="row mb-4">
+  <dt class="col-sm-3">Mô tả</dt>
+  <dd class="col-sm-9">{{ exam.description|default:"—"|linebreaksbr }}</dd>
+  <dt class="col-sm-3">Thời lượng</dt>
+  <dd class="col-sm-9">{% if exam.duration_minutes %}{{ exam.duration_minutes }} phút{% else %}—{% endif %}</dd>
+  <dt class="col-sm-3">Thời gian mở</dt>
+  <dd class="col-sm-9">{{ exam.opens_at|date:"d/m/Y H:i"|default:"Không giới hạn" }}</dd>
+  <dt class="col-sm-3">Thời gian đóng</dt>
+  <dd class="col-sm-9">{{ exam.closes_at|date:"d/m/Y H:i"|default:"Không giới hạn" }}</dd>
+  <dt class="col-sm-3">Sinh viên được giao</dt>
+  <dd class="col-sm-9">{{ participant_total }}</dd>
+  {% if not is_draft %}
+    <dt class="col-sm-3">Bài làm</dt>
+    <dd class="col-sm-9">
+      Đang làm: <strong>{{ counts.in_progress }}</strong> ·
+      Đã nộp, chờ chấm: <strong>{{ counts.submitted }}</strong> ·
+      Đã chấm: <strong>{{ counts.graded }}</strong>
+      · <a href="{% url 'results:teacher_exam' exam.exam_id %}">Xem kết quả</a>
+    </dd>
+    <dt class="col-sm-3">Công bố điểm</dt>
+    <dd class="col-sm-9">
+      {% if exam.results_published %}<span class="badge text-bg-success">Đã công bố</span>
+      {% else %}<span class="badge text-bg-secondary">Chưa công bố</span>
+        {% if exam.status == "CLOSED" and counts.in_progress|add:counts.submitted %}
+          <span class="small text-muted ms-1">Còn {{ counts.in_progress|add:counts.submitted }} bài chưa chấm xong.</span>
+        {% endif %}
+      {% endif %}
+    </dd>
+  {% endif %}
+  <dt class="col-sm-3">Ngày tạo</dt>
+  <dd class="col-sm-9">{{ exam.created_at|date:"d/m/Y H:i" }}</dd>
+</dl>
+
+<h2 class="h6 fw-bold mb-2">Câu hỏi trong đề ({{ items|length }} câu · tổng {{ total_points }} điểm)</h2>
+{% if items %}
+  <div class="table-responsive mb-4">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr><th class="text-center" style="width: 60px">Câu</th><th>Nội dung</th><th class="text-end" style="width: 100px">Điểm</th></tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+          <tr>
+            <td class="text-center">{{ item.position }}</td>
+            <td>{{ item.question.content|truncatechars:150 }}</td>
+            <td class="text-end">{{ item.points }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="text-muted mb-4">Đề chưa có câu hỏi.{% if is_draft %} Bấm 'Chọn câu hỏi' để thêm.{% endif %}</div>
+{% endif %}
+{% endblock %}

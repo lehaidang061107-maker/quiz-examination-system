@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}{% if exam %}Sửa đề thi{% else %}Tạo đề thi{% endif %}{% endblock %}
+{% block page_title %}{% if exam %}Sửa đề thi{% else %}Tạo đề thi{% endif %}{% endblock %}
+{% block page_subtitle %}Đề được lưu ở trạng thái Nháp; giờ nhập theo giờ Việt Nam (GMT+7){% endblock %}
+{% block page_actions %}
+  <a href="{% if exam %}{% url 'exams:detail' exam.exam_id %}{% else %}{% url 'exams:list' %}{% endif %}"
+     class="btn btn-sm btn-outline-secondary">Quay lại</a>
+{% endblock %}
+
+{% block content %}
+<form method="post" novalidate style="max-width: 720px">
+  {% csrf_token %}
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">
+      {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+    </div>
+  {% endif %}
+
+  {% for field in form %}
+    <div class="mb-3">
+      <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
+        {{ field.label }}{% if field.name == "title" or field.name == "duration_minutes" %} <span class="text-danger">*</span>{% endif %}
+      </label>
+      {{ field }}
+      {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+      {% if field.name == "opens_at" or field.name == "closes_at" %}
+        <div class="form-text">Bỏ trống nếu không giới hạn.</div>
+      {% endif %}
+    </div>
+  {% endfor %}
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary">{% if exam %}Lưu thay đổi{% else %}Tạo đề nháp{% endif %}</button>
+    <a href="{% if exam %}{% url 'exams:detail' exam.exam_id %}{% else %}{% url 'exams:list' %}{% endif %}"
+       class="btn btn-outline-secondary">Hủy</a>
+  </div>
+</form>
+{% endblock %}

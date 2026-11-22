@@ -120,3 +120,13 @@ LOGOUT_REDIRECT_URL = LOGIN_URL
 
 # messages.error(...) hiển thị bằng class Bootstrap "alert-danger".
 MESSAGE_TAGS = {message_constants.ERROR: "danger"}
+
+# Nhật ký thao tác quan trọng của giảng viên (đóng đề, lưu trữ, công bố điểm) để truy vết:
+# in ra console, khi chạy Docker xem bằng `docker compose logs web`.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"audit": {"format": "{asctime} [AUDIT] {message}", "style": "{"}},
+    "handlers": {"audit_console": {"class": "logging.StreamHandler", "formatter": "audit"}},
+    "loggers": {"exams.audit": {"handlers": ["audit_console"], "level": "INFO", "propagate": False}},
+}

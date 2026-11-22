@@ -1,0 +1,33 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-13-01,"Create Exam (FR-06), BR-18","1. Đăng nhập Teacher
+2. Mở chi tiết đề
+3. Bấm 'Phân công sinh viên'","Có 2 sinh viên hoạt động, 1 sinh viên bị khóa chưa từng được giao",Danh sách chỉ hiện 2 sinh viên hoạt động với trạng thái 'Chưa cấp'; không hiện sinh viên bị khóa
+S3-13-02,"Create Exam (FR-06), BR-18","1. Ở trang 'Phân công sinh viên' tích chọn 2 sinh viên
+2. Bấm 'Cấp quyền cho sinh viên đã chọn'","Sinh viên: An Nguyễn, Bình Trần",Hiện 'Đã cấp quyền dự thi cho 2 sinh viên.'; cột Quyền dự thi của 2 người đổi thành 'Đã cấp quyền'
+S3-13-03,"Create Exam (FR-06), BR-18","1. Ở trang 'Phân công sinh viên' không tích ai
+2. Bấm 'Cấp quyền cho sinh viên đã chọn'",Không chọn sinh viên,Hiện 'Vui lòng chọn ít nhất 1 sinh viên.'
+S3-13-04,"Create Exam (FR-06), BR-18","1. Tích chọn An (đã được cấp) và Bình (chưa cấp)
+2. Bấm 'Cấp quyền cho sinh viên đã chọn'",An đã có quyền từ trước,Hiện 'Đã cấp quyền dự thi cho 1 sinh viên.'; An không bị tạo phân công trùng
+S3-13-05,"Create Exam (FR-06), BR-18","1. Mở trang 'Phân công sinh viên'
+2. Admin khóa tài khoản Bình ở tab khác
+3. Tích chọn An và Bình, bấm 'Cấp quyền cho sinh viên đã chọn'",Bình bị khóa sau khi trang đã mở,Hiện 'Bình Trần không phải sinh viên đang hoạt động.'; không cấp quyền cho ai
+S3-13-06,"View Exam List (FR-08), BR-18","1. Cấp quyền cho An, không cấp cho Bình
+2. Phát hành đề
+3. Đăng nhập An, mở 'Danh sách bài thi'
+4. Đăng nhập Bình, mở 'Danh sách bài thi'",Đề đang trong giờ thi,An thấy đề và bấm bắt đầu được; Bình không thấy đề trong danh sách
+S3-13-07,"Manage Exams (FR-07), BR-18","1. Ở đề Đã phát hành bấm 'Thu hồi' tại dòng An
+2. Bấm OK ở hộp xác nhận","An đã được cấp quyền, chưa vào làm",Hiện 'Đã thu hồi quyền của An Nguyễn.'; dòng An hiện 'Đã thu hồi' (vẫn còn trong danh sách)
+S3-13-08,"Manage Exams (FR-07), BR-18","1. An bắt đầu làm bài và chọn 1 đáp án
+2. Teacher bấm 'Thu hồi' tại dòng An, bấm OK",An đang làm bài (Đang làm),Hộp xác nhận báo bài sẽ được nộp bằng đáp án đã lưu; sau đó hiện 'Đã thu hồi quyền của An Nguyễn. Bài đang làm đã được chốt và nộp bằng đáp án đã lưu.'; cột Bài làm không còn 'Đang làm'
+S3-13-09,"Manage Exams (FR-07), BR-18","1. Sau khi thu hồi An, tích chọn An
+2. Bấm 'Cấp quyền cho sinh viên đã chọn'",An đang ở trạng thái 'Đã thu hồi',Hiện 'Đã cấp quyền dự thi cho 1 sinh viên.'; An trở lại 'Đã cấp quyền'
+S3-13-10,"Manage Exams (FR-07), BR-18","1. Đóng đề hoặc chờ qua giờ đóng
+2. Mở 'Phân công sinh viên'",Đề Đã đóng,"Hiện cảnh báo 'Đề đã đóng hoặc đã hết lịch thi nên không thể cấp hay thu hồi quyền...'; không có ô chọn, nút cấp quyền và nút 'Thu hồi'"
+S3-13-11,"Manage Exams (FR-07), NFR-SEC-09","1. Đăng nhập Teacher B
+2. Gõ thẳng đường dẫn /exams/<mã đề của Teacher A>/participants/",Đề thuộc Teacher A,Hiện trang 403; phân công của đề không đổi
+S3-13-12,"Manage Exams (FR-07), BR-02","1. Đăng nhập Student
+2. Gõ thẳng đường dẫn /exams/<mã đề>/participants/",Tài khoản Student,Hiện trang 403 'Bạn không có quyền truy cập trang này.'
+S3-13-13,"Create Exam (FR-06), NFR-PER-05","1. Đăng nhập Teacher, mở một đề nháp
+2. Bấm 'Phân công sinh viên'
+3. Gõ 'Sinh viên' vào ô tìm, bấm 'Tìm'
+4. Bấm 'Sau' ở cuối danh sách",Hệ thống có 27 Student đang hoạt động,"Mỗi trang tối đa 20 sinh viên, hiện '1/2'; trang 2 có các sinh viên còn lại; từ khóa tìm vẫn được giữ khi chuyển trang"

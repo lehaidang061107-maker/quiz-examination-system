@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý kỳ thi{% endblock %}
+{% block page_title %}Quản lý kỳ thi{% endblock %}
+{% block page_subtitle %}Các đề thi bạn phụ trách{% endblock %}
+{% block page_actions %}
+  <a href="{% url 'exams:create' %}" class="btn btn-primary">Tạo đề thi</a>
+{% endblock %}
+
+{% block content %}
+<form method="get" class="row g-2 align-items-end mb-3">
+  <div class="col-12 col-sm-6 col-md-4">
+    <label for="exam-status" class="form-label">Trạng thái</label>
+    <select id="exam-status" name="status" class="form-select">
+      <option value="">Tất cả trạng thái</option>
+      {% for value, label in status_choices %}
+        <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-12 col-sm-auto d-flex gap-2">
+    <button type="submit" class="btn btn-outline-primary">Lọc</button>
+    <a href="{% url 'exams:list' %}" class="btn btn-outline-secondary">Xóa lọc</a>
+  </div>
+</form>
+
+{% if exams %}
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Tên đề thi</th>
+          <th>Trạng thái</th>
+          <th class="text-center">Thời lượng</th>
+          <th>Lịch thi</th>
+          <th class="text-center">Số câu</th>
+          <th class="text-center">Được giao</th>
+          <th class="text-end">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for exam in exams %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ exam.title }}</div>
+              <div class="small text-muted">Mã đề: {{ exam.exam_id }}</div>
+            </td>
+            <td>{% include "exams/_status_badge.html" with status=exam.status %}</td>
+            <td class="text-center">{% if exam.duration_minutes %}{{ exam.duration_minutes }} phút{% else %}—{% endif %}</td>
+            <td class="small text-nowrap">
+              {{ exam.opens_at|date:"d/m/Y H:i"|default:"Không giới hạn" }}<br>
+              → {{ exam.closes_at|date:"d/m/Y H:i"|default:"Không giới hạn" }}
+            </td>
+            <td class="text-center">{{ exam.question_total }}</td>
+            <td class="text-center">{{ exam.participant_total }}</td>
+            <td class="text-end text-nowrap">
+              <a href="{% url 'exams:detail' exam.exam_id %}" class="btn btn-sm btn-outline-primary">Xem</a>
+              {% if exam.status == "DRAFT" %}
+                <a href="{% url 'exams:edit' exam.exam_id %}" class="btn btn-sm btn-outline-secondary">Sửa</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "partials/pagination.html" with label="Phân trang đề thi" %}
+{% elif selected_status %}
+  <div class="text-center py-4 text-muted">Không có đề thi nào ở trạng thái này.</div>
+{% else %}
+  <div class="text-center py-4 text-muted">Bạn chưa có đề thi nào. Bấm 'Tạo đề thi' để bắt đầu.</div>
+{% endif %}
+{% endblock %}
