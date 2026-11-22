@@ -125,6 +125,8 @@ def exam_questions(request, exam_id):
     if request.method == "POST":
         try:
             with transaction.atomic():
+                exam = _lock_exam(exam)
+                exam.check_draft()  # tab khác có thể vừa phát hành đề
                 text = _handle_question_action(request, exam)
         except ValidationError as error:
             for message in error.messages:
@@ -205,7 +207,9 @@ def exam_publish(request, exam_id):
     """S3-12: phát hành đề DRAFT -> PUBLISHED; chưa đủ điều kiện thì báo từng mục cần sửa (BR-17)."""
     exam = request.user.as_role().manage_exam(exam_id)
     try:
-        exam.publish()
+        with transaction.atomic():
+            exam = _lock_exam(exam)  # chờ thao tác sửa câu hỏi/điểm đang chạy xong rồi mới kiểm tra
+            exam.publish()
     except ValidationError as error:
         messages.error(request, "Chưa thể phát hành đề:")
         for text in error.messages:

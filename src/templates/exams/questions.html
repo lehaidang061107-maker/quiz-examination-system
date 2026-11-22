@@ -13,6 +13,9 @@
 {% if items %}
   <form method="post" class="mb-4">
     {% csrf_token %}
+    {# Nhấn Enter trong ô điểm sẽ bấm nút submit đầu tiên của form: đặt "Lưu điểm" lên đầu để không bấm nhầm ↓ hay Bỏ. #}
+    <button type="submit" name="action" value="save_points" tabindex="-1" aria-hidden="true"
+            style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); border: 0; padding: 0;"></button>
     <div class="table-responsive">
       <table class="table align-middle mb-2">
         <thead>

@@ -101,6 +101,15 @@ class ChooseQuestionTests(ExamQuestionsBase):
         points = dict(self.exam.exam_questions.values_list("question__content", "points"))
         self.assertEqual(points, {"Câu ba": Decimal("3"), "Câu hai": Decimal("0.5")})
 
+    def test_enter_trong_o_diem_la_luu_diem(self):
+        # Trình duyệt bấm nút submit đầu tiên khi nhấn Enter; nút đó phải là "Lưu điểm",
+        # kể cả khi đề chỉ có 1 câu (↑ ↓ đều tắt, nút bật đầu tiên trước đây là "Bỏ").
+        self.exam.add_question(self.q1.pk, 1)
+        html = self.client.get(self.url).content.decode()
+        form = html[html.index('<form method="post" class="mb-4">'):]
+        first_button = form[form.index("<button"):]
+        self.assertTrue(first_button.startswith('<button type="submit" name="action" value="save_points"'))
+
     def test_luu_diem_sai_bao_dung_cau_va_khong_luu(self):
         self.exam.add_question(self.q1.pk, 1)
         self.exam.add_question(self.q2.pk, 1)
