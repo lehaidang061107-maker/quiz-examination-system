@@ -108,4 +108,6 @@ class TakeExamProgressTests(AttemptTestCase):
         self.client.force_login(self.student)
         response = self.client.get(reverse("attempts:take_exam", args=[self.submission.pk]))
         self.assertContains(response, '"Bạn đã trả lời " + answered + "/" + totalQuestions + " câu"')
-        self.assertContains(response, '" câu chưa trả lời"')
+        # S3-17: hộp xác nhận dùng modal chung và ghi rõ số thứ tự các câu chưa làm.
+        self.assertContains(response, '" câu chưa trả lời (câu " + unanswered.join(", ")')
+        self.assertContains(response, "window.qesConfirm(summary")
