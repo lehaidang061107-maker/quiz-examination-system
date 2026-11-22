@@ -63,6 +63,13 @@
     <div class="card shadow-sm sticky-top" style="top: 1rem;">
       <div class="card-header fw-bold bg-light">Danh sách câu hỏi</div>
       <div class="card-body">
+        <div class="mb-2" aria-live="polite">
+          Đã trả lời <strong id="answered-count">{{ answered_count }}</strong>/<span id="question-total">{{ question_items|length }}</span> câu
+        </div>
+        <div class="progress mb-3" style="height: 6px;" role="progressbar" aria-label="Tiến độ làm bài"
+             aria-valuemin="0" aria-valuemax="{{ question_items|length }}" aria-valuenow="{{ answered_count }}">
+          <div id="answered-bar" class="progress-bar" style="width: 0%"></div>
+        </div>
         <div class="d-flex flex-wrap gap-2">
           {% for item in question_items %}
           <a
@@ -133,12 +140,31 @@
     }
   }
 
+  const answeredEl = document.getElementById("answered-count");
+  const answeredBar = document.getElementById("answered-bar");
+  const totalQuestions = Number(document.getElementById("question-total").textContent) || 0;
+
+  function countAnswered() {
+    const answered = new Set();
+    document.querySelectorAll(".answer-radio:checked").forEach((r) => answered.add(r.dataset.questionId));
+    return answered.size;
+  }
+
+  function refreshProgress() {
+    const answered = countAnswered();
+    answeredEl.textContent = answered;
+    answeredBar.style.width = (totalQuestions ? (answered * 100 / totalQuestions) : 0) + "%";
+    answeredBar.parentElement.setAttribute("aria-valuenow", answered);
+  }
+
   function markAnswered(questionId, optionId) {
     const navBtn = document.getElementById("nav-btn-" + questionId);
     if (navBtn) {
       navBtn.className = optionId !== null ? "btn btn-sm btn-primary" : "btn btn-sm btn-outline-secondary";
     }
+    refreshProgress();
   }
+  refreshProgress();
 
   function stopAndLeave(message, url) {
     finished = true;
@@ -236,7 +262,11 @@
     btnSubmit.addEventListener("click", async function (e) {
       e.preventDefault();
       if (finished) return;
-      if (!confirm("Bạn chắc chắn muốn nộp bài thi này? Sau khi nộp sẽ không thể sửa đáp án.")) return;
+      const answered = countAnswered();
+      const blank = totalQuestions - answered;
+      const summary = "Bạn đã trả lời " + answered + "/" + totalQuestions + " câu" +
+        (blank > 0 ? ", còn " + blank + " câu chưa trả lời" : "") + ".";
+      if (!confirm(summary + "\nNộp bài? Sau khi nộp sẽ không thể sửa đáp án.")) return;
       btnSubmit.disabled = true;
       setSaveStatus("Đang đồng bộ...", "bg-warning text-dark");
       await flush();

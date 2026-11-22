@@ -28,3 +28,9 @@ S3-19-10,"Submit Exam (FR-10), NFR-SEC-10","1. Teacher thu hồi quyền của S
 S3-19-11,"View Exam List (FR-08), NFR-PER-05","1. Đăng nhập Student được giao 23 đề
 2. Mở 'Danh sách bài thi'
 3. Bấm 'Sau'",Student được giao 23 đề,"Trang 1 có 20 đề và hiện '1/2'; trang 2 có 3 đề còn lại"
+S3-19-12,"Take Exam (FR-09), NFR-USA-03","1. Student vào phòng thi đề 3 câu
+2. Chọn đáp án câu 1 và câu 2
+3. Tải lại trang",Đề đang mở có 3 câu,"Khung Danh sách câu hỏi hiện 'Đã trả lời 0/3 câu', sau bước 2 tăng thành '2/3' và thanh tiến độ chạy 2/3; tải lại trang vẫn hiện '2/3'"
+S3-19-13,Submit Exam (FR-10),"1. Student đã trả lời 2/3 câu
+2. Bấm 'Nộp bài'
+3. Bấm Hủy ở hộp xác nhận",Đề đang mở có 3 câu,"Hộp xác nhận ghi 'Bạn đã trả lời 2/3 câu, còn 1 câu chưa trả lời.'; bấm Hủy thì quay lại làm bài, bài chưa bị nộp"
