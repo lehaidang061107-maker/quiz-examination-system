@@ -37,6 +37,14 @@ def _log_text(value, limit=254):
     return "".join(ch if ch.isprintable() else "?" for ch in str(value or ""))[:limit]
 
 
+PASSWORD_MESSAGES = {
+    "password_too_short": "Mật khẩu phải có ít nhất 8 ký tự.",
+    "password_too_common": "Mật khẩu quá phổ biến, hãy chọn mật khẩu khác.",
+    "password_entirely_numeric": "Mật khẩu không được chỉ gồm chữ số.",
+    "password_too_similar": "Mật khẩu quá giống họ tên hoặc email.",
+}
+
+
 class Role(models.TextChoices):
     ADMIN = "ADMIN", "Quản trị viên"
     TEACHER = "TEACHER", "Giảng viên"
@@ -167,6 +175,35 @@ class User(AbstractBaseUser):
         """logout(): hủy phiên hiện tại (FR-03)."""
         audit_log.info("đăng xuất | user_id=%s (%s) | ip=%s", self.pk, self.email, _client_ip(request))
         auth_logout(request)
+
+    def change_password(self, request, current_password, new_password):
+        """changePassword(): đổi mật khẩu của chính mình (S3-35, NFR-SEC-03).
+
+        Kiểm tra mật khẩu hiện tại và quy tắc mật khẩu như khi đăng ký; lưu dạng băm; giữ phiên đang
+        dùng (đổi mã phiên), hủy các phiên khác của tài khoản. Trả về số phiên khác đã bị hủy.
+        """
+        from django.contrib.auth import update_session_auth_hash
+
+        from accounts.services import revoke_user_sessions
+
+        if not self.check_password(current_password):
+            raise ValidationError({"current_password": "Mật khẩu hiện tại không đúng."})
+        if current_password == new_password:
+            raise ValidationError({"new_password": "Mật khẩu mới phải khác mật khẩu hiện tại."})
+        try:
+            validate_password(new_password, self)
+        except ValidationError as error:
+            # Bộ kiểm tra sẵn của Django chưa có bản dịch tiếng Việt: đổi theo mã lỗi (NFR-USA-05).
+            raise ValidationError({"new_password": [
+                PASSWORD_MESSAGES.get(item.code, item.messages[0]) for item in error.error_list
+            ]})
+        self.set_password(new_password)
+        self.save(update_fields=["password"])
+        update_session_auth_hash(request, self)  # giữ đăng nhập ở trình duyệt đang dùng, đổi mã phiên
+        revoked = revoke_user_sessions(self.pk, keep_session_key=request.session.session_key)
+        audit_log.info("đổi mật khẩu | user_id=%s (%s) | hủy %s phiên khác | ip=%s",
+                       self.pk, self.email, revoked, _client_ip(request))
+        return revoked
 
     def as_role(self):
         """Trả về đúng lớp con theo vai trò, ví dụ request.user.as_role() -> Teacher."""

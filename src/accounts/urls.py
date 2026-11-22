@@ -8,6 +8,7 @@ urlpatterns = [
     path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
     path("register/", views.register_view, name="register"),
+    path("password/", views.change_password_view, name="change_password"),
     # S3-04: Admin account management & session revocation
     path("admin/users/", views.admin_user_list_view, name="admin_user_list"),
     path("admin/users/create/", views.admin_user_create_view, name="admin_user_create"),
