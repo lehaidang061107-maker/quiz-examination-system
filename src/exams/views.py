@@ -157,18 +157,24 @@ def exam_questions(request, exam_id):
         return redirect(request.get_full_path())
 
     search = request.GET.get("q", "").strip()
-    bank = (
-        request.user.as_role().manage_questions()
-        .filter(status=QuestionStatus.ACTIVE)
-        .exclude(exam_questions__exam=exam)
-        .annotate(option_count=Count("options"))
-    )
+    bank = _bank_for(request.user.as_role(), exam, search).annotate(option_count=Count("options"))
+    page_obj = Paginator(bank, BANK_PAGE_SIZE).get_page(request.GET.get("page"))
+    context = _detail_context(exam)
+    context.update({
+        "page_obj": page_obj, "bank": page_obj.object_list, "search": search, "bank_total": page_obj.paginator.count,
+    })
+    return render(request, "exams/questions.html", context)
+
+
+BANK_PAGE_SIZE = 20
+
+
+def _bank_for(teacher, exam, search=""):
+    """Câu hỏi ACTIVE của giảng viên chưa có trong đề, lọc theo nội dung nếu có."""
+    bank = teacher.manage_questions().filter(status=QuestionStatus.ACTIVE).exclude(exam_questions__exam=exam)
     if search:
         bank = bank.filter(content__icontains=search)
-    page_obj = Paginator(bank, 10).get_page(request.GET.get("page"))
-    context = _detail_context(exam)
-    context.update({"page_obj": page_obj, "bank": page_obj.object_list, "search": search})
-    return render(request, "exams/questions.html", context)
+    return bank
 
 
 def _handle_question_action(request, exam):
@@ -181,6 +187,22 @@ def _handle_question_action(request, exam):
         for question_id in ids:
             exam.add_question(_int(question_id), _points(request.POST.get("points")))
         return f"Đã thêm {len(ids)} câu hỏi vào đề."
+    if action == "add_all":
+        # Thêm một lần mọi câu khớp tìm kiếm (không phải tích từng ô qua nhiều trang).
+        points = _points(request.POST.get("points"))
+        ids = list(_bank_for(request.user.as_role(), exam, request.POST.get("q", "").strip())
+                   .order_by("question_id").values_list("question_id", flat=True))
+        if not ids:
+            raise ValidationError("Không còn câu hỏi nào để thêm.")
+        for question_id in ids:
+            exam.add_question(question_id, points)
+        return f"Đã thêm {len(ids)} câu hỏi vào đề."
+    if action == "set_all_points":
+        points = _points(request.POST.get("all_points"))
+        items = list(exam.exam_questions.order_by("position"))
+        for item in items:
+            item.set_points(points)
+        return f"Đã đặt {len(items)} câu cùng điểm."
     if action == "save_points":
         for item in exam.exam_questions.order_by("position"):
             value = request.POST.get(f"points_{item.question_id}")

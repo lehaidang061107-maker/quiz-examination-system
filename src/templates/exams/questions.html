@@ -48,13 +48,22 @@
         </tbody>
       </table>
     </div>
-    <button type="submit" name="action" value="save_points" class="btn btn-primary btn-sm">Lưu điểm</button>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <button type="submit" name="action" value="save_points" class="btn btn-primary btn-sm">Lưu điểm</button>
+      <span class="ms-sm-3 small qes-subtitle">Đặt cùng điểm cho tất cả</span>
+      <input type="number" name="all_points" min="0.01" step="0.01" class="form-control form-control-sm" style="width: 90px"
+             aria-label="Điểm cho tất cả câu">
+      <button type="submit" name="action" value="set_all_points" class="btn btn-outline-primary btn-sm">Áp dụng</button>
+    </div>
   </form>
 {% else %}
   <div class="text-muted mb-4">Đề chưa có câu hỏi. Chọn câu hỏi từ ngân hàng bên dưới.</div>
 {% endif %}
 
-<h2 class="h6 fw-bold mb-2">Ngân hàng câu hỏi (đang dùng)</h2>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+  <h2 class="h6 fw-bold m-0">Ngân hàng câu hỏi (đang dùng)</h2>
+  {% if import_url %}<a href="{{ import_url }}" class="btn btn-sm btn-outline-primary">Nhập từ Excel</a>{% endif %}
+</div>
 <form method="get" class="row g-2 mb-2">
   <div class="col-12 col-md-6">
     <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Tìm theo nội dung câu hỏi..." aria-label="Tìm câu hỏi">
@@ -68,12 +77,13 @@
     <div class="table-responsive">
       <table class="table align-middle mb-2">
         <thead>
-          <tr><th style="width: 40px"></th><th>Nội dung</th><th class="text-center">Số phương án</th></tr>
+          <tr><th style="width: 40px"><input type="checkbox" class="form-check-input" id="pick-all" aria-label="Chọn tất cả câu trên trang"></th>
+            <th>Nội dung</th><th class="text-center">Số phương án</th></tr>
         </thead>
         <tbody>
           {% for question in bank %}
             <tr>
-              <td><input type="checkbox" class="form-check-input" name="question_ids" value="{{ question.question_id }}"
+              <td><input type="checkbox" class="form-check-input qes-pick" name="question_ids" value="{{ question.question_id }}"
                          id="q{{ question.question_id }}"></td>
               <td><label for="q{{ question.question_id }}">{{ question.content|truncatechars:150 }}</label></td>
               <td class="text-center">{{ question.option_count }}</td>
@@ -82,10 +92,17 @@
         </tbody>
       </table>
     </div>
-    <div class="d-flex flex-wrap align-items-center gap-2">
-      <label for="add-points" class="form-label mb-0">Điểm mỗi câu</label>
-      <input type="number" name="points" id="add-points" value="1" min="0.01" step="0.01" class="form-control form-control-sm" style="width: 110px">
-      <button type="submit" name="action" value="add" class="btn btn-primary btn-sm">Thêm vào đề</button>
+    <input type="hidden" name="q" value="{{ search }}">
+    <div class="d-flex flex-wrap align-items-center gap-2 p-2 rounded" style="background: #eef4fc">
+      <span class="fw-semibold" id="pick-count" aria-live="polite">Đã chọn 0 câu</span>
+      <span class="ms-auto d-flex flex-wrap align-items-center gap-2">
+        <label for="add-points" class="form-label mb-0 small">Điểm mỗi câu</label>
+        <input type="number" name="points" id="add-points" value="1" min="0.01" step="0.01" class="form-control form-control-sm" style="width: 90px">
+        <button type="submit" name="action" value="add" class="btn btn-primary btn-sm">Thêm câu đã chọn</button>
+        <button type="submit" name="action" value="add_all" class="btn btn-outline-primary btn-sm"
+                data-confirm="Thêm tất cả {{ bank_total }} câu{% if search %} khớp '{{ search }}'{% endif %} vào đề?" data-confirm-ok="Thêm">
+          Thêm tất cả {{ bank_total }} câu{% if search %} khớp tìm kiếm{% endif %}</button>
+      </span>
     </div>
   </form>
   {% if page_obj.has_other_pages %}
@@ -100,4 +117,26 @@
 {% else %}
   <div class="text-muted">Không còn câu hỏi đang dùng nào để thêm. Câu hỏi phải ở trạng thái 'Đang dùng' mới chọn được.</div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Chọn tất cả câu trên trang và đếm số câu đã chọn (S3-12).
+(() => {
+  const all = document.getElementById("pick-all");
+  const boxes = [...document.querySelectorAll(".qes-pick")];
+  const count = document.getElementById("pick-count");
+  if (!all || !count) return;
+  const refresh = () => {
+    const n = boxes.filter((b) => b.checked).length;
+    count.textContent = "Đã chọn " + n + " câu";
+    all.checked = n > 0 && n === boxes.length;
+    all.indeterminate = n > 0 && n < boxes.length;
+  };
+  all.addEventListener("change", () => { boxes.forEach((b) => { b.checked = all.checked; }); refresh(); });
+  boxes.forEach((b) => b.addEventListener("change", refresh));
+  refresh();
+})();
+</script>
+
 {% endblock %}
