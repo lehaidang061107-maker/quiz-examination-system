@@ -8,10 +8,77 @@
   {% if exam.results_published %}Đã công bố điểm cho sinh viên{% else %}Sinh viên chưa xem được điểm (chưa công bố){% endif %}
 {% endblock %}
 {% block page_actions %}
-  <a href="{% url 'results:teacher_list' %}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
+  <div class="d-flex gap-2">
+    <a href="{% url 'results:teacher_exam_csv' exam.exam_id %}" class="btn btn-sm btn-outline-primary">Tải bảng điểm (CSV)</a>
+    <a href="{% url 'results:teacher_list' %}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
+  </div>
 {% endblock %}
 
 {% block content %}
+{# S3-34: thống kê chỉ tính bài đã chấm #}
+{% if stats.graded_count %}
+  <div class="row g-3 qes-stats mb-3">
+    <div class="col-6 col-md"><div class="qes-card qes-stat p-3 h-100"><div class="qes-subtitle small">Bài đã chấm</div>
+      <div class="fs-4 fw-bold">{{ stats.graded_count }}<span class="fs-6 text-muted fw-normal"> / {{ stats.participant_count }}</span></div></div></div>
+    <div class="col-6 col-md"><div class="qes-card qes-stat p-3 h-100"><div class="qes-subtitle small">Điểm trung bình</div>
+      <div class="fs-4 fw-bold">{{ stats.average }}</div></div></div>
+    <div class="col-6 col-md"><div class="qes-card qes-stat p-3 h-100"><div class="qes-subtitle small">Cao nhất / thấp nhất</div>
+      <div class="fs-4 fw-bold">{{ stats.highest }} <span class="fs-6 text-muted fw-normal">/ {{ stats.lowest }}</span></div></div></div>
+    <div class="col-6 col-md"><div class="qes-card qes-stat p-3 h-100"><div class="qes-subtitle small">Đạt (từ 5 điểm)</div>
+      <div class="fs-4 fw-bold">{{ stats.pass_percent }}%<span class="fs-6 text-muted fw-normal"> · {{ stats.pass_count }} bài</span></div></div></div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-lg-5">
+      <div class="qes-card p-3 h-100">
+        <h2 class="h6 fw-bold mb-3">Phân bố điểm (thang 10)</h2>
+        {% for bin in stats.distribution %}
+          <div class="d-flex align-items-center gap-2 mb-2 small">
+            <span class="text-nowrap" style="width: 48px">{{ bin.label }}</span>
+            <div class="progress flex-grow-1" style="height: 14px" role="progressbar" aria-label="Khoảng {{ bin.label }}"
+                 aria-valuenow="{{ bin.percent }}" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar" style="width: {{ bin.percent }}%"></div>
+            </div>
+            <span class="text-nowrap text-end" style="width: 64px">{{ bin.count }} bài</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-12 col-lg-7">
+      <div class="qes-card p-3 h-100">
+        <h2 class="h6 fw-bold mb-2">Tỷ lệ đúng từng câu</h2>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead><tr><th>Câu</th><th>Nội dung</th><th style="min-width: 140px">Đúng</th>
+              <th class="text-center">Sai</th><th class="text-center">Bỏ trống</th></tr></thead>
+            <tbody>
+              {% for q in stats.questions %}
+                <tr>
+                  <td>{{ q.position }}</td>
+                  <td class="qes-title-col small">{{ q.content|truncatechars:80 }}</td>
+                  <td>
+                    <div class="d-flex align-items-center gap-2 small">
+                      <div class="progress flex-grow-1" style="height: 8px" aria-hidden="true">
+                        <div class="progress-bar {% if q.correct_percent < 50 %}bg-danger{% else %}bg-success{% endif %}" style="width: {{ q.correct_percent }}%"></div>
+                      </div>
+                      <span class="text-nowrap">{{ q.correct_percent }}% ({{ q.correct }})</span>
+                    </div>
+                  </td>
+                  <td class="text-center">{{ q.wrong }}</td>
+                  <td class="text-center">{{ q.blank }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="small qes-subtitle mt-2">Câu tô đỏ có dưới 50% bài làm đúng — nên xem lại nội dung hoặc đáp án.</div>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="alert alert-light border small">Chưa có bài nào được chấm nên chưa có thống kê.</div>
+{% endif %}
+
 {% if rows %}
   <div class="table-responsive">
     <table class="table align-middle mb-0">
