@@ -5,6 +5,8 @@ người khác -> 403), quy tắc nghiệp vụ gọi phương thức Model, bá
 """
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Count, Q
 from django.shortcuts import redirect, render
 
@@ -12,9 +14,27 @@ from accounts.decorators import role_required
 from accounts.models import Role
 
 from .forms import ExamForm
-from .models import ExamStatus
+from .models import Exam, ExamStatus
 
 STATUS_FILTERS = [(value, label) for value, label in ExamStatus.choices]
+PAGE_SIZE = 20  # NFR-PER-05: danh sách dài phải phân trang
+
+
+def _lock_exam(exam):
+    """Khóa dòng đề tới hết transaction rồi đọc lại trạng thái mới nhất.
+
+    Hai tab cùng thao tác (vd. một tab sửa nháp, tab kia vừa phát hành) sẽ chạy lần lượt,
+    tab sau thấy trạng thái đã đổi nên không sửa được đề đã phát hành (BR-14).
+    Phải gọi bên trong transaction.atomic().
+    """
+    return Exam.objects.select_for_update().get(pk=exam.pk)
+
+
+def _page_query(request):
+    """Tham số lọc hiện tại (bỏ page) để nút Trước/Sau giữ nguyên bộ lọc."""
+    params = request.GET.copy()
+    params.pop("page", None)
+    return params.urlencode()
 
 
 @role_required(Role.TEACHER)
@@ -31,10 +51,17 @@ def exam_list(request):
         question_total=Count("exam_questions__question", distinct=True),
         participant_total=Count("participants__student", filter=Q(participants__is_active=True), distinct=True),
     ).order_by("-created_at", "-exam_id")
+    page_obj = Paginator(exams, PAGE_SIZE).get_page(request.GET.get("page"))
     return render(
         request,
         "exams/list.html",
-        {"exams": exams, "selected_status": selected_status, "status_choices": STATUS_FILTERS},
+        {
+            "exams": page_obj.object_list,
+            "page_obj": page_obj,
+            "page_query": _page_query(request),
+            "selected_status": selected_status,
+            "status_choices": STATUS_FILTERS,
+        },
     )
 
 
@@ -72,8 +99,11 @@ def exam_edit(request, exam_id):
     form = ExamForm(request.POST or None, initial=ExamForm.initial_from(exam))
     if request.method == "POST" and form.is_valid():
         try:
-            exam.apply_settings(form.cleaned_data)
-            exam.save()
+            with transaction.atomic():
+                exam = _lock_exam(exam)
+                exam.check_draft()  # tab khác có thể vừa phát hành đề
+                exam.apply_settings(form.cleaned_data)
+                exam.save()
         except ValidationError as error:
             _attach_errors(form, error)
         else:

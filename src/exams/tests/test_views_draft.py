@@ -54,6 +54,22 @@ class ExamListTests(TestCase):
         self.assertContains(response, "Đề nháp A")
         self.assertEqual(response.context["selected_status"], "")
 
+    def test_phan_trang_20_de_moi_trang(self):
+        for i in range(25):
+            self.teacher.create_exam({"title": f"Đề số {i:02d}", "duration_minutes": 30})
+        first = self.client.get(reverse("exams:list"))
+        self.assertEqual(len(first.context["exams"]), 20)
+        self.assertContains(first, "1/2")
+        second = self.client.get(reverse("exams:list"), {"page": 2})
+        self.assertEqual(len(second.context["exams"]), 5)
+        self.assertContains(second, "Đề số 00")  # đề tạo sớm nhất nằm ở trang cuối
+
+    def test_phan_trang_giu_bo_loc(self):
+        for i in range(21):
+            self.teacher.create_exam({"title": f"Đề số {i:02d}", "duration_minutes": 30})
+        response = self.client.get(reverse("exams:list"), {"status": ExamStatus.DRAFT})
+        self.assertContains(response, "?status=DRAFT&amp;page=2")
+
     def test_chua_co_de(self):
         response = self.client.get(reverse("exams:list"))
         self.assertContains(response, "Bạn chưa có đề thi nào.")
