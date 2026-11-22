@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load l10n %}
+
+{% block title %}Chọn câu hỏi: {{ exam.title }}{% endblock %}
+{% block page_title %}Chọn câu hỏi cho đề{% endblock %}
+{% block page_subtitle %}{{ exam.title }} · {{ items|length }} câu · tổng {{ total_points }} điểm{% endblock %}
+{% block page_actions %}
+  <a href="{% url 'exams:detail' exam.exam_id %}" class="btn btn-sm btn-outline-secondary">Xong</a>
+{% endblock %}
+
+{% block content %}
+<h2 class="h6 fw-bold mb-2">Câu hỏi trong đề</h2>
+{% if items %}
+  <form method="post" class="mb-4">
+    {% csrf_token %}
+    <div class="table-responsive">
+      <table class="table align-middle mb-2">
+        <thead>
+          <tr>
+            <th class="text-center" style="width: 60px">Câu</th>
+            <th>Nội dung</th>
+            <th style="width: 130px">Điểm</th>
+            <th class="text-end" style="width: 170px">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+            <tr>
+              <td class="text-center">{{ item.position }}</td>
+              <td>{{ item.question.content|truncatechars:150 }}</td>
+              <td>
+                <input type="number" name="points_{{ item.question_id }}" value="{{ item.points|unlocalize }}" min="0.01" step="0.01"
+                       class="form-control form-control-sm" aria-label="Điểm câu {{ item.position }}">
+              </td>
+              <td class="text-end text-nowrap">
+                <button type="submit" name="action" value="up:{{ item.question_id }}" class="btn btn-sm btn-outline-secondary"
+                        {% if forloop.first %}disabled{% endif %} aria-label="Đưa câu {{ item.position }} lên">↑</button>
+                <button type="submit" name="action" value="down:{{ item.question_id }}" class="btn btn-sm btn-outline-secondary"
+                        {% if forloop.last %}disabled{% endif %} aria-label="Đưa câu {{ item.position }} xuống">↓</button>
+                <button type="submit" name="action" value="remove:{{ item.question_id }}" class="btn btn-sm btn-outline-danger">Bỏ</button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <button type="submit" name="action" value="save_points" class="btn btn-primary btn-sm">Lưu điểm</button>
+  </form>
+{% else %}
+  <div class="text-muted mb-4">Đề chưa có câu hỏi. Chọn câu hỏi từ ngân hàng bên dưới.</div>
+{% endif %}
+
+<h2 class="h6 fw-bold mb-2">Ngân hàng câu hỏi (đang dùng)</h2>
+<form method="get" class="row g-2 mb-2">
+  <div class="col-12 col-md-6">
+    <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Tìm theo nội dung câu hỏi..." aria-label="Tìm câu hỏi">
+  </div>
+  <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Tìm</button></div>
+</form>
+
+{% if bank %}
+  <form method="post">
+    {% csrf_token %}
+    <div class="table-responsive">
+      <table class="table align-middle mb-2">
+        <thead>
+          <tr><th style="width: 40px"></th><th>Nội dung</th><th class="text-center">Số phương án</th></tr>
+        </thead>
+        <tbody>
+          {% for question in bank %}
+            <tr>
+              <td><input type="checkbox" class="form-check-input" name="question_ids" value="{{ question.question_id }}"
+                         id="q{{ question.question_id }}"></td>
+              <td><label for="q{{ question.question_id }}">{{ question.content|truncatechars:150 }}</label></td>
+              <td class="text-center">{{ question.option_count }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <label for="add-points" class="form-label mb-0">Điểm mỗi câu</label>
+      <input type="number" name="points" id="add-points" value="1" min="0.01" step="0.01" class="form-control form-control-sm" style="width: 110px">
+      <button type="submit" name="action" value="add" class="btn btn-primary btn-sm">Thêm vào đề</button>
+    </div>
+  </form>
+  {% if page_obj.has_other_pages %}
+    <nav class="mt-2 small">
+      {% if page_obj.has_previous %}<a href="?q={{ search|urlencode }}&page={{ page_obj.previous_page_number }}">‹ Trước</a>{% endif %}
+      Trang {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}
+      {% if page_obj.has_next %}<a href="?q={{ search|urlencode }}&page={{ page_obj.next_page_number }}">Sau ›</a>{% endif %}
+    </nav>
+  {% endif %}
+{% elif search %}
+  <div class="text-muted">Không tìm thấy câu hỏi phù hợp.</div>
+{% else %}
+  <div class="text-muted">Không còn câu hỏi đang dùng nào để thêm. Câu hỏi phải ở trạng thái 'Đang dùng' mới chọn được.</div>
+{% endif %}
+{% endblock %}

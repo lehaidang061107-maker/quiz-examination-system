@@ -7,6 +7,12 @@
   <div class="d-flex flex-wrap gap-2">
     {% if is_draft %}
       <a href="{% url 'exams:edit' exam.exam_id %}" class="btn btn-sm btn-outline-primary">Sửa thông tin</a>
+      <a href="{% url 'exams:questions' exam.exam_id %}" class="btn btn-sm btn-outline-primary">Chọn câu hỏi</a>
+      <form method="post" action="{% url 'exams:publish' exam.exam_id %}" class="m-0"
+            onsubmit="return confirm('Phát hành đề? Sau khi phát hành sẽ không sửa được câu hỏi, thứ tự và điểm.');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-primary">Phát hành</button>
+      </form>
     {% endif %}
     <a href="{% url 'exams:list' %}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
   </div>
@@ -25,4 +31,26 @@
   <dt class="col-sm-3">Ngày tạo</dt>
   <dd class="col-sm-9">{{ exam.created_at|date:"d/m/Y H:i" }}</dd>
 </dl>
+
+<h2 class="h6 fw-bold mb-2">Câu hỏi trong đề ({{ items|length }} câu · tổng {{ total_points }} điểm)</h2>
+{% if items %}
+  <div class="table-responsive mb-4">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr><th class="text-center" style="width: 60px">Câu</th><th>Nội dung</th><th class="text-end" style="width: 100px">Điểm</th></tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+          <tr>
+            <td class="text-center">{{ item.position }}</td>
+            <td>{{ item.question.content|truncatechars:150 }}</td>
+            <td class="text-end">{{ item.points }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="text-muted mb-4">Đề chưa có câu hỏi.{% if is_draft %} Bấm 'Chọn câu hỏi' để thêm.{% endif %}</div>
+{% endif %}
 {% endblock %}
