@@ -28,11 +28,11 @@ def sync_and_finalize_if_needed(submission: Submission, now=None) -> FinalizeRes
         return FinalizeResult(finalized=False, reason="already_submitted")
 
     if submission.deadline_at is not None and now >= submission.deadline_at:
-        submission.auto_submit(at=submission.deadline_at)
+        submission.auto_submit(at=submission.deadline_at, reason="expired")
         return FinalizeResult(finalized=True, reason="expired")
 
     if submission.exam.status == ExamStatus.CLOSED:
-        submission.auto_submit(at=now)
+        submission.auto_submit(at=now, reason="exam_closed")
         return FinalizeResult(finalized=True, reason="exam_closed")
 
     has_active_access = ExamParticipant.objects.filter(
@@ -41,7 +41,7 @@ def sync_and_finalize_if_needed(submission: Submission, now=None) -> FinalizeRes
         is_active=True,
     ).exists()
     if not has_active_access:
-        submission.auto_submit(at=now)
+        submission.auto_submit(at=now, reason="revoked")
         return FinalizeResult(finalized=True, reason="revoked")
 
     return None

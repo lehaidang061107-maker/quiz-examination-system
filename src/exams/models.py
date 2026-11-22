@@ -163,7 +163,7 @@ class Exam(models.Model):
         self.status = ExamStatus.CLOSED
         self.save(update_fields=["status"])
         for submission in self.submissions.filter(status=SubmissionStatus.IN_PROGRESS):
-            submission.auto_submit(at=now)
+            submission.auto_submit(at=now, reason="exam_closed")
 
     def archive(self):
         """Lưu trữ đề CLOSED -> ARCHIVED khi không còn bài đang làm/chờ chấm (BR-17). Điểm đã công bố vẫn xem được."""
@@ -298,7 +298,7 @@ class ExamParticipant(models.Model):
         ExamParticipant.objects.filter(pk=self.pk).update(is_active=False)
         self.is_active = False
         for submission in self.exam.submissions.filter(student_id=self.student_id, status=SubmissionStatus.IN_PROGRESS):
-            submission.auto_submit(at=now)
+            submission.auto_submit(at=now, reason="revoked")
 
     def can_participate(self):
         """canParticipate(): còn quyền dự thi và đề đang mở."""

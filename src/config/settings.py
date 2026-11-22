@@ -128,5 +128,8 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {"audit": {"format": "{asctime} [AUDIT] {message}", "style": "{"}},
     "handlers": {"audit_console": {"class": "logging.StreamHandler", "formatter": "audit"}},
-    "loggers": {"exams.audit": {"handlers": ["audit_console"], "level": "INFO", "propagate": False}},
+    "loggers": {
+        "exams.audit": {"handlers": ["audit_console"], "level": "INFO", "propagate": False},
+        "attempts.audit": {"handlers": ["audit_console"], "level": "INFO", "propagate": False},
+    },
 }

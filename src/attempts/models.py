@@ -10,6 +10,15 @@ from django.db.models.functions import Now
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
+# NFR-MAI-03, NFR-SEC-10: nhật ký nộp bài (ai, lượt nào, nộp tay hay tự nộp và lý do). Không ghi đáp án.
+audit_log = logging.getLogger("attempts.audit")
+
+AUTO_SUBMIT_REASONS = {
+    "expired": "hết giờ",
+    "exam_closed": "đề đã đóng",
+    "revoked": "bị thu hồi quyền",
+    "account_locked": "tài khoản bị khóa",
+}
 
 
 class StaleVersionError(ValidationError):
@@ -132,12 +141,13 @@ class Submission(models.Model):
         (gọi lại không tạo bản nộp trùng, NFR-REL-03). Nộp xong thì chấm luôn (Submit include Grading)."""
         return self._finalize(effective_at=None)
 
-    def auto_submit(self, at=None):
+    def auto_submit(self, at=None, reason="expired"):
         """autoSubmit(): tự nộp khi hết giờ, khóa tài khoản, thu hồi quyền hoặc đóng đề.
-        submitted_at là thời điểm hiệu lực (mặc định là hạn nộp), chỉ dùng đáp án đã lưu (BR-21)."""
-        return self._finalize(effective_at=at or self.deadline_at or timezone.now())
+        submitted_at là thời điểm hiệu lực (mặc định là hạn nộp), chỉ dùng đáp án đã lưu (BR-21).
+        reason: một khóa của AUTO_SUBMIT_REASONS, ghi vào nhật ký."""
+        return self._finalize(effective_at=at or self.deadline_at or timezone.now(), reason=reason)
 
-    def _finalize(self, effective_at):
+    def _finalize(self, effective_at, reason=None):
         with transaction.atomic():
             current = Submission.objects.select_for_update().get(pk=self.pk)
             if current.status != SubmissionStatus.IN_PROGRESS:
@@ -151,6 +161,11 @@ class Submission(models.Model):
             current.submitted_at = max(effective_at, current.started_at)
             current.save(update_fields=["status", "submitted_at"])
         self.refresh_from_db()
+        how = "nộp tay" if reason is None else f"tự nộp ({AUTO_SUBMIT_REASONS.get(reason, reason)})"
+        audit_log.info(
+            "nộp bài | submission_id=%s | student_id=%s | exam_id=%s | %s | submitted_at=%s",
+            self.pk, self.student_id, self.exam_id, how, self.submitted_at.isoformat(),
+        )
         try:
             self.grade()
         except Exception:

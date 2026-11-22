@@ -277,7 +277,7 @@ class Admin(User):
             # BR-18: bài đang làm được nộp bằng các đáp án đã lưu, tính tại thời điểm khóa.
             in_progress = list(user.submissions.filter(status=SubmissionStatus.IN_PROGRESS))
         for submission in in_progress:
-            submission.auto_submit(at=timezone.now())
+            submission.auto_submit(at=timezone.now(), reason="account_locked")
 
     @staticmethod
     def _check_not_last_admin(user):
