@@ -326,9 +326,10 @@ def _revoke(exam, student_id):
 def exam_close(request, exam_id):
     """S3-14: đóng đề PUBLISHED -> CLOSED; bài đang làm được nộp bằng đáp án đã lưu. Không mở lại được."""
     exam = request.user.as_role().manage_exam(exam_id)
-    in_progress = exam.submissions.filter(status=SubmissionStatus.IN_PROGRESS).count()
     try:
         with transaction.atomic():
+            exam = _lock_exam(exam)
+            in_progress = exam.submissions.filter(status=SubmissionStatus.IN_PROGRESS).count()
             exam.close()
     except ValidationError as error:
         _show_errors(request, error)
@@ -350,7 +351,9 @@ def exam_publish_results(request, exam_id):
         messages.info(request, "Điểm của đề này đã được công bố trước đó.")
         return redirect("exams:detail", exam_id=exam.pk)
     try:
-        exam.publish_results()
+        with transaction.atomic():
+            exam = _lock_exam(exam)
+            exam.publish_results()
     except ValidationError as error:
         _show_errors(request, error)
     else:
@@ -365,7 +368,9 @@ def exam_archive(request, exam_id):
     """S3-14: lưu trữ đề CLOSED -> ARCHIVED khi không còn bài đang làm/chờ chấm (BR-17)."""
     exam = request.user.as_role().manage_exam(exam_id)
     try:
-        exam.archive()
+        with transaction.atomic():
+            exam = _lock_exam(exam)
+            exam.archive()
     except ValidationError as error:
         _show_errors(request, error)
     else:

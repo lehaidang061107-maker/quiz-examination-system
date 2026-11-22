@@ -1,4 +1,5 @@
 """Xử lý nền cho lượt thi (S3-23): tự nộp lượt hết hạn và chấm lại bài chờ chấm.
+S3-14: tự đóng đề PUBLISHED khi đến closes_at (BR-17) để giảng viên công bố điểm được.
 
 Không phụ thuộc sinh viên còn mở trình duyệt. Mỗi lượt được khóa riêng bằng
 select_for_update(skip_locked=True): lượt đang bị web hoặc worker khác giữ thì bỏ qua,
@@ -13,18 +14,20 @@ from django.db import transaction
 from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
 
-from exams.models import ExamParticipant, ExamStatus
+from exams.models import Exam, ExamParticipant, ExamStatus
 
 from .models import Submission, SubmissionStatus
 from .services import sync_and_finalize_if_needed
 
 logger = logging.getLogger(__name__)
+audit_log = logging.getLogger("exams.audit")
 
 BATCH_SIZE = 200  # số lượt tối đa mỗi loại trong một vòng; còn dư thì vòng sau làm tiếp
 
 
 @dataclass
 class WorkerStats:
+    exams_closed: int = 0  # đề hết lịch được hệ thống tự đóng
     finalized: int = 0  # lượt đang làm được chốt (hết giờ, đề đóng, bị thu hồi quyền)
     graded: int = 0  # bài chờ chấm được chấm lại thành công (bài tự nộp đã chấm ngay khi chốt)
     skipped: int = 0  # lượt đang bị tiến trình khác giữ hoặc đã được xử lý trước
@@ -32,11 +35,42 @@ class WorkerStats:
 
     @property
     def total(self):
-        return self.finalized + self.graded + self.skipped + self.failed
+        return self.exams_closed + self.finalized + self.graded + self.skipped + self.failed
 
     def __str__(self):
-        return (f"chốt {self.finalized}, chấm lại {self.graded}, "
+        return (f"đóng đề {self.exams_closed}, chốt {self.finalized}, chấm lại {self.graded}, "
                 f"bỏ qua {self.skipped}, lỗi {self.failed}")
+
+
+def expired_exam_ids(now, limit=BATCH_SIZE):
+    """Đề còn PUBLISHED nhưng đã qua giờ đóng."""
+    return list(
+        Exam.objects.filter(status=ExamStatus.PUBLISHED, closes_at__lte=now)
+        .order_by("closes_at", "pk")
+        .values_list("pk", flat=True)[:limit]
+    )
+
+
+def close_expired_exams(stats, now=None):
+    """Đóng đề hết lịch; bài đang làm được nộp tại giờ đóng bằng đáp án đã lưu (BR-17, BR-21)."""
+    now = now or timezone.now()
+    for pk in expired_exam_ids(now):
+        try:
+            with transaction.atomic():
+                exam = (
+                    Exam.objects.select_for_update(skip_locked=True)
+                    .filter(pk=pk, status=ExamStatus.PUBLISHED)
+                    .first()
+                )
+                if exam is None:  # giảng viên đang thao tác trên đề hoặc đã đóng tay
+                    stats.skipped += 1
+                    continue
+                exam.close(at=exam.closes_at)
+            stats.exams_closed += 1
+            audit_log.info("hệ thống tự đóng đề | exam_id=%s '%s' | hết lịch lúc %s", exam.pk, exam.title, exam.closes_at)
+        except Exception:
+            logger.exception("Worker: tự đóng đề %s thất bại, sẽ thử lại vòng sau", pk)
+            stats.failed += 1
 
 
 def overdue_submission_ids(now, limit=BATCH_SIZE):
@@ -105,8 +139,9 @@ def retry_grading(stats):
 
 
 def process_once(now=None):
-    """Một vòng xử lý: chốt lượt quá hạn trước, rồi chấm các bài còn chờ chấm."""
+    """Một vòng xử lý: đóng đề hết lịch, chốt lượt quá hạn, rồi chấm các bài còn chờ chấm."""
     stats = WorkerStats()
+    close_expired_exams(stats, now=now)
     finalize_overdue(stats, now=now)
     retry_grading(stats)
     return stats
