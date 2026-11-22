@@ -51,7 +51,9 @@ Mở http://127.0.0.1:8000/accounts/login/ và đăng nhập bằng [tài khoả
 | Xem log tiến trình nền (tự nộp, chấm lại) | `docker compose logs -f worker` |
 | Xem nhật ký thao tác (đăng nhập, tài khoản, nộp bài, đề thi) | Xem [Audit Logs](#audit-logs) |
 | Sửa code xong, chạy bản mới | `docker compose up -d --build --wait` |
+| Chạy bộ kiểm tra | `docker compose exec web python manage.py test` (cuối kết quả có `OK` là đạt) |
 | Chạy lệnh `manage.py` khác | Thêm `docker compose exec web` trước `python manage.py ...` |
+| Sao lưu / phục hồi database | `scripts/backup_db.sh`, `scripts/restore_db.sh` (xem [05-backup-restore.md](05-backup-restore.md)) |
 | Tắt (giữ dữ liệu) | `docker compose stop` |
 
 Website trong Docker chạy bằng `runserver`, chỉ dùng cho máy cá nhân và buổi demo.
@@ -170,4 +172,4 @@ Bảng bắt đầu bằng `django_` hoặc `auth_` là của hệ thống, khô
 | `DEMO_PASSWORD chưa hợp lệ` | Đặt `DEMO_PASSWORD` ít nhất 8 ký tự, có cả chữ và số |
 | `Demo đã tồn tại` | Bình thường, dữ liệu mẫu đã có sẵn |
 | `port is already allocated` | Cổng đang bận: đổi `POSTGRES_PORT` hoặc `WEB_PORT` trong `.env` (ví dụ `WEB_PORT=8001`) |
-| Muốn xóa sạch dữ liệu, làm lại từ đầu | `docker compose down -v`, rồi làm lại các lệnh lần đầu |
+| Muốn xóa sạch dữ liệu, làm lại từ đầu | Sao lưu trước nếu cần (`scripts/backup_db.sh`), rồi `docker compose down -v` và làm lại các lệnh lần đầu |

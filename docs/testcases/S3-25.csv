@@ -1,0 +1,28 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-25-01,Sao lưu database (NFR-REL-04),"1. Chạy hệ thống bằng Docker, đã có dữ liệu mẫu (seed_demo)
+2. Ở thư mục dự án chạy scripts/backup_db.sh
+3. Xem thư mục backups/",Dữ liệu mẫu seed_demo,Script báo Đã sao lưu: backups/quiz-<ngày giờ>.dump kèm dung lượng; file có trong backups/ và không rỗng
+S3-25-02,Sao lưu database (NFR-REL-04),"1. Trong backups/ đã có 7 bản quiz-*.dump
+2. Chạy scripts/backup_db.sh
+3. Xem thư mục backups/",7 bản sao lưu cũ,"Tạo bản mới, xóa đúng bản cũ nhất, báo Đang giữ 7 bản trong backups/"
+S3-25-03,Sao lưu database (NFR-REL-04),"1. Tắt database: docker compose stop db
+2. Chạy scripts/backup_db.sh
+3. Xem thư mục backups/",Database đã tắt,"Script báo lỗi database chưa chạy, không tạo file mới và không xóa bản cũ nào"
+S3-25-04,Kiểm tra phục hồi trước kỳ thi (NFR-REL-04),"1. Đã có ít nhất một bản sao lưu (S3-25-01)
+2. Chạy scripts/check_backup.sh
+3. Đăng nhập website kiểm tra dữ liệu",Bản sao lưu mới nhất,"In bảng số dòng 9 bảng nghiệp vụ của bản sao lưu và database đang chạy, dòng cuối ĐẠT; dữ liệu trên website không đổi, database tạm quiz_kiemtra_phuchoi đã bị xóa"
+S3-25-05,Phục hồi database (NFR-REL-04),"1. Chạy scripts/restore_db.sh backups/quiz-<ngày giờ>.dump
+2. Khi được hỏi, gõ khong rồi Enter",Câu trả lời: khong,"Script báo Đã hủy, không thay đổi gì; web và worker vẫn chạy, dữ liệu giữ nguyên"
+S3-25-06,Phục hồi database (NFR-REL-04),"1. Tạo file rác: echo rac > backups/hong.dump
+2. Chạy scripts/restore_db.sh --yes backups/hong.dump",File backups/hong.dump không phải bản sao lưu,Script báo file không phải bản sao lưu hợp lệ của pg_dump và dừng; database không bị xóa
+S3-25-07,Phục hồi database (NFR-REL-04),"1. Sao lưu: scripts/backup_db.sh
+2. Giả sự cố: xóa toàn bộ bảng results bằng psql
+3. Chạy scripts/restore_db.sh với bản vừa sao lưu, gõ dong y
+4. Mở /health/, đăng nhập student1, xem Lịch sử bài thi","Câu trả lời: dong y
+Tài khoản: student1@demo.example / Kiemthu2026","Script sao lưu dữ liệu hiện tại vào backups/truoc-phuc-hoi-*.dump, tạm dừng rồi bật lại web và worker, báo Đã phục hồi; /health/ trả database ok; điểm của student1 hiện lại như trước sự cố"
+S3-25-08,Hướng dẫn chạy trên máy sạch,"1. Clone repo, chép .env.example thành .env và điền theo 01-getting-started
+2. docker compose up -d --build --wait
+3. docker compose exec web python manage.py seed_demo
+4. docker compose exec web python manage.py test
+5. Mở http://127.0.0.1:8000/accounts/login/ và đăng nhập","DEMO_PASSWORD: Kiemthu2026
+Tài khoản: teacher@demo.example","db, web, worker đều Healthy; seed_demo báo Đã tạo dữ liệu demo.; bộ kiểm tra kết thúc bằng OK; đăng nhập vào Trang chủ giảng viên"

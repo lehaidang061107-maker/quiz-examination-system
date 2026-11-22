@@ -21,8 +21,10 @@ FILES = [
     "docs/guides/02-git-workflow.md",
     "docs/guides/03-coding-guidelines.md",
     "docs/guides/04-testing.md",
+    "docs/guides/05-backup-restore.md",
     "docs/project/project-plan.md",
     "docs/project/course-requirements.md",
+    "docs/project/demo-and-handover.md",
 ]
 START, END = "<!-- toc -->", "<!-- /toc -->"
 HEADING = re.compile(r"^(#{2,3})\s+(.+?)\s*#*\s*$")
