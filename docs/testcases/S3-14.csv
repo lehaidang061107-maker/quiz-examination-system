@@ -1,0 +1,26 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-14-01,Manage Exams (FR-07),"1. Đăng nhập Teacher
+2. Mở chi tiết đề Đã phát hành","1 sinh viên đã nộp và được chấm, 1 sinh viên đang làm","Dòng 'Bài làm' hiện 'Đang làm: 1 · Đã nộp, chờ chấm: 0 · Đã chấm: 1'; có nút 'Đóng đề'"
+S3-14-02,"Manage Exams (FR-07), BR-17","1. Mở chi tiết đề Đã phát hành
+2. Bấm 'Đóng đề'
+3. Bấm OK ở hộp xác nhận",1 sinh viên đang làm bài,Hiện 'Đã đóng đề thi. 1 bài đang làm đã được nộp bằng đáp án đã lưu.'; trạng thái đề 'Đã đóng'; bài của sinh viên chuyển sang Đã nộp/Đã chấm
+S3-14-03,"Manage Exams (FR-07), BR-17","1. Đóng đề
+2. Sinh viên được giao mở 'Danh sách bài thi'","Đề Đã đóng, sinh viên chưa làm","Sinh viên không bắt đầu được, hiện lý do 'Đề thi chưa mở hoặc đã đóng.'"
+S3-14-04,"Manage Exams (FR-07), BR-17",1. Mở chi tiết đề Đã đóng,Đề Đã đóng,"Không có nút 'Đóng đề', 'Phát hành', 'Sửa thông tin', 'Chọn câu hỏi' (không mở lại hay sửa được đề)"
+S3-14-05,"Manage Exams (FR-07), BR-19","1. Mở chi tiết đề Đã đóng còn bài chờ chấm
+2. Bấm 'Công bố điểm' và OK","1 bài ở trạng thái Đã nộp, chưa có kết quả","Hiện 'Còn 1 bài chưa chấm xong, chưa thể công bố.'; dòng Công bố điểm vẫn 'Chưa công bố'"
+S3-14-06,"Manage Exams (FR-07), BR-19","1. Mở chi tiết đề Đã đóng, mọi bài đã chấm
+2. Bấm 'Công bố điểm' và OK",Đề có 1 bài Đã chấm,Hiện 'Đã công bố điểm. Sinh viên đã xem được kết quả của mình.'; dòng Công bố điểm hiện 'Đã công bố'; nút 'Công bố điểm' biến mất
+S3-14-07,"View Exam Results (FR-13), BR-10","1. Trước khi công bố: Student mở 'Lịch sử bài thi'
+2. Teacher công bố điểm
+3. Student tải lại trang","Student đã nộp bài, đề Đã đóng",Bước 1 chưa thấy điểm (Chưa công bố); bước 3 thấy điểm của mình
+S3-14-08,"Manage Exams (FR-07), BR-19",1. Gõ thẳng gửi yêu cầu công bố điểm khi đề còn Đã phát hành (dùng đường dẫn /exams/<mã đề>/publish-results/ bằng form POST),Đề Đã phát hành,Hiện 'Chỉ công bố điểm sau khi đã đóng đề.'; điểm chưa được công bố
+S3-14-09,"Manage Exams (FR-07), BR-17","1. Mở chi tiết đề Đã đóng, mọi bài đã chấm
+2. Bấm 'Lưu trữ' và OK
+3. Student mở kết quả đề đó",Điểm đã công bố trước khi lưu trữ,Hiện 'Đã lưu trữ đề thi.'; trạng thái 'Lưu trữ'; Student vẫn xem được điểm đã công bố
+S3-14-10,"Manage Exams (FR-07), BR-17","1. Mở chi tiết đề Đã đóng còn bài chờ chấm
+2. Bấm 'Lưu trữ' và OK",1 bài Đã nộp chưa có kết quả,"Hiện 'Còn 1 bài chưa chấm xong, chưa thể lưu trữ.'; đề vẫn 'Đã đóng'"
+S3-14-11,Manage Exams (FR-07),"1. Đóng đề, công bố điểm, lưu trữ
+2. Xem log máy chủ (docker compose logs web)",Teacher thực hiện 3 thao tác,"Log có 3 dòng [AUDIT] ghi thời điểm, thao tác ('đóng đề', 'công bố điểm', 'lưu trữ đề'), user_id/email Teacher và exam_id"
+S3-14-12,"Manage Exams (FR-07), NFR-SEC-09","1. Đăng nhập Teacher B
+2. Gửi yêu cầu đóng đề / công bố điểm cho đề của Teacher A",Đề thuộc Teacher A,Hiện trang 403; trạng thái đề không đổi

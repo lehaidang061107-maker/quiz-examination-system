@@ -3,6 +3,8 @@
 Controller theo MVC: kiểm tra vai trò bằng role_required, lấy đề qua Teacher.manage_exam (đề của
 người khác -> 403), quy tắc nghiệp vụ gọi phương thức Model, báo kết quả bằng messages.
 """
+import logging
+
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
@@ -19,6 +21,8 @@ from questions.models import QuestionStatus
 
 from .forms import ExamForm
 from .models import ExamParticipant, ExamStatus
+
+audit_log = logging.getLogger("exams.audit")
 
 STATUS_FILTERS = [(value, label) for value, label in ExamStatus.choices]
 
@@ -278,6 +282,83 @@ def _revoke(exam, student_id):
     return f"Đã thu hồi quyền của {name}."
 
 
+@role_required(Role.TEACHER)
+@require_POST
+def exam_close(request, exam_id):
+    """S3-14: đóng đề PUBLISHED -> CLOSED; bài đang làm được nộp bằng đáp án đã lưu. Không mở lại được."""
+    exam = request.user.as_role().manage_exam(exam_id)
+    in_progress = exam.submissions.filter(status=SubmissionStatus.IN_PROGRESS).count()
+    try:
+        with transaction.atomic():
+            exam.close()
+    except ValidationError as error:
+        _show_errors(request, error)
+    else:
+        _audit(request, exam, "đóng đề", f"tự nộp {in_progress} bài đang làm")
+        text = "Đã đóng đề thi."
+        if in_progress:
+            text += f" {in_progress} bài đang làm đã được nộp bằng đáp án đã lưu."
+        messages.success(request, text)
+    return redirect("exams:detail", exam_id=exam.pk)
+
+
+@role_required(Role.TEACHER)
+@require_POST
+def exam_publish_results(request, exam_id):
+    """S3-14: công bố điểm khi đề CLOSED và mọi bài đã chấm (BR-19). Chưa có thao tác thu hồi công bố."""
+    exam = request.user.as_role().manage_exam(exam_id)
+    if exam.results_published:
+        messages.info(request, "Điểm của đề này đã được công bố trước đó.")
+        return redirect("exams:detail", exam_id=exam.pk)
+    try:
+        exam.publish_results()
+    except ValidationError as error:
+        _show_errors(request, error)
+    else:
+        _audit(request, exam, "công bố điểm", f"{exam.submissions.count()} bài")
+        messages.success(request, "Đã công bố điểm. Sinh viên đã xem được kết quả của mình.")
+    return redirect("exams:detail", exam_id=exam.pk)
+
+
+@role_required(Role.TEACHER)
+@require_POST
+def exam_archive(request, exam_id):
+    """S3-14: lưu trữ đề CLOSED -> ARCHIVED khi không còn bài đang làm/chờ chấm (BR-17)."""
+    exam = request.user.as_role().manage_exam(exam_id)
+    try:
+        exam.archive()
+    except ValidationError as error:
+        _show_errors(request, error)
+    else:
+        _audit(request, exam, "lưu trữ đề")
+        messages.success(request, "Đã lưu trữ đề thi.")
+    return redirect("exams:detail", exam_id=exam.pk)
+
+
+def _show_errors(request, error):
+    for text in error.messages:
+        messages.error(request, text)
+
+
+def _audit(request, exam, action, note=""):
+    """Ghi ai làm gì, lúc nào (giờ máy chủ) với đề nào để truy vết."""
+    audit_log.info(
+        "%s | user_id=%s (%s) | exam_id=%s '%s'%s",
+        action, request.user.pk, request.user.email, exam.pk, exam.title, f" | {note}" if note else "",
+    )
+
+
+def _submission_counts(exam):
+    counts = dict(
+        exam.submissions.order_by().values_list("status").annotate(n=Count("submission_id")).values_list("status", "n")
+    )
+    return {
+        "in_progress": counts.get(SubmissionStatus.IN_PROGRESS, 0),
+        "submitted": counts.get(SubmissionStatus.SUBMITTED, 0),
+        "graded": counts.get(SubmissionStatus.GRADED, 0),
+    }
+
+
 def _detail_context(exam):
     items = list(exam.exam_questions.select_related("question").order_by("position"))
     return {
@@ -286,6 +367,7 @@ def _detail_context(exam):
         "items": items,
         "total_points": sum((item.points for item in items), 0),
         "participant_total": exam.participants.filter(is_active=True).count(),
+        "counts": _submission_counts(exam),
     }
 
 

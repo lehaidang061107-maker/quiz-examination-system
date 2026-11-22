@@ -162,6 +162,20 @@ class Exam(models.Model):
         for submission in self.submissions.filter(status=SubmissionStatus.IN_PROGRESS):
             submission.auto_submit(at=now)
 
+    def archive(self):
+        """Lưu trữ đề CLOSED -> ARCHIVED khi không còn bài đang làm/chờ chấm (BR-17). Điểm đã công bố vẫn xem được."""
+        from attempts.models import SubmissionStatus
+
+        if self.status != ExamStatus.CLOSED:
+            raise ValidationError("Chỉ lưu trữ được đề đã đóng.")
+        pending = self.submissions.filter(
+            status__in=[SubmissionStatus.IN_PROGRESS, SubmissionStatus.SUBMITTED]
+        ).count()
+        if pending:
+            raise ValidationError(f"Còn {pending} bài chưa chấm xong, chưa thể lưu trữ.")
+        self.status = ExamStatus.ARCHIVED
+        self.save(update_fields=["status"])
+
     def publish_results(self):
         """publishResults(): công bố điểm khi đề CLOSED và mọi bài đã chấm (BR-19)."""
         from attempts.models import SubmissionStatus

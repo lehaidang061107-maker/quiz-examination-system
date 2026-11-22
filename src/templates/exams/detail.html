@@ -14,6 +14,26 @@
         <button type="submit" class="btn btn-sm btn-primary">Phát hành</button>
       </form>
     {% endif %}
+    {% if exam.status == "PUBLISHED" %}
+      <form method="post" action="{% url 'exams:close' exam.exam_id %}" class="m-0"
+            onsubmit="return confirm('Đóng đề? Bài đang làm sẽ được nộp bằng đáp án đã lưu và không mở lại được đề.');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-warning">Đóng đề</button>
+      </form>
+    {% elif exam.status == "CLOSED" %}
+      {% if not exam.results_published %}
+        <form method="post" action="{% url 'exams:publish_results' exam.exam_id %}" class="m-0"
+              onsubmit="return confirm('Công bố điểm cho sinh viên? Chưa có thao tác thu hồi công bố.');">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-primary">Công bố điểm</button>
+        </form>
+      {% endif %}
+      <form method="post" action="{% url 'exams:archive' exam.exam_id %}" class="m-0"
+            onsubmit="return confirm('Lưu trữ đề thi?');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-outline-dark">Lưu trữ</button>
+      </form>
+    {% endif %}
     <a href="{% url 'exams:participants' exam.exam_id %}" class="btn btn-sm btn-outline-primary">Phân công sinh viên</a>
     <a href="{% url 'exams:list' %}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
   </div>
@@ -31,6 +51,24 @@
   <dd class="col-sm-9">{{ exam.closes_at|date:"d/m/Y H:i"|default:"Không giới hạn" }}</dd>
   <dt class="col-sm-3">Sinh viên được giao</dt>
   <dd class="col-sm-9">{{ participant_total }}</dd>
+  {% if not is_draft %}
+    <dt class="col-sm-3">Bài làm</dt>
+    <dd class="col-sm-9">
+      Đang làm: <strong>{{ counts.in_progress }}</strong> ·
+      Đã nộp, chờ chấm: <strong>{{ counts.submitted }}</strong> ·
+      Đã chấm: <strong>{{ counts.graded }}</strong>
+      · <a href="{% url 'results:teacher_exam' exam.exam_id %}">Xem kết quả</a>
+    </dd>
+    <dt class="col-sm-3">Công bố điểm</dt>
+    <dd class="col-sm-9">
+      {% if exam.results_published %}<span class="badge text-bg-success">Đã công bố</span>
+      {% else %}<span class="badge text-bg-secondary">Chưa công bố</span>
+        {% if exam.status == "CLOSED" and counts.in_progress|add:counts.submitted %}
+          <span class="small text-muted ms-1">Còn {{ counts.in_progress|add:counts.submitted }} bài chưa chấm xong.</span>
+        {% endif %}
+      {% endif %}
+    </dd>
+  {% endif %}
   <dt class="col-sm-3">Ngày tạo</dt>
   <dd class="col-sm-9">{{ exam.created_at|date:"d/m/Y H:i" }}</dd>
 </dl>

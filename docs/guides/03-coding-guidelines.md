@@ -125,7 +125,7 @@ Admin/Teacher/Student là proxy model của `User` (cùng bảng `users`); lấy
 | Student | `accounts/models.py` | `view_available_exams`, `start_exam`, `save_answer`, `submit_exam`, `view_result` |
 | Question | `questions/models.py` | `add_option`, `validate_options`, `create_revision`, `archive` (+ `activate`, `option_errors`, `is_locked`) |
 | AnswerOption | `questions/models.py` | `update_content`, `set_correct` |
-| Exam | `exams/models.py` | `add_question`, `publish`, `can_start`, `publish_results` (+ `apply_settings`, `close`, `cannot_start_reason`) |
+| Exam | `exams/models.py` | `add_question`, `publish`, `can_start`, `publish_results` (+ `apply_settings`, `remove_question`, `close`, `archive`, `cannot_start_reason`) |
 | ExamQuestion | `exams/models.py` | `set_position`, `set_points` |
 | ExamParticipant | `exams/models.py` | `grant_access`, `revoke_access`, `can_participate` |
 | Submission | `attempts/models.py` | `save_answer`, `submit`, `auto_submit`, `grade`, `is_editable` (+ `start`) |
