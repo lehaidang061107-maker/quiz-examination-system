@@ -47,10 +47,22 @@ def _page_query(request):
 
 @role_required(Role.TEACHER)
 def exam_list(request):
-    """S3-11: danh sách đề thuộc giảng viên đang đăng nhập, lọc theo trạng thái."""
+    """S3-11: danh sách đề thuộc giảng viên đang đăng nhập, lọc theo trạng thái và tên đề.
+
+    Ba ô số ở đầu trang như màn hình 09 Figma: tổng số đề, đang mở, đã kết thúc (đóng hoặc lưu trữ).
+    """
     teacher = request.user.as_role()
     selected_status = request.GET.get("status", "").strip()
+    search = request.GET.get("q", "").strip()
     exams = teacher.exams.all()
+    counts = dict(exams.order_by().values_list("status").annotate(n=Count("exam_id")))
+    stats = [
+        ("Tổng kỳ thi", sum(counts.values())),
+        ("Đang mở", counts.get(ExamStatus.PUBLISHED, 0)),
+        ("Đã kết thúc", counts.get(ExamStatus.CLOSED, 0) + counts.get(ExamStatus.ARCHIVED, 0)),
+    ]
+    if search:
+        exams = exams.filter(title__icontains=search)
     if selected_status in ExamStatus.values:
         exams = exams.filter(status=selected_status)
     else:
@@ -69,6 +81,8 @@ def exam_list(request):
             "page_query": _page_query(request),
             "selected_status": selected_status,
             "status_choices": STATUS_FILTERS,
+            "search": search,
+            "stats": stats,
         },
     )
 

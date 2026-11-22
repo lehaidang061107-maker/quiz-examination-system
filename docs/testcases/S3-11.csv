@@ -55,7 +55,14 @@ S3-11-13,"Manage Exams (FR-07), NFR-PER-05","1. Đăng nhập Teacher đã có 2
 2. Bấm menu 'Quản lý kỳ thi'
 3. Chọn lọc 'Nháp', bấm 'Lọc'
 4. Bấm 'Sau' ở cuối danh sách",Teacher có 25 đề nháp,"Mỗi trang tối đa 20 đề, hiện '1/2'; trang 2 có 5 đề còn lại; bộ lọc 'Nháp' vẫn được giữ khi chuyển trang"
-S3-11-14,"Manage Exams (FR-07)","1. Đăng nhập Teacher, mở một đề nháp đã chọn câu hỏi và phân công sinh viên
+S3-11-14,Manage Exams (FR-07),"1. Đăng nhập Teacher, mở một đề nháp đã chọn câu hỏi và phân công sinh viên
 2. Bấm 'Xóa đề'
 3. Bấm Hủy, rồi bấm 'Xóa đề' lần nữa và bấm OK",Đề nháp của Teacher,"Bấm Hủy thì không thay đổi; bấm OK thì về Quản lý kỳ thi, hiện 'Đã xóa đề nháp ...', đề biến khỏi danh sách; câu hỏi vẫn còn trong ngân hàng câu hỏi"
 S3-11-15,"Manage Exams (FR-07), BR-17","1. Đăng nhập Teacher, mở một đề đã phát hành",Đề đã phát hành,"Không có nút 'Xóa đề' (chỉ có Đóng đề); gửi thẳng yêu cầu xóa thì báo 'Chỉ xóa được đề nháp.', đề vẫn còn"
+S3-11-16,Danh sách đề thi (màn hình 09 Figma),"1. Đăng nhập Teacher
+2. Mở Quản lý kỳ thi","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","3 ô số đầu trang: Tổng kỳ thi, Đang mở (Đã phát hành), Đã kết thúc (Đã đóng + Lưu trữ) chỉ đếm đề của giảng viên này; lịch thi hiện một dòng 'mở → đóng', đề không giới hạn ghi 'Tự do'"
+S3-11-17,Danh sách đề thi,"1. Đăng nhập Teacher, mở Quản lý kỳ thi
+2. Gõ một phần tên đề vào ô Tìm kiếm, bấm Lọc
+3. Gõ chuỗi không có trong tên đề nào, bấm Lọc","Email: teacher@demo.example
+Tìm kiếm: demo, rồi: khongco","Bước 2 chỉ còn các đề có tên chứa chuỗi tìm (không phân biệt hoa thường), ô số không đổi; bước 3 hiện 'Không có đề thi nào khớp bộ lọc.'"

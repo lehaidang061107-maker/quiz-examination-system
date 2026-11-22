@@ -8,8 +8,24 @@
 {% endblock %}
 
 {% block content %}
+{# Màn hình 09 Figma: ô số tổng quan #}
+<div class="row g-3 qes-stats mb-3">
+  {% for label, value in stats %}
+    <div class="col-4 col-md-3">
+      <div class="qes-card qes-stat p-3 h-100">
+        <div class="qes-subtitle small">{{ label }}</div>
+        <div class="fs-4 fw-bold">{{ value }}</div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
 <form method="get" class="row g-2 align-items-end mb-3">
-  <div class="col-12 col-sm-6 col-md-4">
+  <div class="col-12 col-md-5">
+    <label for="exam-search" class="form-label">Tìm kiếm</label>
+    <input type="text" id="exam-search" name="q" value="{{ search }}" class="form-control" placeholder="Nhập tên kỳ thi...">
+  </div>
+  <div class="col-12 col-sm-6 col-md-3">
     <label for="exam-status" class="form-label">Trạng thái</label>
     <select id="exam-status" name="status" class="form-select">
       <option value="">Tất cả trạng thái</option>
@@ -41,16 +57,13 @@
       <tbody>
         {% for exam in exams %}
           <tr>
-            <td>
+            <td class="qes-title-col">
               <div class="fw-semibold">{{ exam.title }}</div>
               <div class="small text-muted">Mã đề: {{ exam.exam_id }}</div>
             </td>
             <td>{% include "exams/_status_badge.html" with status=exam.status %}</td>
             <td class="text-center">{% if exam.duration_minutes %}{{ exam.duration_minutes }} phút{% else %}—{% endif %}</td>
-            <td class="small text-nowrap">
-              {{ exam.opens_at|date:"d/m/Y H:i"|default:"Không giới hạn" }}<br>
-              → {{ exam.closes_at|date:"d/m/Y H:i"|default:"Không giới hạn" }}
-            </td>
+            <td class="small">{% include "partials/schedule.html" with opens=exam.opens_at closes=exam.closes_at %}</td>
             <td class="text-center">{{ exam.question_total }}</td>
             <td class="text-center">{{ exam.participant_total }}</td>
             <td class="text-end text-nowrap">
@@ -65,8 +78,8 @@
     </table>
   </div>
   {% include "partials/pagination.html" with label="Phân trang đề thi" %}
-{% elif selected_status %}
-  <div class="text-center py-4 text-muted">Không có đề thi nào ở trạng thái này.</div>
+{% elif selected_status or search %}
+  <div class="text-center py-4 text-muted">Không có đề thi nào khớp bộ lọc.</div>
 {% else %}
   <div class="text-center py-4 text-muted">Bạn chưa có đề thi nào. Bấm 'Tạo đề thi' để bắt đầu.</div>
 {% endif %}
