@@ -24,3 +24,6 @@ __pycache__/
 *.db
 *.sqlite
 *.sqlite3
+
+# Bản sao lưu database (scripts/backup_db.sh): chứa dữ liệu thật, không đưa lên Git
+backups/
