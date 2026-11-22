@@ -83,3 +83,18 @@ body { background: var(--qes-page); min-height: 100vh; }
 @media (max-width: 400px) { .qes-topbar .navbar-brand { font-size: .95rem; } }
 /* Cột tên trong bảng không bị bóp hẹp; bảng cuộn ngang trong khung */
 .qes-title-col { min-width: 180px; }
+
+/* ---------- S3-17: màn làm bài (màn hình 12 Figma) ---------- */
+#qes-confirm-text { white-space: pre-line; }
+.qes-timer { color: #d64545; font-size: 1.8rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.qes-timer-warning { animation: qes-blink 1s step-start infinite; }
+@keyframes qes-blink { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .qes-timer-warning { animation: none; } }
+.qes-qgrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.qes-qgrid .btn { padding: .25rem 0; }
+.qes-qgrid .qes-current { outline: 2px solid var(--qes-text); outline-offset: 1px; }
+.qes-exam-panel { position: sticky; top: 1rem; z-index: 5; }
+@media (max-width: 991.98px) {
+  .qes-exam-panel { top: 0; box-shadow: 0 4px 12px rgba(16, 41, 68, .12); }
+  .qes-timer { font-size: 1.4rem; }
+}

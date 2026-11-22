@@ -4,35 +4,67 @@
 {% block page_title %}{{ exam.title }}{% endblock %}
 {% block page_subtitle %}Lượt thi #{{ submission.attempt_no }} · Tổng cộng {{ question_items|length }} câu hỏi{% endblock %}
 
-{% block page_actions %}
-<div class="d-flex align-items-center gap-3">
-  <span id="save-status" class="badge bg-secondary">Đã lưu</span>
-  {% if has_deadline %}
-  <div class="px-3 py-1 rounded bg-danger text-white fw-bold">
-    Còn lại: <span id="countdown-timer">--:--</span>
-  </div>
-  {% else %}
-  <div class="px-3 py-1 rounded bg-info text-dark fw-bold">
-    Không giới hạn thời gian
-  </div>
-  {% endif %}
-  <form id="submit-exam-form" method="post" action="{% url 'attempts:submit_exam' submission.pk %}" class="m-0">
-    {% csrf_token %}
-    <button type="submit" id="btn-submit-exam" class="btn btn-success fw-semibold">
-      Nộp bài
-    </button>
-  </form>
-</div>
-{% endblock %}
+{% block page_actions %}{% endblock %}
 
 {% block content %}
 <div id="offline-alert" class="alert alert-warning d-none" role="alert" aria-live="polite"></div>
 <div class="row g-4">
-  <div class="col-lg-9">
+  {% comment %} Khung bên phải (màn hình 12 Figma): đồng hồ, tiến độ, lưới số câu, nút nộp; bám theo khi cuộn.
+     Trên điện thoại khung nằm trên cùng, chỉ hiện đồng hồ + nút nộp; lưới số câu mở bằng nút (NFR-USA-02). {% endcomment %}
+  <div class="col-lg-4 col-xl-3 order-lg-2">
+    <div class="qes-card p-3 qes-exam-panel">
+      <div class="d-flex align-items-center justify-content-between gap-2">
+        <div>
+          {% if has_deadline %}
+            <div class="small qes-subtitle">Thời gian còn lại</div>
+            <div class="qes-timer" id="countdown-timer" role="timer" aria-live="off">--:--</div>
+          {% else %}
+            <div class="small qes-subtitle">Thời gian làm bài</div>
+            <div class="fw-semibold">Không giới hạn thời gian</div>
+          {% endif %}
+        </div>
+        <span id="save-status" class="badge bg-secondary">Đã lưu</span>
+      </div>
+
+      <div class="d-flex align-items-center gap-2 mt-2">
+        <div class="small flex-grow-1" aria-live="polite">
+          Đã trả lời <strong id="answered-count">{{ answered_count }}</strong>/<span id="question-total">{{ question_items|length }}</span> câu
+        </div>
+        <button class="btn btn-sm btn-outline-secondary d-lg-none" type="button" data-bs-toggle="collapse"
+                data-bs-target="#exam-panel-extra" aria-expanded="false" aria-controls="exam-panel-extra">Danh sách câu</button>
+      </div>
+      <div class="progress mt-1 mb-2" style="height: 6px;" role="progressbar" aria-label="Tiến độ làm bài"
+           aria-valuemin="0" aria-valuemax="{{ question_items|length }}" aria-valuenow="{{ answered_count }}">
+        <div id="answered-bar" class="progress-bar" style="width: 0%"></div>
+      </div>
+
+      <div class="collapse d-lg-block" id="exam-panel-extra">
+        <div class="qes-qgrid my-2">
+          {% for item in question_items %}
+          <a href="#question-card-{{ item.question.pk }}" id="nav-btn-{{ item.question.pk }}" data-question-nav="{{ forloop.counter0 }}"
+             class="btn btn-sm {% if item.selected_option_id %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+             aria-label="Câu {{ item.position }}">{{ item.position }}</a>
+          {% endfor %}
+        </div>
+        <div class="btn-group btn-group-sm w-100 mb-2" role="group" aria-label="Cách hiển thị câu hỏi">
+          <button type="button" class="btn btn-outline-primary" data-view-mode="single">Từng câu</button>
+          <button type="button" class="btn btn-outline-primary" data-view-mode="all">Tất cả câu</button>
+        </div>
+        <small class="text-muted d-block mb-2">Ô xanh: đã trả lời. Đáp án tự lưu khoảng 1 giây sau khi chọn; chỉ khi thấy "Đã lưu" thì máy chủ mới ghi nhận.</small>
+      </div>
+
+      <form id="submit-exam-form" method="post" action="{% url 'attempts:submit_exam' submission.pk %}" class="m-0">
+        {% csrf_token %}
+        <button type="submit" id="btn-submit-exam" class="btn btn-primary w-100 fw-semibold">Nộp bài thi</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-8 col-xl-9 order-lg-1">
     {% for item in question_items %}
-    <div class="card mb-3 shadow-sm" id="question-card-{{ item.question.pk }}">
+    <div class="card mb-3 shadow-sm qes-question" id="question-card-{{ item.question.pk }}" data-index="{{ forloop.counter0 }}">
       <div class="card-header d-flex justify-content-between align-items-center bg-light">
-        <span class="fw-bold">Câu {{ item.position }}</span>
+        <span class="fw-bold">Câu {{ item.position }} / {{ question_items|length }}</span>
         <span class="badge bg-primary">{{ item.points }} điểm</span>
       </div>
       <div class="card-body">
@@ -57,35 +89,12 @@
     {% empty %}
     <div class="alert alert-warning">Đề thi hiện chưa có câu hỏi nào.</div>
     {% endfor %}
-  </div>
-
-  <div class="col-lg-3">
-    <div class="card shadow-sm sticky-top" style="top: 1rem;">
-      <div class="card-header fw-bold bg-light">Danh sách câu hỏi</div>
-      <div class="card-body">
-        <div class="mb-2" aria-live="polite">
-          Đã trả lời <strong id="answered-count">{{ answered_count }}</strong>/<span id="question-total">{{ question_items|length }}</span> câu
-        </div>
-        <div class="progress mb-3" style="height: 6px;" role="progressbar" aria-label="Tiến độ làm bài"
-             aria-valuemin="0" aria-valuemax="{{ question_items|length }}" aria-valuenow="{{ answered_count }}">
-          <div id="answered-bar" class="progress-bar" style="width: 0%"></div>
-        </div>
-        <div class="d-flex flex-wrap gap-2">
-          {% for item in question_items %}
-          <a
-            href="#question-card-{{ item.question.pk }}"
-            id="nav-btn-{{ item.question.pk }}"
-            class="btn btn-sm {% if item.selected_option_id %}btn-primary{% else %}btn-outline-secondary{% endif %}"
-            style="width: 38px;"
-          >
-            {{ item.position }}
-          </a>
-          {% endfor %}
-        </div>
-        <hr />
-        <small class="text-muted d-block">Đáp án được tự động lưu sau khi bạn chọn khoảng 1 giây. Chỉ khi thấy "Đã lưu" thì máy chủ mới ghi nhận.</small>
-      </div>
+    {% if question_items %}
+    <div class="d-flex justify-content-between d-none" id="single-nav">
+      <button type="button" class="btn btn-outline-secondary" id="btn-prev">‹ Câu trước</button>
+      <button type="button" class="btn btn-primary" id="btn-next">Câu tiếp ›</button>
     </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
@@ -160,7 +169,9 @@
   function markAnswered(questionId, optionId) {
     const navBtn = document.getElementById("nav-btn-" + questionId);
     if (navBtn) {
-      navBtn.className = optionId !== null ? "btn btn-sm btn-primary" : "btn btn-sm btn-outline-secondary";
+      const isCurrent = navBtn.classList.contains("qes-current");
+      navBtn.className = (optionId !== null ? "btn btn-sm btn-primary" : "btn btn-sm btn-outline-secondary") +
+        (isCurrent ? " qes-current" : "");
     }
     refreshProgress();
   }
@@ -264,9 +275,13 @@
       if (finished) return;
       const answered = countAnswered();
       const blank = totalQuestions - answered;
+      const unanswered = [...document.querySelectorAll(".qes-question")]
+        .filter((card) => !card.querySelector(".answer-radio:checked"))
+        .map((card) => Number(card.dataset.index) + 1);
       const summary = "Bạn đã trả lời " + answered + "/" + totalQuestions + " câu" +
-        (blank > 0 ? ", còn " + blank + " câu chưa trả lời" : "") + ".";
-      if (!confirm(summary + "\nNộp bài? Sau khi nộp sẽ không thể sửa đáp án.")) return;
+        (blank > 0 ? ", còn " + blank + " câu chưa trả lời (câu " + unanswered.join(", ") + ")" : "") + ".";
+      const ok = await window.qesConfirm(summary + "\nNộp bài? Sau khi nộp sẽ không thể sửa đáp án.", { ok: "Nộp bài" });
+      if (!ok || finished) return;
       btnSubmit.disabled = true;
       setSaveStatus("Đang đồng bộ...", "bg-warning text-dark");
       await flush();
@@ -288,9 +303,12 @@
 
   function renderTimer(sec) {
     const safe = Math.max(0, sec);
-    const mins = Math.floor(safe / 60);
+    const hours = Math.floor(safe / 3600);
+    const mins = Math.floor((safe % 3600) / 60);
     const secs = safe % 60;
-    timerEl.textContent = String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
+    const pad = (n) => String(n).padStart(2, "0");
+    timerEl.textContent = (hours ? pad(hours) + ":" : "") + pad(mins) + ":" + pad(secs);
+    timerEl.classList.toggle("qes-timer-warning", safe <= 300);  // còn dưới 5 phút thì nhấp nháy
   }
 
   renderTimer(remaining);
@@ -304,6 +322,44 @@
     }
   }, 1000);
   {% endif %}
+
+  /* Xem từng câu (như màn hình 12 Figma) hoặc tất cả câu. Mọi câu vẫn nằm trong trang nên
+   * lưu đáp án và nộp bài không đổi; chỉ ẩn/hiện thẻ câu hỏi. Lựa chọn nhớ theo trình duyệt. */
+  const cards = [...document.querySelectorAll(".qes-question")];
+  const singleNav = document.getElementById("single-nav");
+  const btnPrev = document.getElementById("btn-prev");
+  const btnNext = document.getElementById("btn-next");
+  let mode = "single";
+  let current = 0;
+  try { mode = localStorage.getItem("qes-exam-view") || "single"; } catch (e) { /* trình duyệt chặn lưu */ }
+
+  function render() {
+    cards.forEach((card, i) => card.classList.toggle("d-none", mode === "single" && i !== current));
+    if (singleNav) singleNav.classList.toggle("d-none", mode !== "single");
+    if (btnPrev) btnPrev.disabled = current === 0;
+    if (btnNext) btnNext.disabled = current === cards.length - 1;
+    document.querySelectorAll("[data-question-nav]").forEach((a) =>
+      a.classList.toggle("qes-current", mode === "single" && Number(a.dataset.questionNav) === current));
+    document.querySelectorAll("[data-view-mode]").forEach((b) => b.classList.toggle("active", b.dataset.viewMode === mode));
+  }
+  function goTo(index) {
+    current = Math.max(0, Math.min(cards.length - 1, index));
+    render();
+    if (cards[current]) cards[current].scrollIntoView({ block: "nearest" });
+  }
+  document.querySelectorAll("[data-view-mode]").forEach((b) => b.addEventListener("click", () => {
+    mode = b.dataset.viewMode;
+    try { localStorage.setItem("qes-exam-view", mode); } catch (e) { /* bỏ qua */ }
+    render();
+  }));
+  document.querySelectorAll("[data-question-nav]").forEach((a) => a.addEventListener("click", (event) => {
+    if (mode !== "single") return;  // chế độ tất cả câu: để link cuộn tới câu như cũ
+    event.preventDefault();
+    goTo(Number(a.dataset.questionNav));
+  }));
+  if (btnPrev) btnPrev.addEventListener("click", () => goTo(current - 1));
+  if (btnNext) btnNext.addEventListener("click", () => goTo(current + 1));
+  if (cards.length) render();
 })();
 </script>
 {% endblock %}
