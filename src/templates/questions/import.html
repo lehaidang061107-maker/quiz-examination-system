@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Nhập câu hỏi từ Excel{% endblock %}
+{% block page_title %}Nhập câu hỏi từ Excel{% endblock %}
+{% block page_subtitle %}Soạn nhiều câu hỏi cùng lúc trong file Excel rồi tải lên{% if exam %} · cho đề {{ exam.title }}{% endif %}{% endblock %}
+{% block page_actions %}
+  {% if exam %}
+    <a href="{% url 'exams:questions' exam.exam_id %}" class="btn btn-sm btn-outline-secondary">Quay lại đề</a>
+  {% else %}
+    <a href="{% url 'questions:list' %}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex gap-4 small qes-subtitle mb-3">
+  <span class="{% if not rows %}text-primary fw-semibold{% endif %}">1. Chọn file</span>
+  <span class="{% if rows %}text-primary fw-semibold{% endif %}">2. Kiểm tra</span>
+  <span>3. Hoàn tất</span>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-12 col-lg-6">
+    <form method="post" enctype="multipart/form-data" class="qes-card p-3 h-100" style="border-style: dashed; background: #f8fbff">
+      {% csrf_token %}
+      <input type="hidden" name="step" value="preview">
+      {% if exam %}<input type="hidden" name="exam" value="{{ exam.exam_id }}">{% endif %}
+      <label for="import-file" class="form-label fw-semibold">{% if file_name %}Đã tải: {{ file_name }}{% else %}Chọn file Excel (.xlsx){% endif %}</label>
+      <input type="file" id="import-file" name="file" accept=".xlsx"
+             class="form-control{% if file_error %} is-invalid{% endif %}" required>
+      {% if file_error %}<div class="invalid-feedback">{{ file_error }}</div>{% endif %}
+      <button type="submit" class="btn btn-outline-primary btn-sm mt-2">{% if file_name %}Tải file khác{% else %}Tải lên và kiểm tra{% endif %}</button>
+    </form>
+  </div>
+  <div class="col-12 col-lg-6">
+    <div class="qes-card p-3 h-100">
+      <div class="fw-semibold mb-1">Cách soạn file</div>
+      <ul class="small mb-2 ps-3">
+        <li>Mỗi dòng một câu hỏi: cột <b>Nội dung câu hỏi</b>, các cột <b>Phương án A</b> đến <b>F</b> (ít nhất 2, điền liên tục từ A), cột <b>Đáp án đúng</b> ghi một chữ A–F.</li>
+        <li>Tối đa {{ max_rows }} câu, file không quá 2 MB. Dòng lỗi được báo lại và không nhập.</li>
+        <li>Câu hợp lệ vào ngân hàng ở trạng thái <b>Đang dùng</b>.</li>
+      </ul>
+      <a href="{% url 'questions:import_template' %}" class="small text-decoration-none">Tải file mẫu (.xlsx)</a>
+    </div>
+  </div>
+</div>
+
+{% if rows %}
+  <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+    <h2 class="h6 fw-bold m-0 me-2">Kết quả kiểm tra</h2>
+    <span class="badge text-bg-success">{{ valid_count }} câu hợp lệ</span>
+    {% if error_count %}<span class="badge text-bg-danger">{{ error_count }} dòng lỗi</span>{% endif %}
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Dòng</th><th>Nội dung câu hỏi</th><th class="text-center">Phương án</th><th class="text-center">Đáp án</th><th>Kiểm tra</th></tr></thead>
+      <tbody>
+        {% for row in rows %}
+          <tr{% if row.errors %} class="table-danger"{% endif %}>
+            <td>{{ row.row }}</td>
+            <td class="qes-title-col">{{ row.content|default:"—"|truncatechars:150 }}</td>
+            <td class="text-center">{{ row.option_count }}</td>
+            <td class="text-center">{{ row.correct|default:"—" }}</td>
+            <td>
+              {% if row.errors %}
+                <span class="text-danger small">{{ row.errors|join:" " }}</span>
+              {% else %}
+                <span class="badge text-bg-success">Hợp lệ</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if valid_count %}
+    <form method="post" class="qes-card p-3">
+      {% csrf_token %}
+      <input type="hidden" name="step" value="confirm">
+      {% if exam %}
+        <input type="hidden" name="exam" value="{{ exam.exam_id }}">
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" name="add_to_exam" value="1" id="add-to-exam" checked>
+          <label class="form-check-label" for="add-to-exam">
+            Thêm luôn các câu hợp lệ vào đề <b>{{ exam.title }}</b>, mỗi câu
+            <input type="number" name="points" value="{{ default_points }}" min="0.01" step="0.01"
+                   class="form-control form-control-sm d-inline-block" style="width: 80px" aria-label="Điểm mỗi câu"> điểm
+          </label>
+        </div>
+      {% endif %}
+      <div class="d-flex flex-wrap justify-content-end gap-2">
+        {% if error_count %}<span class="small qes-subtitle me-auto align-self-center">Sửa các dòng lỗi trong file rồi tải lại nếu muốn nhập cả những câu đó.</span>{% endif %}
+        <button type="submit" class="btn btn-primary">Nhập {{ valid_count }} câu hợp lệ</button>
+      </div>
+    </form>
+  {% else %}
+    <div class="alert alert-warning">Không có câu nào hợp lệ để nhập. Sửa file theo lỗi ở trên rồi tải lên lại.</div>
+  {% endif %}
+{% endif %}
+{% endblock %}
