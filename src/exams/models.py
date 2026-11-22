@@ -191,6 +191,18 @@ class Exam(models.Model):
         self.results_published = True
         self.save(update_fields=["results_published"])
 
+    def delete_draft(self):
+        """Xóa đề nháp tạo nhầm (UC Manage Exams). Đề đã phát hành có thể đã có bài làm và kết quả
+        nên không xóa, chỉ đóng hoặc lưu trữ để giữ lịch sử."""
+        if self.status != ExamStatus.DRAFT:
+            raise ValidationError("Chỉ xóa được đề nháp. Đề đã phát hành hãy đóng hoặc lưu trữ để giữ lịch sử.")
+        if self.submissions.exists():  # phòng hờ: đề nháp không thể có bài làm
+            raise ValidationError("Đề đã có bài làm, không thể xóa.")
+        with transaction.atomic():
+            self.exam_questions.all().delete()
+            self.participants.all().delete()  # đề nháp chưa phát hành nên sinh viên chưa thấy đề
+            self.delete()
+
     def check_draft(self):
         """Đề đã phát hành giữ nguyên nội dung, thứ tự, điểm (BR-14)."""
         if self.pk and self.status != ExamStatus.DRAFT:

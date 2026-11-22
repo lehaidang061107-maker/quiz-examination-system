@@ -364,6 +364,25 @@ def exam_publish_results(request, exam_id):
 
 @role_required(Role.TEACHER)
 @require_POST
+def exam_delete(request, exam_id):
+    """Xóa đề nháp (có xác nhận ở giao diện). Đề đã phát hành không xóa được."""
+    exam = request.user.as_role().manage_exam(exam_id)
+    try:
+        with transaction.atomic():
+            exam = _lock_exam(exam)
+            title, pk = exam.title, exam.pk
+            exam.delete_draft()
+    except ValidationError as error:
+        _show_errors(request, error)
+        return redirect("exams:detail", exam_id=exam.pk)
+    exam.pk = pk  # delete() đặt pk về None; giữ lại để ghi nhật ký
+    _audit(request, exam, "xóa đề nháp")
+    messages.success(request, f"Đã xóa đề nháp '{title}'.")
+    return redirect("exams:list")
+
+
+@role_required(Role.TEACHER)
+@require_POST
 def exam_archive(request, exam_id):
     """S3-14: lưu trữ đề CLOSED -> ARCHIVED khi không còn bài đang làm/chờ chấm (BR-17)."""
     exam = request.user.as_role().manage_exam(exam_id)

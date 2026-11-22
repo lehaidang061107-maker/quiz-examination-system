@@ -36,3 +36,6 @@ S3-12-14,Create Exam (FR-06),"1. Đăng nhập Teacher, mở đề nháp chỉ c
 2. Bấm 'Chọn câu hỏi'
 3. Sửa điểm câu 1 thành 2,5
 4. Nhấn phím Enter trong ô điểm","Đề nháp có 1 câu; điểm mới 2,5","Hiện 'Đã lưu điểm các câu hỏi.'; điểm câu 1 là 2.5; câu hỏi vẫn còn trong đề (không bị bỏ hay đổi thứ tự)"
+S3-12-15,"Create Exam (FR-06), NFR-USA-04","1. Đăng nhập Teacher, mở 'Chọn câu hỏi' của đề nháp có 2 câu
+2. Bấm 'Bỏ' ở câu 1, bấm Hủy
+3. Bấm 'Bỏ' ở câu 1, bấm OK",Đề nháp có 2 câu,"Hiện hộp hỏi 'Bỏ câu 1 khỏi đề? Các câu phía sau sẽ dồn lên.'; bấm Hủy thì đề giữ nguyên 2 câu; bấm OK thì hiện 'Đã bỏ câu hỏi khỏi đề.' và câu còn lại thành câu 1"
