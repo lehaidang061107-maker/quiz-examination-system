@@ -27,3 +27,7 @@ S3-13-11,"Manage Exams (FR-07), NFR-SEC-09","1. Đăng nhập Teacher B
 2. Gõ thẳng đường dẫn /exams/<mã đề của Teacher A>/participants/",Đề thuộc Teacher A,Hiện trang 403; phân công của đề không đổi
 S3-13-12,"Manage Exams (FR-07), BR-02","1. Đăng nhập Student
 2. Gõ thẳng đường dẫn /exams/<mã đề>/participants/",Tài khoản Student,Hiện trang 403 'Bạn không có quyền truy cập trang này.'
+S3-13-13,"Create Exam (FR-06), NFR-PER-05","1. Đăng nhập Teacher, mở một đề nháp
+2. Bấm 'Phân công sinh viên'
+3. Gõ 'Sinh viên' vào ô tìm, bấm 'Tìm'
+4. Bấm 'Sau' ở cuối danh sách",Hệ thống có 27 Student đang hoạt động,"Mỗi trang tối đa 20 sinh viên, hiện '1/2'; trang 2 có các sinh viên còn lại; từ khóa tìm vẫn được giữ khi chuyển trang"

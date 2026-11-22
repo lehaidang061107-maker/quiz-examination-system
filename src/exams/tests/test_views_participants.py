@@ -43,6 +43,22 @@ class GrantTests(ParticipantBase):
         response = self.client.get(self.url, {"q": "bình"})
         self.assertEqual([row["student"].pk for row in response.context["rows"]], [self.binh.pk])
 
+    def test_phan_trang_sinh_vien(self):
+        for i in range(25):
+            make_user(name=f"Sinh viên {i:02d}")
+        first = self.client.get(self.url)
+        self.assertEqual(len(first.context["rows"]), 20)
+        self.assertContains(first, "1/2")
+        second = self.client.get(self.url, {"page": 2})
+        self.assertEqual(len(second.context["rows"]), 7)  # 27 sinh viên: An, Bình và 25 người mới
+        self.assertContains(second, "Sinh viên 24")
+
+    def test_phan_trang_giu_tu_khoa_tim(self):
+        for i in range(21):
+            make_user(name=f"Sinh viên {i:02d}")
+        response = self.client.get(self.url, {"q": "Sinh viên"})
+        self.assertContains(response, "?q=Sinh+vi%C3%AAn&amp;page=2")
+
     def test_cap_quyen_nhieu_sinh_vien(self):
         response = self.client.post(self.url, {"action": "grant", "student_ids": [self.an.pk, self.binh.pk]}, follow=True)
         self.assertContains(response, "Đã cấp quyền dự thi cho 2 sinh viên.")

@@ -32,3 +32,7 @@ S3-12-12,"Manage Exams (FR-07), BR-14","1. Đăng nhập Teacher
 2. Gõ thẳng đường dẫn /exams/<mã đề đã phát hành>/questions/",Đề ở trạng thái 'Đã phát hành',"Quay về trang chi tiết đề, hiện 'Đề đã phát hành, không thể sửa nội dung.'"
 S3-12-13,"Manage Exams (FR-07), NFR-SEC-09","1. Đăng nhập Teacher B
 2. Gõ thẳng đường dẫn /exams/<mã đề của Teacher A>/questions/",Đề nháp thuộc Teacher A,Hiện trang 403; đề của Teacher A không đổi
+S3-12-14,Create Exam (FR-06),"1. Đăng nhập Teacher, mở đề nháp chỉ có 1 câu hỏi
+2. Bấm 'Chọn câu hỏi'
+3. Sửa điểm câu 1 thành 2,5
+4. Nhấn phím Enter trong ô điểm","Đề nháp có 1 câu; điểm mới 2,5","Hiện 'Đã lưu điểm các câu hỏi.'; điểm câu 1 là 2.5; câu hỏi vẫn còn trong đề (không bị bỏ hay đổi thứ tự)"
