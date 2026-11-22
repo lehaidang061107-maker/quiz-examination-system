@@ -35,7 +35,22 @@ S3-12-13,"Manage Exams (FR-07), NFR-SEC-09","1. Đăng nhập Teacher B
 S3-12-14,Create Exam (FR-06),"1. Đăng nhập Teacher, mở đề nháp chỉ có 1 câu hỏi
 2. Bấm 'Chọn câu hỏi'
 3. Sửa điểm câu 1 thành 2,5
-4. Nhấn phím Enter trong ô điểm","Đề nháp có 1 câu; điểm mới 2,5","Hiện 'Đã lưu điểm các câu hỏi.'; điểm câu 1 là 2.5; câu hỏi vẫn còn trong đề (không bị bỏ hay đổi thứ tự)"
+4. Nhấn phím Enter trong ô điểm","Đề nháp có 1 câu; điểm mới 2,5",Hiện 'Đã lưu điểm các câu hỏi.'; điểm câu 1 là 2.5; câu hỏi vẫn còn trong đề (không bị bỏ hay đổi thứ tự)
 S3-12-15,"Create Exam (FR-06), NFR-USA-04","1. Đăng nhập Teacher, mở 'Chọn câu hỏi' của đề nháp có 2 câu
 2. Bấm 'Bỏ' ở câu 1, bấm Hủy
-3. Bấm 'Bỏ' ở câu 1, bấm OK",Đề nháp có 2 câu,"Hiện hộp hỏi 'Bỏ câu 1 khỏi đề? Các câu phía sau sẽ dồn lên.'; bấm Hủy thì đề giữ nguyên 2 câu; bấm OK thì hiện 'Đã bỏ câu hỏi khỏi đề.' và câu còn lại thành câu 1"
+3. Bấm 'Bỏ' ở câu 1, bấm OK",Đề nháp có 2 câu,Hiện hộp hỏi 'Bỏ câu 1 khỏi đề? Các câu phía sau sẽ dồn lên.'; bấm Hủy thì đề giữ nguyên 2 câu; bấm OK thì hiện 'Đã bỏ câu hỏi khỏi đề.' và câu còn lại thành câu 1
+S3-12-16,Chọn câu hỏi vào đề,"1. Mở trang chọn câu hỏi của một đề nháp
+2. Tích ô ở tiêu đề cột của bảng ngân hàng
+3. Bấm 'Thêm câu đã chọn'","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026
+Điểm mỗi câu: 1","Bước 2 tích hết các câu trên trang, dòng 'Đã chọn N câu' cập nhật; bước 3 thêm đủ N câu vào cuối đề với 1 điểm mỗi câu"
+S3-12-17,Chọn câu hỏi vào đề,"1. Mở trang chọn câu hỏi của đề nháp
+2. Tìm 'khóa', bấm Tìm
+3. Bấm 'Thêm tất cả N câu khớp tìm kiếm', bấm Thêm trong hộp xác nhận","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026
+Tìm kiếm: khóa
+Điểm mỗi câu: 2","Mọi câu ACTIVE của giảng viên có chữ 'khóa' và chưa có trong đề được thêm (kể cả câu ở trang sau), mỗi câu 2 điểm; câu nháp, câu của giảng viên khác không bị thêm"
+S3-12-18,Nhập điểm từng câu,"1. Đề nháp đã có vài câu với điểm khác nhau
+2. Nhập 2,5 vào ô 'Đặt cùng điểm cho tất cả', bấm Áp dụng
+3. Nhập -1, bấm Áp dụng","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","Bước 2 mọi câu trong đề thành 2,50 điểm, báo 'Đã đặt N câu cùng điểm.'; bước 3 báo lỗi đỏ, điểm giữ nguyên"
