@@ -20,11 +20,29 @@ from attempts.models import Submission, SubmissionStatus
 from questions.models import QuestionStatus
 
 from .forms import ExamForm
-from .models import ExamParticipant, ExamStatus
+from .models import Exam, ExamParticipant, ExamStatus
 
 audit_log = logging.getLogger("exams.audit")
 
 STATUS_FILTERS = [(value, label) for value, label in ExamStatus.choices]
+PAGE_SIZE = 20  # NFR-PER-05: danh sách dài phải phân trang
+
+
+def _lock_exam(exam):
+    """Khóa dòng đề tới hết transaction rồi đọc lại trạng thái mới nhất.
+
+    Hai tab cùng thao tác (vd. một tab sửa nháp, tab kia vừa phát hành) sẽ chạy lần lượt,
+    tab sau thấy trạng thái đã đổi nên không sửa được đề đã phát hành (BR-14).
+    Phải gọi bên trong transaction.atomic().
+    """
+    return Exam.objects.select_for_update().get(pk=exam.pk)
+
+
+def _page_query(request):
+    """Tham số lọc hiện tại (bỏ page) để nút Trước/Sau giữ nguyên bộ lọc."""
+    params = request.GET.copy()
+    params.pop("page", None)
+    return params.urlencode()
 
 
 @role_required(Role.TEACHER)
@@ -41,10 +59,17 @@ def exam_list(request):
         question_total=Count("exam_questions__question", distinct=True),
         participant_total=Count("participants__student", filter=Q(participants__is_active=True), distinct=True),
     ).order_by("-created_at", "-exam_id")
+    page_obj = Paginator(exams, PAGE_SIZE).get_page(request.GET.get("page"))
     return render(
         request,
         "exams/list.html",
-        {"exams": exams, "selected_status": selected_status, "status_choices": STATUS_FILTERS},
+        {
+            "exams": page_obj.object_list,
+            "page_obj": page_obj,
+            "page_query": _page_query(request),
+            "selected_status": selected_status,
+            "status_choices": STATUS_FILTERS,
+        },
     )
 
 
@@ -82,8 +107,11 @@ def exam_edit(request, exam_id):
     form = ExamForm(request.POST or None, initial=ExamForm.initial_from(exam))
     if request.method == "POST" and form.is_valid():
         try:
-            exam.apply_settings(form.cleaned_data)
-            exam.save()
+            with transaction.atomic():
+                exam = _lock_exam(exam)
+                exam.check_draft()  # tab khác có thể vừa phát hành đề
+                exam.apply_settings(form.cleaned_data)
+                exam.save()
         except ValidationError as error:
             _attach_errors(form, error)
         else:
@@ -103,6 +131,8 @@ def exam_questions(request, exam_id):
     if request.method == "POST":
         try:
             with transaction.atomic():
+                exam = _lock_exam(exam)
+                exam.check_draft()  # tab khác có thể vừa phát hành đề
                 text = _handle_question_action(request, exam)
         except ValidationError as error:
             for message in error.messages:
@@ -183,7 +213,9 @@ def exam_publish(request, exam_id):
     """S3-12: phát hành đề DRAFT -> PUBLISHED; chưa đủ điều kiện thì báo từng mục cần sửa (BR-17)."""
     exam = request.user.as_role().manage_exam(exam_id)
     try:
-        exam.publish()
+        with transaction.atomic():
+            exam = _lock_exam(exam)  # chờ thao tác sửa câu hỏi/điểm đang chạy xong rồi mới kiểm tra
+            exam.publish()
     except ValidationError as error:
         messages.error(request, "Chưa thể phát hành đề:")
         for text in error.messages:
@@ -202,12 +234,14 @@ def exam_participants(request, exam_id):
     if request.method == "POST":
         action, _, target = request.POST.get("action", "").partition(":")
         try:
-            if action == "grant":
-                text = _grant(teacher, exam, request.POST.getlist("student_ids"))
-            elif action == "revoke":
-                text = _revoke(exam, _int(target, "Sinh viên không hợp lệ."))
-            else:
-                raise ValidationError("Thao tác không hợp lệ.")
+            with transaction.atomic():
+                exam = _lock_exam(exam)  # không cấp/thu hồi xen giữa lúc đề đang được đóng
+                if action == "grant":
+                    text = _grant(teacher, exam, request.POST.getlist("student_ids"))
+                elif action == "revoke":
+                    text = _revoke(exam, _int(target, "Sinh viên không hợp lệ."))
+                else:
+                    raise ValidationError("Thao tác không hợp lệ.")
         except ValidationError as error:
             for message in error.messages:
                 messages.error(request, message)
@@ -216,14 +250,17 @@ def exam_participants(request, exam_id):
         return redirect(request.get_full_path())
 
     search = request.GET.get("q", "").strip()
-    participants = {p.student_id: p for p in exam.participants.select_related("student")}
-    submissions = {s.student_id: s for s in Submission.objects.filter(exam=exam)}
+    participants = {p.student_id: p for p in exam.participants.all()}
     # Student ACTIVE (để cấp quyền) và mọi người đã từng được phân công (để xem lịch sử, kể cả đã bị khóa).
     students = Student.objects.filter(Q(status=UserStatus.ACTIVE) | Q(pk__in=participants.keys()))
     if search:
         students = students.filter(Q(full_name__icontains=search) | Q(email__icontains=search))
+    # NFR-PER-05: hệ thống có thể tới 10.000 tài khoản, chỉ tải từng trang sinh viên.
+    page_obj = Paginator(students.order_by("full_name", "user_id"), PAGE_SIZE).get_page(request.GET.get("page"))
+    page_ids = [student.pk for student in page_obj.object_list]
+    submissions = {s.student_id: s for s in Submission.objects.filter(exam=exam, student_id__in=page_ids)}
     rows = []
-    for student in students.order_by("full_name", "user_id"):
+    for student in page_obj.object_list:
         participant = participants.get(student.pk)
         rows.append({
             "student": student,
@@ -234,6 +271,8 @@ def exam_participants(request, exam_id):
     context = _detail_context(exam)
     context.update({
         "rows": rows,
+        "page_obj": page_obj,
+        "page_query": _page_query(request),
         "search": search,
         "can_change": _can_change_participants(exam),
         "assigned_total": sum(1 for p in participants.values() if p.is_active),
