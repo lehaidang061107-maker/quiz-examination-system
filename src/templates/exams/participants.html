@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Phân công: {{ exam.title }}{% endblock %}
+{% block page_title %}Phân công sinh viên{% endblock %}
+{% block page_subtitle %}{{ exam.title }} · {% include "exams/_status_badge.html" with status=exam.status %} · {{ assigned_total }} sinh viên đang được giao{% endblock %}
+{% block page_actions %}
+  <a href="{% url 'exams:detail' exam.exam_id %}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
+{% endblock %}
+
+{% block content %}
+{% if not can_change %}
+  <div class="alert alert-warning" role="alert">
+    Đề đã đóng hoặc đã hết lịch thi nên không thể cấp hay thu hồi quyền. Danh sách dưới đây chỉ để xem lịch sử.
+  </div>
+{% endif %}
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-12 col-md-6">
+    <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Tìm theo họ tên hoặc email..." aria-label="Tìm sinh viên">
+  </div>
+  <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Tìm</button></div>
+</form>
+
+{% if rows %}
+  <form method="post">
+    {% csrf_token %}
+    <div class="table-responsive">
+      <table class="table align-middle mb-2">
+        <thead>
+          <tr>
+            <th style="width: 40px">
+              {% if can_change %}<input type="checkbox" class="form-check-input" id="check-all" aria-label="Chọn tất cả">{% endif %}
+            </th>
+            <th>Sinh viên</th>
+            <th>Quyền dự thi</th>
+            <th>Bài làm</th>
+            <th class="text-end">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+            <tr>
+              <td>
+                {% if can_change and not row.assigned and row.student.is_active %}
+                  <input type="checkbox" class="form-check-input student-check" name="student_ids"
+                         value="{{ row.student.pk }}" id="s{{ row.student.pk }}">
+                {% endif %}
+              </td>
+              <td>
+                <label for="s{{ row.student.pk }}" class="fw-semibold d-block">{{ row.student.full_name }}</label>
+                <span class="small text-muted">{{ row.student.email }}</span>
+                {% if not row.student.is_active %}<span class="badge text-bg-secondary ms-1">{{ row.student.get_status_display }}</span>{% endif %}
+              </td>
+              <td>
+                {% if row.assigned %}
+                  <span class="badge badge-qes-success">Đã cấp quyền</span>
+                  <div class="small text-muted">từ {{ row.participant.assigned_at|date:"d/m/Y H:i" }}</div>
+                {% elif row.participant %}
+                  <span class="badge text-bg-warning">Đã thu hồi</span>
+                {% else %}
+                  <span class="badge text-bg-light border">Chưa cấp</span>
+                {% endif %}
+              </td>
+              <td class="small">{{ row.submission.get_status_display|default:"—" }}</td>
+              <td class="text-end">
+                {% if can_change and row.assigned %}
+                  <button type="submit" name="action" value="revoke:{{ row.student.pk }}" class="btn btn-sm btn-outline-danger"
+                          onclick="return confirm('Thu hồi quyền dự thi của {{ row.student.full_name|escapejs }}?{% if row.submission.status == "IN_PROGRESS" %} Sinh viên đang làm bài: bài sẽ được nộp bằng đáp án đã lưu.{% endif %}');">
+                    Thu hồi
+                  </button>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if can_change %}
+      <button type="submit" name="action" value="grant" class="btn btn-primary btn-sm">Cấp quyền cho sinh viên đã chọn</button>
+    {% endif %}
+  </form>
+{% elif search %}
+  <div class="text-muted">Không tìm thấy sinh viên phù hợp.</div>
+{% else %}
+  <div class="text-muted">Chưa có sinh viên nào đang hoạt động trong hệ thống.</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    var all = document.getElementById("check-all");
+    if (!all) return;
+    all.addEventListener("change", function () {
+      document.querySelectorAll(".student-check").forEach(function (box) { box.checked = all.checked; });
+    });
+  })();
+</script>
+{% endblock %}

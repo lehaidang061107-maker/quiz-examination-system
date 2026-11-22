@@ -14,6 +14,7 @@
         <button type="submit" class="btn btn-sm btn-primary">Phát hành</button>
       </form>
     {% endif %}
+    <a href="{% url 'exams:participants' exam.exam_id %}" class="btn btn-sm btn-outline-primary">Phân công sinh viên</a>
     <a href="{% url 'exams:list' %}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
   </div>
 {% endblock %}
@@ -28,6 +29,8 @@
   <dd class="col-sm-9">{{ exam.opens_at|date:"d/m/Y H:i"|default:"Không giới hạn" }}</dd>
   <dt class="col-sm-3">Thời gian đóng</dt>
   <dd class="col-sm-9">{{ exam.closes_at|date:"d/m/Y H:i"|default:"Không giới hạn" }}</dd>
+  <dt class="col-sm-3">Sinh viên được giao</dt>
+  <dd class="col-sm-9">{{ participant_total }}</dd>
   <dt class="col-sm-3">Ngày tạo</dt>
   <dd class="col-sm-9">{{ exam.created_at|date:"d/m/Y H:i" }}</dd>
 </dl>
