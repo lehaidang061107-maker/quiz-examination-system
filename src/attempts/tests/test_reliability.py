@@ -89,3 +89,23 @@ class TakeExamReliableSaveTests(AttemptTestCase):
         self.assertContains(response, "const RETRY_MS = 10000;")
         self.assertContains(response, '"beforeunload"')
         self.assertContains(response, 'addEventListener("online"')
+
+
+class TakeExamProgressTests(AttemptTestCase):
+    """UC Take Exam bước 4 (tiến độ) và UC Submit Exam bước 2 (xác nhận kèm số câu đã trả lời)."""
+
+    def test_hien_so_cau_da_tra_loi_tu_may_chu(self):
+        from config.tests.factories import correct_option
+
+        self.answer(self.questions[0], correct_option(self.questions[0]))
+        self.client.force_login(self.student)
+        response = self.client.get(reverse("attempts:take_exam", args=[self.submission.pk]))
+        self.assertEqual(response.context["answered_count"], 1)
+        self.assertContains(response, '<strong id="answered-count">1</strong>/<span id="question-total">3</span> câu',
+                            html=False)
+
+    def test_hop_xac_nhan_nop_bai_co_so_cau(self):
+        self.client.force_login(self.student)
+        response = self.client.get(reverse("attempts:take_exam", args=[self.submission.pk]))
+        self.assertContains(response, '"Bạn đã trả lời " + answered + "/" + totalQuestions + " câu"')
+        self.assertContains(response, '" câu chưa trả lời"')

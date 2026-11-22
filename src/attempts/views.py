@@ -152,6 +152,8 @@ def take_exam(request, submission_id):
             "submission": submission,
             "exam": submission.exam,
             "question_items": question_items,
+            # UC Take Exam bước 4 / UC Submit Exam bước 2: tiến độ số câu đã trả lời.
+            "answered_count": sum(1 for item in question_items if item["selected_option_id"]),
             "has_deadline": has_deadline,
             "remaining_seconds": remaining_seconds,
         },
