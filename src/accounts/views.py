@@ -7,8 +7,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
-from .decorators import role_required
-from .forms import AdminUserCreateForm, AdminUserUpdateForm, StudentRegisterForm
+from .decorators import login_required_any_role, role_required
+from .forms import AdminUserCreateForm, AdminUserUpdateForm, ChangePasswordForm, StudentRegisterForm
 from .models import Admin, Role, User, UserStatus, audit_log
 from .services import revoke_user_sessions
 
@@ -276,3 +276,25 @@ def admin_user_delete_view(request, user_id: int):
             "action_label": "Xóa tài khoản",
         },
     )
+
+
+@login_required_any_role
+def change_password_view(request):
+    """S3-35: người dùng đã đăng nhập (mọi vai trò) đổi mật khẩu của chính mình."""
+    form = ChangePasswordForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        try:
+            revoked = request.user.change_password(
+                request, form.cleaned_data["current_password"], form.cleaned_data["new_password"]
+            )
+        except ValidationError as error:
+            for field, texts in error.message_dict.items():
+                for text in texts:
+                    form.add_error(field, text)
+        else:
+            text = "Đã đổi mật khẩu."
+            if revoked:
+                text += f" Đã đăng xuất {revoked} phiên ở thiết bị khác."
+            messages.success(request, text)
+            return redirect("home")
+    return render(request, "accounts/change_password.html", {"form": form})

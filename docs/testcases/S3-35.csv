@@ -1,0 +1,18 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-35-01,Đổi mật khẩu (NFR-SEC-03),"1. Đăng nhập Teacher
+2. Bấm tên người dùng trên thanh trên (hoặc 'Đổi mật khẩu' ở menu trái)
+3. Nhập mật khẩu hiện tại, mật khẩu mới, nhập lại, bấm Đổi mật khẩu
+4. Đăng xuất, đăng nhập bằng mật khẩu mới","Email: teacher@demo.example
+Mật khẩu hiện tại: Kiemthu2026
+Mật khẩu mới: MatKhauMoi2026","Về Trang chủ với thông báo 'Đã đổi mật khẩu.'; vẫn đăng nhập ở trình duyệt đang dùng; đăng nhập lại bằng mật khẩu mới thành công, mật khẩu cũ bị từ chối"
+S3-35-02,Đổi mật khẩu (NFR-SEC-08),"1. Đăng nhập cùng tài khoản ở Chrome và Edge
+2. Ở Chrome đổi mật khẩu
+3. Ở Edge bấm sang trang khác","Email: student1@demo.example
+Mật khẩu mới: MatKhauMoi2026",Chrome báo 'Đã đăng xuất 1 phiên ở thiết bị khác.'; Edge bị chuyển về trang Đăng nhập
+S3-35-03,Đổi mật khẩu,"1. Mở trang Đổi mật khẩu
+2. Nhập sai mật khẩu hiện tại
+3. Nhập mật khẩu mới 'abc12'
+4. Nhập mật khẩu mới trùng mật khẩu hiện tại
+5. Nhập lại không khớp",Email: teacher@demo.example,"Lần lượt báo 'Mật khẩu hiện tại không đúng.', 'Mật khẩu phải có ít nhất 8 ký tự.', 'Mật khẩu mới phải khác mật khẩu hiện tại.', 'Mật khẩu xác nhận không khớp.'; mật khẩu không đổi"
+S3-35-04,Ghi nhật ký (NFR-MAI-03),"1. Đổi mật khẩu thành công
+2. Chạy docker compose logs web | grep AUDIT",Email: teacher@demo.example,Có dòng '[AUDIT] đổi mật khẩu | user_id=... | hủy N phiên khác | ip=...'; không có mật khẩu trong nhật ký

@@ -20,7 +20,7 @@
       <a class="navbar-brand m-0" href="{% url 'home' %}">Quiz Examination System</a>
     </div>
     <div class="d-flex align-items-center gap-3">
-      <span class="nav-link d-none d-sm-inline">{{ user.full_name }}</span>
+      <a class="nav-link d-none d-sm-inline" href="{% url 'accounts:change_password' %}" title="Đổi mật khẩu">{{ user.full_name }} ▾</a>
       {% if logout_url %}
         <form method="post" action="{{ logout_url }}" class="m-0">
           {% csrf_token %}
@@ -50,6 +50,11 @@
                 {{ item.label }}<br><span class="qes-soon">Sắp có</span></span>
             {% endif %}
           {% endfor %}
+        </nav>
+        <hr class="border-secondary my-3">
+        <nav class="nav flex-column">
+          <a class="nav-link{% if request.resolver_match.view_name == 'accounts:change_password' %} active{% endif %}"
+             href="{% url 'accounts:change_password' %}">Đổi mật khẩu</a>
         </nav>
       </div>
     </aside>
