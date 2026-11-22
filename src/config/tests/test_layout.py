@@ -70,11 +70,13 @@ class HomeTests(TestCase):
                 self.assertContains(response, visible)
                 self.assertNotContains(response, hidden)
 
-    def test_menu_chua_lam_hien_sap_co(self):
+    def test_menu_giang_vien_da_du_trang(self):
+        # S3-11 có trang Quản lý kỳ thi nên menu Teacher không còn mục "Sắp có".
         self.client.force_login(make_user(Role.TEACHER))
         response = self.client.get(reverse("home"))
-        self.assertContains(response, 'aria-disabled="true"', count=1)  # còn Quản lý kỳ thi chưa có trang
-        self.assertContains(response, "Sắp có", count=1)
+        self.assertNotContains(response, 'aria-disabled="true"')
+        self.assertNotContains(response, "Sắp có")
+        self.assertContains(response, reverse("exams:list"))
         self.assertContains(response, 'class="nav-link active"', count=1)  # Trang chủ đang chọn
 
     def test_so_lieu_trang_chu_giang_vien(self):
