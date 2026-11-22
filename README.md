@@ -34,7 +34,7 @@ Mở http://127.0.0.1:8000/accounts/login/, đăng nhập bằng `student1@demo.
 
 | # | File | Đọc khi |
 | --- | --- | --- |
-| 1 | [Getting Started](docs/guides/01-getting-started.md) | Lần đầu cài; tài khoản mẫu; xem database; gặp lỗi khi chạy |
+| 1 | [Getting Started](docs/guides/01-getting-started.md) | Lần đầu cài; tài khoản mẫu; xem database; xem nhật ký `[AUDIT]`; gặp lỗi khi chạy |
 | 2 | [Git Workflow](docs/guides/02-git-workflow.md) | Nhận task Jira → branch → PR → merge |
 | 3 | [Coding Guidelines](docs/guides/03-coding-guidelines.md) | Công nghệ, MVC, cách viết một trang, sơ đồ lớp, quy tắc bắt buộc |
 | 4 | [Testing](docs/guides/04-testing.md) | Unit test, thử trên trình duyệt, viết test case CSV |
