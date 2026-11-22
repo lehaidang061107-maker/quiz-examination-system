@@ -39,3 +39,18 @@ S3-07-13,Edit Question - Used Option (FR-05),"1. Mở trang Sửa của câu h�
 3. Nhấn Lưu nháp.",Phương án đã có trong bài làm,"Không lưu thay đổi, hiển thị lỗi Không thể xóa phương án đã được sử dụng trong bài làm của thí sinh."
 S3-07-14,Create Question - Permission (FR-05),"1. Đăng nhập bằng tài khoản Student.
 2. Mở đường dẫn /questions/create/.",Tài khoản: student,"Hệ thống trả về lỗi 403, Student không truy cập được trang Tạo câu hỏi."
+S3-07-15,"Manage Questions (FR-05)","1. Đăng nhập Teacher
+2. Mở Ngân hàng câu hỏi
+3. Bấm Xóa ở một câu chưa dùng trong đề nào
+4. Bấm OK ở hộp xác nhận",Câu hỏi chưa dùng trong đề,Hiện 'Đã xóa câu hỏi.'; câu hỏi và các phương án biến mất khỏi danh sách; bấm Hủy ở bước 4 thì không có gì thay đổi
+S3-07-16,"Manage Questions (FR-05), BR-14","1. Đăng nhập Teacher
+2. Mở Ngân hàng câu hỏi
+3. Tìm câu đã dùng trong đề đã phát hành",Câu hỏi nằm trong đề đã phát hành,"Dòng câu hỏi không có nút Xóa, chỉ có 'Tạo phiên bản mới' và 'Lưu trữ'; gửi thẳng yêu cầu xóa thì báo 'không xóa được', câu hỏi vẫn còn"
+S3-07-17,"Manage Questions (FR-05)","1. Đăng nhập Teacher
+2. Thêm một câu vào đề nháp 'Đề nháp A'
+3. Mở Ngân hàng câu hỏi, bấm Xóa câu đó, bấm OK",Câu hỏi nằm trong đề nháp,Báo 'Câu hỏi đang nằm trong đề nháp: Đề nháp A. Hãy bỏ câu hỏi khỏi đề trước khi xóa.'; câu hỏi vẫn còn
+S3-07-18,"Manage Questions (FR-05), BR-14","1. Đăng nhập Teacher
+2. Bấm Lưu trữ ở câu đã dùng trong đề phát hành, bấm OK
+3. Chọn lọc 'Lưu trữ'
+4. Mở trang chọn câu hỏi của một đề nháp mới
+5. Quay lại lọc 'Lưu trữ', bấm Khôi phục",Câu hỏi nằm trong đề đã phát hành,"Bước 2: câu biến khỏi danh sách mặc định, đề cũ vẫn giữ câu; bước 3: câu hiện với nhãn 'Lưu trữ'; bước 4: không có câu này trong ngân hàng để chọn; bước 5: câu về trạng thái 'Nháp'"

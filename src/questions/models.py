@@ -92,8 +92,41 @@ class Question(models.Model):
 
     def archive(self):
         """archive(): ngừng dùng câu hỏi cho đề mới; lịch sử vẫn đọc được."""
+        if self.status == QuestionStatus.ARCHIVED:
+            raise ValidationError("Câu hỏi đã được lưu trữ trước đó.")
         self.status = QuestionStatus.ARCHIVED
         self.save(update_fields=["status"])
+
+    def restore(self):
+        """Khôi phục câu đã lưu trữ về DRAFT; muốn dùng lại cho đề mới thì kiểm tra rồi chuyển ACTIVE."""
+        if self.status != QuestionStatus.ARCHIVED:
+            raise ValidationError("Chỉ khôi phục được câu hỏi đang lưu trữ.")
+        self.status = QuestionStatus.DRAFT
+        self.save(update_fields=["status"])
+
+    def delete_unused(self):
+        """Xóa hẳn câu hỏi chưa từng được chọn vào đề nào (UC Manage Questions, bước 2-3).
+
+        Câu đã dùng trong đề phát hành thì từ chối xóa để giữ đề và kết quả cũ (BR-14), chỉ lưu trữ được.
+        Câu đang nằm trong đề nháp thì phải bỏ khỏi đề trước.
+        """
+        from exams.models import ExamStatus
+
+        with transaction.atomic():
+            Question.objects.select_for_update().filter(pk=self.pk).first()  # chặn thêm vào đề cùng lúc
+            used = self.exam_questions.select_related("exam")
+            if used.exclude(exam__status=ExamStatus.DRAFT).exists():
+                raise ValidationError(
+                    "Câu hỏi đã dùng trong đề đã phát hành nên không xóa được. "
+                    "Hãy lưu trữ để ngừng dùng cho đề mới."
+                )
+            drafts = [item.exam.title for item in used]
+            if drafts:
+                raise ValidationError(
+                    f"Câu hỏi đang nằm trong đề nháp: {', '.join(drafts)}. Hãy bỏ câu hỏi khỏi đề trước khi xóa."
+                )
+            self.options.all().delete()
+            self.delete()
 
     def is_locked(self):
         """True nếu câu đã nằm trong đề đã phát hành: không được sửa trực tiếp (BR-14)."""
