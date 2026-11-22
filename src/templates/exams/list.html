@@ -47,7 +47,7 @@
             </td>
             <td>{% include "exams/_status_badge.html" with status=exam.status %}</td>
             <td class="text-center">{% if exam.duration_minutes %}{{ exam.duration_minutes }} phút{% else %}—{% endif %}</td>
-            <td class="small">
+            <td class="small text-nowrap">
               {{ exam.opens_at|date:"d/m/Y H:i"|default:"Không giới hạn" }}<br>
               → {{ exam.closes_at|date:"d/m/Y H:i"|default:"Không giới hạn" }}
             </td>
