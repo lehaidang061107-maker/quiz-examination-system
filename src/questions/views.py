@@ -34,6 +34,20 @@ def question_list(request):
         # Chỉ lấy câu hỏi thuộc giảng viên hiện tại.
         questions = teacher.manage_questions()
 
+        # Ô số đầu trang (màn hình 07 Figma): tổng quan cả ngân hàng, không đổi theo bộ lọc.
+        counts = dict(questions.order_by().values_list("status").annotate(n=Count("question_id")))
+        # Câu có trong ít nhất một đề đã phát hành (dù còn nằm trong đề nháp khác) — BR-14.
+        used = questions.filter(
+            Exists(ExamQuestion.objects.filter(question_id=OuterRef("question_id")).exclude(
+                exam__status=ExamStatus.DRAFT))
+        ).count()
+        stats = [
+            ("Tổng câu hỏi", counts.get(QuestionStatus.ACTIVE, 0) + counts.get(QuestionStatus.DRAFT, 0)),
+            ("Đang dùng", counts.get(QuestionStatus.ACTIVE, 0)),
+            ("Nháp", counts.get(QuestionStatus.DRAFT, 0)),
+            ("Đã dùng trong đề phát hành", used),
+        ]
+
         # Tìm kiếm theo nội dung câu hỏi.
         if search_query:
             questions = questions.filter(content__icontains=search_query)
@@ -67,6 +81,7 @@ def question_list(request):
             "search_query": search_query,
             "selected_status": selected_status,
             "status_choices": STATUS_CHOICES,
+            "stats": stats,
         }
 
         return render(

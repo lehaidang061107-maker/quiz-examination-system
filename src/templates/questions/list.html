@@ -19,6 +19,18 @@ Quản lý và theo dõi các câu hỏi của bạn.
 
     {% else %}
 
+        <!-- Ô số tổng quan (màn hình 07 Figma) -->
+        <div class="row g-3 qes-stats mb-3">
+            {% for label, value in stats %}
+                <div class="col-6 col-md-3">
+                    <div class="qes-card qes-stat p-3 h-100">
+                        <div class="qes-subtitle small">{{ label }}</div>
+                        <div class="fs-4 fw-bold">{{ value }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
         <!-- Thanh tìm kiếm và lọc -->
         <div class="qes-card p-3 mb-3">
             <form method="get" action="{% url 'questions:list' %}" id="question-filter-form">

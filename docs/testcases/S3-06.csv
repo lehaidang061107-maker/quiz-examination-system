@@ -1,28 +1,32 @@
 ﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
-S3-06-01,"Manage Questions (FR-05)","1. Đăng nhập bằng tài khoản Teacher.
-2. Mở trang Ngân hàng câu hỏi.","Tài khoản: teacher@demo.example","Trang Ngân hàng câu hỏi hiển thị danh sách câu hỏi thuộc giảng viên đang đăng nhập."
-S3-06-02,"Search Questions (FR-05)","1. Đăng nhập bằng tài khoản Teacher.
+S3-06-01,Manage Questions (FR-05),"1. Đăng nhập bằng tài khoản Teacher.
+2. Mở trang Ngân hàng câu hỏi.",Tài khoản: teacher@demo.example,Trang Ngân hàng câu hỏi hiển thị danh sách câu hỏi thuộc giảng viên đang đăng nhập.
+S3-06-02,Search Questions (FR-05),"1. Đăng nhập bằng tài khoản Teacher.
 2. Nhập từ khóa vào ô Tìm kiếm câu hỏi.
-3. Nhấn Tìm kiếm.","Từ khóa: câu hỏi kiểm thử","Danh sách chỉ hiển thị các câu hỏi có nội dung khớp với từ khóa tìm kiếm."
-S3-06-03,"Filter Questions by Status (FR-05)","1. Mở trang Ngân hàng câu hỏi.
+3. Nhấn Tìm kiếm.",Từ khóa: câu hỏi kiểm thử,Danh sách chỉ hiển thị các câu hỏi có nội dung khớp với từ khóa tìm kiếm.
+S3-06-03,Filter Questions by Status (FR-05),"1. Mở trang Ngân hàng câu hỏi.
 2. Chọn trạng thái Nháp.
-3. Nhấn Tìm kiếm.","Trạng thái: DRAFT","Danh sách chỉ hiển thị các câu hỏi có trạng thái Nháp."
-S3-06-04,"Filter Questions by Status (FR-05)","1. Mở trang Ngân hàng câu hỏi.
+3. Nhấn Tìm kiếm.",Trạng thái: DRAFT,Danh sách chỉ hiển thị các câu hỏi có trạng thái Nháp.
+S3-06-04,Filter Questions by Status (FR-05),"1. Mở trang Ngân hàng câu hỏi.
 2. Chọn trạng thái Đang dùng.
-3. Nhấn Tìm kiếm.","Trạng thái: ACTIVE","Danh sách chỉ hiển thị các câu hỏi có trạng thái Đang dùng."
-S3-06-05,"Display Questions by Ownership (FR-05)","1. Đăng nhập bằng Teacher thứ nhất.
-2. Mở trang Ngân hàng câu hỏi.","Tài khoản Teacher thứ nhất; câu hỏi thuộc Teacher thứ hai","Không hiển thị câu hỏi thuộc giảng viên khác."
-S3-06-06,"Display Question Options Count (FR-05)","1. Đăng nhập bằng tài khoản Teacher.
+3. Nhấn Tìm kiếm.",Trạng thái: ACTIVE,Danh sách chỉ hiển thị các câu hỏi có trạng thái Đang dùng.
+S3-06-05,Display Questions by Ownership (FR-05),"1. Đăng nhập bằng Teacher thứ nhất.
+2. Mở trang Ngân hàng câu hỏi.",Tài khoản Teacher thứ nhất; câu hỏi thuộc Teacher thứ hai,Không hiển thị câu hỏi thuộc giảng viên khác.
+S3-06-06,Display Question Options Count (FR-05),"1. Đăng nhập bằng tài khoản Teacher.
 2. Mở trang Ngân hàng câu hỏi.
-3. Kiểm tra cột Số phương án.","Câu hỏi có 3 phương án trả lời","Cột Số phương án hiển thị giá trị 3 đối với câu hỏi có 3 phương án."
-S3-06-07,"Paginate Questions (FR-05)","1. Đăng nhập bằng tài khoản Teacher.
+3. Kiểm tra cột Số phương án.",Câu hỏi có 3 phương án trả lời,Cột Số phương án hiển thị giá trị 3 đối với câu hỏi có 3 phương án.
+S3-06-07,Paginate Questions (FR-05),"1. Đăng nhập bằng tài khoản Teacher.
 2. Mở trang Ngân hàng câu hỏi có nhiều hơn 10 câu hỏi.
-3. Chuyển sang trang tiếp theo.","Số lượng câu hỏi: lớn hơn 10","Mỗi trang hiển thị tối đa 10 câu hỏi và có thể chuyển giữa các trang."
-S3-06-08,"Display Empty Question List (FR-05)","1. Đăng nhập bằng tài khoản Teacher.
-2. Tìm kiếm bằng từ khóa không tồn tại.","Từ khóa: khong_co_cau_hoi_phu_hop_123","Giao diện hiển thị thông báo ""Không tìm thấy câu hỏi nào""."
-S3-06-09,"Exclude Archived Questions (FR-05)","1. Đăng nhập bằng tài khoản Teacher.
-2. Mở trang Ngân hàng câu hỏi.","Có câu hỏi mang trạng thái ARCHIVED","Danh sách không hiển thị câu hỏi đã lưu trữ."
-S3-06-10,"Access Control for Questions (FR-05)","1. Đăng xuất.
-2. Truy cập trực tiếp đường dẫn /questions/.","Người dùng chưa đăng nhập","Người dùng được chuyển hướng đến trang đăng nhập."
-S3-06-11,"Access Control for Questions (FR-05)","1. Đăng nhập bằng tài khoản Student.
-2. Truy cập trực tiếp đường dẫn /questions/.","Vai trò: Student","Hệ thống từ chối truy cập và trả về lỗi 403 Forbidden."
+3. Chuyển sang trang tiếp theo.",Số lượng câu hỏi: lớn hơn 10,Mỗi trang hiển thị tối đa 10 câu hỏi và có thể chuyển giữa các trang.
+S3-06-08,Display Empty Question List (FR-05),"1. Đăng nhập bằng tài khoản Teacher.
+2. Tìm kiếm bằng từ khóa không tồn tại.",Từ khóa: khong_co_cau_hoi_phu_hop_123,"Giao diện hiển thị thông báo ""Không tìm thấy câu hỏi nào""."
+S3-06-09,Exclude Archived Questions (FR-05),"1. Đăng nhập bằng tài khoản Teacher.
+2. Mở trang Ngân hàng câu hỏi.",Có câu hỏi mang trạng thái ARCHIVED,Danh sách không hiển thị câu hỏi đã lưu trữ.
+S3-06-10,Access Control for Questions (FR-05),"1. Đăng xuất.
+2. Truy cập trực tiếp đường dẫn /questions/.",Người dùng chưa đăng nhập,Người dùng được chuyển hướng đến trang đăng nhập.
+S3-06-11,Access Control for Questions (FR-05),"1. Đăng nhập bằng tài khoản Student.
+2. Truy cập trực tiếp đường dẫn /questions/.",Vai trò: Student,Hệ thống từ chối truy cập và trả về lỗi 403 Forbidden.
+S3-06-12,Danh sách câu hỏi (màn hình 07 Figma),"1. Đăng nhập Teacher
+2. Mở Ngân hàng câu hỏi
+3. Chọn lọc trạng thái Nháp","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","4 ô số đầu trang: Tổng câu hỏi (không tính lưu trữ), Đang dùng, Nháp, Đã dùng trong đề phát hành; chỉ đếm câu của giảng viên này và không đổi khi lọc"
