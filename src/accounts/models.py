@@ -8,6 +8,7 @@ Các phương thức báo lỗi nghiệp vụ bằng ValidationError (thông bá
 cho người dùng) và lỗi sai quyền bằng PermissionDenied.
 """
 import copy
+import logging
 from datetime import timedelta
 
 from django.contrib.auth import login as auth_login
@@ -22,6 +23,18 @@ from django.utils import timezone
 
 LOGIN_MAX_FAILS = 5  # NFR-SEC-07, BR-23
 LOGIN_LOCK_TIME = timedelta(minutes=15)
+
+# NFR-MAI-03, NFR-SEC-10: nhật ký đăng nhập và thay đổi tài khoản. Không ghi mật khẩu hay cookie phiên.
+audit_log = logging.getLogger("accounts.audit")
+
+
+def _client_ip(request):
+    return request.META.get("REMOTE_ADDR", "-") if request is not None else "-"
+
+
+def _log_text(value, limit=254):
+    """Chữ người dùng gõ (email) đưa vào nhật ký: bỏ ký tự xuống dòng để không giả được dòng log khác."""
+    return "".join(ch if ch.isprintable() else "?" for ch in str(value or ""))[:limit]
 
 
 class Role(models.TextChoices):
@@ -112,36 +125,47 @@ class User(AbstractBaseUser):
         """
         wrong = "Email hoặc mật khẩu không đúng."
         error = None
+        reason = None  # lý do thất bại ghi vào nhật ký (không lộ cho người dùng)
         with transaction.atomic():
             user = cls.objects.select_for_update().filter(email=normalize_email(email)).first()
             now = timezone.now()
             if user is None:
-                error = wrong
+                error, reason = wrong, "email không tồn tại"
             elif user.locked_until and user.locked_until > now:
                 minutes = int((user.locked_until - now).total_seconds() // 60) + 1
                 error = f"Bạn đã nhập sai {LOGIN_MAX_FAILS} lần. Vui lòng thử lại sau {minutes} phút."
+                reason = "đang bị khóa tạm do nhập sai"
             elif not user.check_password(password):
                 user.failed_login_count += 1
+                reason = f"sai mật khẩu lần {user.failed_login_count}"
                 if user.failed_login_count >= LOGIN_MAX_FAILS:
                     user.failed_login_count = 0
                     user.locked_until = now + LOGIN_LOCK_TIME
+                    reason += f", khóa tạm {int(LOGIN_LOCK_TIME.total_seconds() // 60)} phút"
                 user.save(update_fields=["failed_login_count", "locked_until"])
                 error = wrong
             elif not user.is_active:
                 error = "Tài khoản đã bị khóa hoặc ngừng sử dụng. Vui lòng liên hệ quản trị viên."
+                reason = f"tài khoản {user.status}"
             else:
                 user.failed_login_count = 0
                 user.locked_until = None
                 user.save(update_fields=["failed_login_count", "locked_until"])
         # Báo lỗi sau khi giao dịch đã lưu bộ đếm sai (báo lỗi trong giao dịch sẽ hoàn tác bộ đếm).
         if error:
+            audit_log.warning(
+                "đăng nhập thất bại | email=%s | user_id=%s | %s | ip=%s",
+                _log_text(normalize_email(email)), user.pk if user else "-", reason, _client_ip(request),
+            )
             raise ValidationError(error)
         # Django đổi mã phiên sau đăng nhập (NFR-SEC-08).
         auth_login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        audit_log.info("đăng nhập | user_id=%s (%s) | %s | ip=%s", user.pk, user.email, user.role, _client_ip(request))
         return True
 
     def logout(self, request):
         """logout(): hủy phiên hiện tại (FR-03)."""
+        audit_log.info("đăng xuất | user_id=%s (%s) | ip=%s", self.pk, self.email, _client_ip(request))
         auth_logout(request)
 
     def as_role(self):
@@ -210,12 +234,15 @@ class Admin(User):
             errors["password"] = exc.messages
         if errors:
             raise ValidationError(errors)
-        return User.objects.create_user(email, password, full_name=full_name, role=role)
+        user = User.objects.create_user(email, password, full_name=full_name, role=role)
+        audit_log.info("tạo tài khoản | admin_id=%s | user_id=%s (%s) | %s", self.pk, user.pk, user.email, role)
+        return user
 
     def update_user(self, user_id, data):
         """updateUser(id, data): sửa họ tên, email, vai trò (BR-22)."""
         with transaction.atomic():
             user = User.objects.select_for_update().get(pk=user_id)
+            before = {"full_name": user.full_name, "email": user.email, "role": user.role}
             if "full_name" in data:
                 if not (data["full_name"] or "").strip():
                     raise ValidationError({"full_name": "Vui lòng nhập họ tên."})
@@ -238,6 +265,13 @@ class Admin(User):
                     )
                 user.role = new_role
             user.save()
+        changed = [field for field, old in before.items() if getattr(user, field) != old]
+        if changed:
+            role_note = f" ({before['role']} -> {user.role})" if "role" in changed else ""
+            audit_log.info(
+                "sửa tài khoản | admin_id=%s | user_id=%s (%s) | đổi %s%s",
+                self.pk, user.pk, user.email, ", ".join(changed), role_note,
+            )
         return user
 
     def lock_user(self, user_id):
@@ -255,6 +289,7 @@ class Admin(User):
             user.failed_login_count = 0
             user.locked_until = None
             user.save(update_fields=["status", "failed_login_count", "locked_until"])
+        audit_log.info("mở khóa tài khoản | admin_id=%s | user_id=%s (%s)", self.pk, user.pk, user.email)
         return user
 
     def delete_user(self, user_id):
@@ -276,6 +311,11 @@ class Admin(User):
             user.save(update_fields=["status"])
             # BR-18: bài đang làm được nộp bằng các đáp án đã lưu, tính tại thời điểm khóa.
             in_progress = list(user.submissions.filter(status=SubmissionStatus.IN_PROGRESS))
+        action = "khóa tài khoản" if status == UserStatus.LOCKED else "xóa tài khoản (ngừng sử dụng)"
+        audit_log.info(
+            "%s | admin_id=%s | user_id=%s (%s) | tự nộp %s bài đang làm",
+            action, self.pk, user.pk, user.email, len(in_progress),
+        )
         for submission in in_progress:
             submission.auto_submit(at=timezone.now(), reason="account_locked")
 
