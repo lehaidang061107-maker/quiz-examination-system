@@ -346,6 +346,26 @@ class Teacher(User):
         """manageQuestions(): các câu hỏi thuộc giảng viên này (ngân hàng câu hỏi riêng)."""
         return self.questions.all().order_by("-updated_at")
 
+    def import_questions(self, rows):
+        """importQuestions(rows): tạo nhiều câu hỏi ACTIVE từ file Excel đã kiểm tra (S3-32).
+
+        rows: danh sách dict {"content", "options", "correct"} (từ questions.importer). Tất cả trong
+        một giao dịch: một câu không hợp lệ thì không câu nào được tạo. Trả về các câu đã tạo.
+        """
+        from questions.models import AnswerOption, Question
+
+        created = []
+        with transaction.atomic():
+            for row in rows:
+                question = Question.objects.create(teacher=self, content=row["content"])
+                AnswerOption.objects.bulk_create(
+                    AnswerOption(question=question, content=text, display_order=i + 1, is_correct=(i == row["correct"]))
+                    for i, text in enumerate(row["options"])
+                )
+                question.activate()  # kiểm tra lại BR-07/BR-13 ở Model, sai thì hủy cả lô
+                created.append(question)
+        return created
+
     def create_exam(self, data):
         """createExam(data): tạo đề nháp DRAFT. data gồm title, description, duration_minutes,
         opens_at, closes_at (đều có thể bỏ trống trừ title)."""

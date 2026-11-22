@@ -1,0 +1,22 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-32-01,Tải file mẫu,"1. Đăng nhập Teacher, mở Ngân hàng câu hỏi
+2. Bấm 'Nhập từ Excel'
+3. Bấm 'Tải file mẫu (.xlsx)'","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","Tải về mau-cau-hoi.xlsx; sheet 'Cau hoi' có dòng tiêu đề Nội dung câu hỏi, Phương án A–F, Đáp án đúng và 2 câu ví dụ; sheet 'Huong dan' ghi cách soạn"
+S3-32-02,Nhập câu hỏi từ Excel (FR-05),"1. Soạn file theo mẫu: 3 dòng hợp lệ, 1 dòng thiếu đáp án đúng, 1 dòng chỉ có 1 phương án
+2. Ở trang Nhập từ Excel chọn file, bấm 'Tải lên và kiểm tra'","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026
+File: cau-hoi.xlsx (5 dòng)","Bảng kết quả hiện '3 câu hợp lệ', '2 dòng lỗi'; dòng lỗi tô đỏ kèm lý do 'Thiếu đáp án đúng.' và 'Cần ít nhất 2 phương án.'; chưa có câu nào được tạo trong ngân hàng"
+S3-32-03,Nhập câu hỏi từ Excel (FR-05),"1. Làm tiếp S3-32-02
+2. Bấm 'Nhập 3 câu hợp lệ'","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","Về Ngân hàng câu hỏi với thông báo 'Đã nhập 3 câu hỏi vào ngân hàng.'; 3 câu ở trạng thái Đang dùng, đúng phương án và đáp án đúng như file; bấm quay lại gửi lại không tạo trùng"
+S3-32-04,Nhập câu hỏi vào đề nháp,"1. Mở trang chọn câu hỏi của một đề nháp, bấm 'Nhập từ Excel'
+2. Tải file mẫu lên
+3. Giữ tích 'Thêm luôn các câu hợp lệ vào đề', điểm 2, bấm Nhập","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026
+Điểm mỗi câu: 2","Về trang chọn câu hỏi của đề với thông báo 'Đã nhập 2 câu hỏi và thêm vào đề ...'; 2 câu mới nằm cuối đề, mỗi câu 2,00 điểm"
+S3-32-05,Kiểm tra file tải lên,"1. Ở trang Nhập từ Excel tải lên lần lượt: file .csv, file .xlsx đổi tên cột dòng 1, file chỉ có dòng tiêu đề","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","Lần lượt báo 'Chỉ nhận file Excel .xlsx', 'Dòng 1 phải đúng các cột của file mẫu...', 'File chưa có câu hỏi nào...'; không tạo câu hỏi nào"
+S3-32-06,Phân quyền (NFR-SEC-02),"1. Đăng nhập Student gõ /questions/import/
+2. Đăng nhập Teacher khác gõ /questions/import/?exam=<mã đề của teacher@demo>","Email: student1@demo.example / teacher2@demo.example
+Mật khẩu: Kiemthu2026",Cả hai trường hợp hiện trang 403

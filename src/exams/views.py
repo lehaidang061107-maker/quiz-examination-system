@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count, Q
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -162,6 +163,7 @@ def exam_questions(request, exam_id):
     context = _detail_context(exam)
     context.update({
         "page_obj": page_obj, "bank": page_obj.object_list, "search": search, "bank_total": page_obj.paginator.count,
+        "import_url": reverse("questions:import") + f"?exam={exam.pk}",  # S3-32: nhập Excel rồi thêm luôn vào đề
     })
     return render(request, "exams/questions.html", context)
 
