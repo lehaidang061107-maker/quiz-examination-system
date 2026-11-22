@@ -399,6 +399,12 @@ class Teacher(User):
                 participants.append(participant)
         return participants
 
+    def view_statistics(self, exam_id):
+        """viewStatistics(id): thống kê điểm và tỷ lệ đúng từng câu của đề mình phụ trách (S3-34)."""
+        from results.statistics import exam_statistics
+
+        return exam_statistics(self.manage_exam(exam_id))
+
     def view_results(self, exam_id, student_ids=None):
         """viewResults(id): kết quả các bài của đề mình phụ trách (Teacher xem kể cả chưa công bố).
         student_ids: chỉ lấy kết quả của các sinh viên này (trang kết quả phân trang)."""

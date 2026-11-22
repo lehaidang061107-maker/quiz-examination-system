@@ -72,7 +72,56 @@ def teacher_exam(request, exam_id):
         rows.append({"student": student, "submission": submission, "result": result,
                      "state": _submission_state(submission, result, published=True)})
 
-    return render(request, "results/teacher_exam.html", {"exam": exam, "rows": rows, "page_obj": page_obj})
+    return render(request, "results/teacher_exam.html", {
+        "exam": exam, "rows": rows, "page_obj": page_obj, "stats": teacher.view_statistics(exam.pk),
+    })
+
+
+STATE_LABELS = {
+    ROW_NOT_STARTED: "Chưa làm bài", ROW_IN_PROGRESS: "Đang làm bài", ROW_GRADING: "Đang chấm",
+    ROW_UNPUBLISHED: "Đã chấm", ROW_GRADED: "Đã chấm",
+}
+
+
+@role_required(Role.TEACHER)
+def teacher_exam_csv(request, exam_id):
+    """S3-34: tải bảng điểm cả đề ra CSV (UTF-8 có BOM để Excel đọc đúng tiếng Việt)."""
+    import csv
+
+    from django.http import HttpResponse
+    from django.utils import timezone
+
+    from results.templatetags.results_extras import duration
+
+    teacher = request.user.as_role()
+    exam = teacher.manage_exam(exam_id)
+    students = User.objects.filter(
+        Q(pk__in=Submission.objects.filter(exam=exam).values("student_id"))
+        | Q(pk__in=exam.participants.filter(is_active=True).values("student_id"))
+    ).order_by(Lower("full_name"), "pk")
+    results = {r.submission_id: r for r in teacher.view_results(exam.pk)}
+    submissions = {s.student_id: s for s in Submission.objects.filter(exam=exam)}
+
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="ket-qua-de-{exam.pk}.csv"'
+    response.write("\ufeff")
+    writer = csv.writer(response)
+    writer.writerow(["Họ và tên", "Email", "Trạng thái", "Điểm", "Điểm tối đa", "Điểm thang 10",
+                     "Số câu đúng", "Số câu sai", "Bỏ trống", "Nộp lúc", "Thời gian làm"])
+    for student in students:
+        submission = submissions.get(student.pk)
+        result = results.get(submission.pk) if submission else None
+        state = ROW_NOT_STARTED if submission is None else _submission_state(submission, result, published=True)
+        submitted = timezone.localtime(submission.submitted_at).strftime("%d/%m/%Y %H:%M") \
+            if submission and submission.submitted_at else ""
+        if result:
+            writer.writerow([student.full_name, student.email, STATE_LABELS[state], result.score, result.max_score,
+                             result.score_on_10, result.correct_count, result.wrong_count, result.blank_count,
+                             submitted, duration(result.completion_time)])
+        else:
+            writer.writerow([student.full_name, student.email, STATE_LABELS[state], "", "", "", "", "", "",
+                             submitted, ""])
+    return response
 
 
 @role_required(Role.STUDENT)
