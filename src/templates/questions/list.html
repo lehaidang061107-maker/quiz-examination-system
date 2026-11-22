@@ -179,7 +179,7 @@ Quản lý và theo dõi các câu hỏi của bạn.
                                         </form>
                                         {# Câu đã dùng trong đề phát hành không xóa được (BR-14), chỉ lưu trữ. #}
                                         <form method="post" action="{% url 'questions:archive' question.question_id %}" class="d-inline"
-                                              onsubmit="return confirm('Lưu trữ câu hỏi này? Câu hỏi sẽ không chọn được vào đề mới; các đề đã phát hành và kết quả cũ giữ nguyên.');">
+                                              data-confirm="Lưu trữ câu hỏi này? Câu hỏi sẽ không chọn được vào đề mới; các đề đã phát hành và kết quả cũ giữ nguyên." data-confirm-ok="Lưu trữ">
                                             {% csrf_token %}
                                             <input type="hidden" name="next" value="{{ request.get_full_path }}">
                                             <button type="submit" class="btn btn-outline-secondary btn-sm">Lưu trữ</button>
@@ -193,7 +193,7 @@ Quản lý và theo dõi các câu hỏi của bạn.
                                             Sửa
                                         </a>
                                         <form method="post" action="{% url 'questions:delete' question.question_id %}" class="d-inline"
-                                              onsubmit="return confirm('Xóa câu hỏi này? Thao tác không hoàn tác được.');">
+                                              data-confirm="Xóa câu hỏi này? Thao tác không hoàn tác được." data-confirm-ok="Xóa" data-confirm-danger>
                                             {% csrf_token %}
                                             <input type="hidden" name="next" value="{{ request.get_full_path }}">
                                             <button type="submit" class="btn btn-outline-danger btn-sm">Xóa</button>

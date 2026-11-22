@@ -1,0 +1,2 @@
+{# Lịch thi gọn một dòng: "Tự do" nếu không giới hạn, ngược lại "mở → đóng". Dùng: include with opens=... closes=... #}
+<span class="text-nowrap">{% if not opens and not closes %}Tự do{% else %}{{ opens|date:"d/m/Y H:i"|default:"Tự do" }} → {{ closes|date:"d/m/Y H:i"|default:"không giới hạn" }}{% endif %}</span>

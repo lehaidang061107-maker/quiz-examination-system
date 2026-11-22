@@ -54,7 +54,7 @@
                   <button type="button" class="btn btn-sm btn-secondary" disabled>Chưa thể bắt đầu</button>
                 {% else %}
                   <form method="post" action="{% url 'attempts:start_exam' item.exam.pk %}" class="d-inline"
-                        onsubmit="return confirm('Bạn chắc chắn muốn bắt đầu làm bài thi này? Đồng hồ sẽ tính giờ ngay lập tức.');">
+                        data-confirm="Bạn chắc chắn muốn bắt đầu làm bài thi này? Đồng hồ sẽ tính giờ ngay lập tức." data-confirm-ok="Bắt đầu">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm btn-primary">Bắt đầu làm bài</button>
                   </form>
