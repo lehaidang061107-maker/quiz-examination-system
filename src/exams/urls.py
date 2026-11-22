@@ -15,4 +15,5 @@ urlpatterns = [
     path("<int:exam_id>/close/", views.exam_close, name="close"),
     path("<int:exam_id>/publish-results/", views.exam_publish_results, name="publish_results"),
     path("<int:exam_id>/archive/", views.exam_archive, name="archive"),
+    path("<int:exam_id>/delete/", views.exam_delete, name="delete"),
 ]

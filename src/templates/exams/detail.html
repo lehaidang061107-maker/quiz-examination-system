@@ -13,6 +13,11 @@
         {% csrf_token %}
         <button type="submit" class="btn btn-sm btn-primary">Phát hành</button>
       </form>
+      <form method="post" action="{% url 'exams:delete' exam.exam_id %}" class="m-0"
+            onsubmit="return confirm('Xóa đề nháp này? Câu hỏi đã chọn và danh sách phân công của đề cũng bị xóa (câu hỏi trong ngân hàng vẫn giữ). Thao tác không hoàn tác được.');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-outline-danger">Xóa đề</button>
+      </form>
     {% endif %}
     {% if exam.status == "PUBLISHED" %}
       <form method="post" action="{% url 'exams:close' exam.exam_id %}" class="m-0"
