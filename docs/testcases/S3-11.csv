@@ -1,0 +1,53 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-11-01,Create Exam (FR-06),"1. Đăng nhập Teacher
+2. Bấm menu 'Quản lý kỳ thi'
+3. Bấm 'Tạo đề thi'
+4. Nhập thông tin
+5. Bấm 'Tạo đề nháp'","Tên đề thi: Kiểm tra giữa kỳ
+Mô tả: Chương 1-3
+Thời lượng (phút): 45
+Thời gian mở: 10/01/2030 08:00
+Thời gian đóng: 10/01/2030 10:00","Hiện thông báo 'Đã tạo đề thi nháp.'; mở trang chi tiết đề, trạng thái 'Nháp', Thời gian mở 10/01/2030 08:00, Thời gian đóng 10/01/2030 10:00"
+S3-11-02,Create Exam (FR-06),"1. Đăng nhập Teacher
+2. Mở 'Tạo đề thi'
+3. Chỉ nhập tên và thời lượng
+4. Bấm 'Tạo đề nháp'","Tên đề thi: Ôn tập
+Thời lượng (phút): 30
+Thời gian mở, Thời gian đóng: bỏ trống",Hiện 'Đã tạo đề thi nháp.'; Thời gian mở và Thời gian đóng hiện 'Không giới hạn'
+S3-11-03,Create Exam (FR-06),"1. Mở 'Tạo đề thi'
+2. Bỏ trống tên
+3. Bấm 'Tạo đề nháp'","Tên đề thi: (để trống)
+Thời lượng (phút): 45",Không tạo đề; dưới ô Tên đề thi hiện 'Vui lòng nhập tên đề thi.'
+S3-11-04,Create Exam (FR-06),"1. Mở 'Tạo đề thi'
+2. Bỏ trống thời lượng
+3. Bấm 'Tạo đề nháp'","Tên đề thi: Kiểm tra
+Thời lượng (phút): (để trống)",Không tạo đề; dưới ô Thời lượng hiện 'Vui lòng nhập thời lượng làm bài.'
+S3-11-05,Create Exam (FR-06),"1. Mở 'Tạo đề thi'
+2. Nhập thời lượng bằng 0
+3. Bấm 'Tạo đề nháp'","Tên đề thi: Kiểm tra
+Thời lượng (phút): 0",Không tạo đề; hiện 'Thời lượng phải lớn hơn 0 phút.'
+S3-11-06,Create Exam (FR-06),"1. Mở 'Tạo đề thi'
+2. Nhập thời lượng quá lớn
+3. Bấm 'Tạo đề nháp'","Tên đề thi: Kiểm tra
+Thời lượng (phút): 5000",Không tạo đề; hiện 'Thời lượng tối đa 1440 phút (24 giờ).'
+S3-11-07,Create Exam (FR-06),"1. Mở 'Tạo đề thi'
+2. Nhập giờ đóng trước giờ mở
+3. Bấm 'Tạo đề nháp'","Tên đề thi: Kiểm tra
+Thời lượng (phút): 45
+Thời gian mở: 10/01/2030 08:00
+Thời gian đóng: 10/01/2030 07:00",Không tạo đề; dưới ô Thời gian đóng hiện 'Thời gian đóng phải sau thời gian mở.'
+S3-11-08,Manage Exams (FR-07),"1. Đăng nhập Teacher
+2. Bấm menu 'Quản lý kỳ thi'
+3. Chọn Trạng thái 'Nháp'
+4. Bấm 'Lọc'",Teacher có 1 đề Nháp và 1 đề Đã phát hành; Teacher khác có 1 đề,Chỉ hiện đề Nháp của Teacher đang đăng nhập; không thấy đề của Teacher khác
+S3-11-09,Manage Exams (FR-07),"1. Ở danh sách đề bấm 'Sửa' tại đề Nháp
+2. Đổi tên và thời lượng
+3. Bấm 'Lưu thay đổi'","Tên đề thi: Kiểm tra cuối kỳ
+Thời lượng (phút): 60",Hiện 'Đã lưu thay đổi đề thi.'; trang chi tiết hiện tên mới và 60 phút
+S3-11-10,"Manage Exams (FR-07), BR-14","1. Đăng nhập Teacher
+2. Mở chi tiết một đề Đã phát hành
+3. Gõ thẳng đường dẫn /exams/<mã đề>/edit/",Đề ở trạng thái Đã phát hành,"Trang chi tiết không có nút 'Sửa thông tin'; mở đường dẫn sửa thì quay về chi tiết và hiện 'Đề đã phát hành, không thể sửa nội dung.'"
+S3-11-11,"Manage Exams (FR-07), NFR-SEC-09","1. Đăng nhập Teacher B
+2. Gõ thẳng đường dẫn /exams/<mã đề của Teacher A>/ và /exams/<mã đề của Teacher A>/edit/",Đề nháp thuộc Teacher A,Cả hai đường dẫn hiện trang 403; đề của Teacher A không bị đổi
+S3-11-12,"Manage Exams (FR-07), BR-02","1. Đăng nhập Student
+2. Gõ thẳng đường dẫn /exams/",Tài khoản Student,Hiện trang 403 'Bạn không có quyền truy cập trang này.'

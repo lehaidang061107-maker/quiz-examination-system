@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{{ exam.title }}{% endblock %}
+{% block page_title %}{{ exam.title }}{% endblock %}
+{% block page_subtitle %}Mã đề {{ exam.exam_id }} · {% include "exams/_status_badge.html" with status=exam.status %}{% endblock %}
+{% block page_actions %}
+  <div class="d-flex flex-wrap gap-2">
+    {% if is_draft %}
+      <a href="{% url 'exams:edit' exam.exam_id %}" class="btn btn-sm btn-outline-primary">Sửa thông tin</a>
+    {% endif %}
+    <a href="{% url 'exams:list' %}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
+  </div>
+{% endblock %}
+
+{% block content %}
+<dl class="row mb-4">
+  <dt class="col-sm-3">Mô tả</dt>
+  <dd class="col-sm-9">{{ exam.description|default:"—"|linebreaksbr }}</dd>
+  <dt class="col-sm-3">Thời lượng</dt>
+  <dd class="col-sm-9">{% if exam.duration_minutes %}{{ exam.duration_minutes }} phút{% else %}—{% endif %}</dd>
+  <dt class="col-sm-3">Thời gian mở</dt>
+  <dd class="col-sm-9">{{ exam.opens_at|date:"d/m/Y H:i"|default:"Không giới hạn" }}</dd>
+  <dt class="col-sm-3">Thời gian đóng</dt>
+  <dd class="col-sm-9">{{ exam.closes_at|date:"d/m/Y H:i"|default:"Không giới hạn" }}</dd>
+  <dt class="col-sm-3">Ngày tạo</dt>
+  <dd class="col-sm-9">{{ exam.created_at|date:"d/m/Y H:i" }}</dd>
+</dl>
+{% endblock %}

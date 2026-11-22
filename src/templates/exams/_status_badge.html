@@ -1,0 +1,5 @@
+{% if status == "DRAFT" %}<span class="badge text-bg-secondary">Nháp</span>
+{% elif status == "PUBLISHED" %}<span class="badge badge-qes-success">Đã phát hành</span>
+{% elif status == "CLOSED" %}<span class="badge text-bg-warning">Đã đóng</span>
+{% elif status == "ARCHIVED" %}<span class="badge text-bg-dark">Lưu trữ</span>
+{% endif %}
