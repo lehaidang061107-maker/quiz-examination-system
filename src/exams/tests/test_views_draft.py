@@ -74,6 +74,33 @@ class ExamListTests(TestCase):
         response = self.client.get(reverse("exams:list"))
         self.assertContains(response, "Bạn chưa có đề thi nào.")
 
+    def test_tim_theo_ten_de(self):
+        self.teacher.create_exam({"title": "Giữa kỳ CSDL", "duration_minutes": 30})
+        self.teacher.create_exam({"title": "Cuối kỳ Mạng", "duration_minutes": 30})
+        response = self.client.get(reverse("exams:list"), {"q": "csdl"})
+        self.assertContains(response, "Giữa kỳ CSDL")
+        self.assertNotContains(response, "Cuối kỳ Mạng")
+
+    def test_tim_khong_thay(self):
+        self.teacher.create_exam({"title": "Giữa kỳ CSDL", "duration_minutes": 30})
+        response = self.client.get(reverse("exams:list"), {"q": "không có"})
+        self.assertContains(response, "Không có đề thi nào khớp bộ lọc.")
+
+    def test_o_so_tong_quan_chi_dem_de_cua_minh(self):
+        # Ô số không đổi theo bộ lọc: luôn là tổng quan đề của giảng viên (màn hình 09 Figma).
+        self.teacher.create_exam({"title": "Nháp", "duration_minutes": 30})
+        make_open_exam(self.teacher, [], [make_question(self.teacher)])
+        closed = self.teacher.create_exam({"title": "Đã đóng", "duration_minutes": 30})
+        Exam.objects.filter(pk=closed.pk).update(status=ExamStatus.CLOSED)
+        self.other.create_exam({"title": "Đề người khác", "duration_minutes": 30})
+        response = self.client.get(reverse("exams:list"), {"status": ExamStatus.DRAFT})
+        self.assertEqual(response.context["stats"], [("Tổng kỳ thi", 3), ("Đang mở", 1), ("Đã kết thúc", 1)])
+
+    def test_lich_thi_khong_gioi_han_hien_tu_do(self):
+        self.teacher.create_exam({"title": "Đề tự do", "duration_minutes": 30})
+        response = self.client.get(reverse("exams:list"))
+        self.assertContains(response, "Tự do")
+
     def test_sai_vai_tro_bi_chan(self):
         for role in (Role.STUDENT, Role.ADMIN):
             with self.subTest(role=role):
