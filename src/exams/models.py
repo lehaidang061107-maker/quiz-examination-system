@@ -163,7 +163,7 @@ class Exam(models.Model):
         self.status = ExamStatus.CLOSED
         self.save(update_fields=["status"])
         for submission in self.submissions.filter(status=SubmissionStatus.IN_PROGRESS):
-            submission.auto_submit(at=now)
+            submission.auto_submit(at=now, reason="exam_closed")
 
     def archive(self):
         """Lưu trữ đề CLOSED -> ARCHIVED khi không còn bài đang làm/chờ chấm (BR-17). Điểm đã công bố vẫn xem được."""
@@ -190,6 +190,18 @@ class Exam(models.Model):
             raise ValidationError(f"Còn {pending} bài chưa chấm xong, chưa thể công bố.")
         self.results_published = True
         self.save(update_fields=["results_published"])
+
+    def delete_draft(self):
+        """Xóa đề nháp tạo nhầm (UC Manage Exams). Đề đã phát hành có thể đã có bài làm và kết quả
+        nên không xóa, chỉ đóng hoặc lưu trữ để giữ lịch sử."""
+        if self.status != ExamStatus.DRAFT:
+            raise ValidationError("Chỉ xóa được đề nháp. Đề đã phát hành hãy đóng hoặc lưu trữ để giữ lịch sử.")
+        if self.submissions.exists():  # phòng hờ: đề nháp không thể có bài làm
+            raise ValidationError("Đề đã có bài làm, không thể xóa.")
+        with transaction.atomic():
+            self.exam_questions.all().delete()
+            self.participants.all().delete()  # đề nháp chưa phát hành nên sinh viên chưa thấy đề
+            self.delete()
 
     def check_draft(self):
         """Đề đã phát hành giữ nguyên nội dung, thứ tự, điểm (BR-14)."""
@@ -298,7 +310,7 @@ class ExamParticipant(models.Model):
         ExamParticipant.objects.filter(pk=self.pk).update(is_active=False)
         self.is_active = False
         for submission in self.exam.submissions.filter(student_id=self.student_id, status=SubmissionStatus.IN_PROGRESS):
-            submission.auto_submit(at=now)
+            submission.auto_submit(at=now, reason="revoked")
 
     def can_participate(self):
         """canParticipate(): còn quyền dự thi và đề đang mở."""

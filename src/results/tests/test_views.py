@@ -192,3 +192,85 @@ class DurationFilterTests(TestCase):
     def test_dinh_dang_thoi_gian(self):
         self.assertEqual(duration(timedelta(minutes=12, seconds=5)), "12 phút 05 giây")
         self.assertEqual(duration(timedelta(hours=1, minutes=2, seconds=3)), "1 giờ 02 phút 03 giây")
+
+
+class ResultPaginationTests(TestCase):
+    """Bổ sung S3-24 (NFR-PER-05): các danh sách kết quả phân trang 20 dòng."""
+
+    def setUp(self):
+        self.teacher = make_user(Role.TEACHER)
+        self.question = make_question(self.teacher)
+
+    def test_teacher_danh_sach_de_phan_trang(self):
+        for _ in range(22):
+            make_open_exam(self.teacher, [], [self.question])
+        self.client.force_login(self.teacher)
+        first = self.client.get(reverse("results:teacher_list"))
+        self.assertEqual(len(first.context["exams"]), 20)
+        self.assertContains(first, "1/2")
+        second = self.client.get(reverse("results:teacher_list"), {"page": 2})
+        self.assertEqual(len(second.context["exams"]), 2)
+
+    def test_ket_qua_mot_de_phan_trang_theo_ten_va_dung_trang_thai(self):
+        students = [make_user(name=f"Sinh viên {i:02d}") for i in range(25)]
+        exam = make_open_exam(self.teacher, students, [self.question])
+        # Sinh viên 24 (trang 2) đã nộp bài; các bạn còn lại chưa làm.
+        submission = students[24].start_exam(exam.pk)
+        submission.submit()
+        self.client.force_login(self.teacher)
+        url = reverse("results:teacher_exam", args=[exam.pk])
+        first = self.client.get(url)
+        self.assertEqual([row["student"].full_name for row in first.context["rows"]][:2], ["Sinh viên 00", "Sinh viên 01"])
+        self.assertEqual(len(first.context["rows"]), 20)
+        second = self.client.get(url, {"page": 2})
+        rows = second.context["rows"]
+        self.assertEqual(len(rows), 5)
+        last = rows[-1]
+        self.assertEqual(last["student"], students[24])
+        self.assertIsNotNone(last["result"])  # kết quả của trang 2 vẫn lấy đúng
+        self.assertEqual(rows[0]["state"], "not_started")
+
+    def test_sinh_vien_lich_su_phan_trang(self):
+        student = make_user()
+        for _ in range(21):
+            exam = make_open_exam(self.teacher, [student], [self.question])
+            student.start_exam(exam.pk).submit()
+        self.client.force_login(student)
+        first = self.client.get(reverse("results:student_list"))
+        self.assertEqual(len(first.context["rows"]), 20)
+        second = self.client.get(reverse("results:student_list"), {"page": 2})
+        self.assertEqual(len(second.context["rows"]), 1)
+
+
+class ScoreOnTenTests(ResultViewsBase):
+    """Hiện thêm điểm quy đổi thang 10; điểm gốc trong database giữ nguyên."""
+
+    def test_quy_doi_va_lam_tron(self):
+        from decimal import Decimal
+
+        from results.models import Result
+
+        cases = [("2", "6", "3.33"), ("4", "6", "6.67"), ("6", "6", "10.00"), ("0", "6", "0.00"), ("7.5", "10", "7.50")]
+        for score, max_score, expected in cases:
+            with self.subTest(score=score, max_score=max_score):
+                result = Result(score=Decimal(score), max_score=Decimal(max_score))
+                self.assertEqual(result.score_on_10, Decimal(expected))
+        self.assertEqual(Result(score=Decimal("0"), max_score=Decimal("0")).score_on_10, Decimal("0.00"))
+
+    def test_teacher_va_student_thay_diem_thang_10_kem_diem_goc(self):
+        self.client.force_login(self.teacher)
+        response = self.client.get(reverse("results:teacher_exam", args=[self.exam.pk]))
+        self.assertContains(response, "3,33 / 10")
+        self.assertContains(response, "2,00 / 6,00")
+        self.exam.close()
+        self.exam.publish_results()
+        self.client.force_login(self.student)
+        detail = self.client.get(reverse("results:student_detail", args=[self.exam.pk]))
+        self.assertContains(detail, "3,33 / 10")
+        self.assertContains(detail, "Điểm gốc: 2,00 / 6,00")
+        self.assertContains(self.client.get(reverse("results:student_list")), "3,33 / 10")
+
+    def test_chua_cong_bo_khong_lo_diem_thang_10(self):
+        self.client.force_login(self.student)
+        self.assertNotContains(self.client.get(reverse("results:student_detail", args=[self.exam.pk])), "3,33")
+        self.assertNotContains(self.client.get(reverse("results:student_list")), "3,33")

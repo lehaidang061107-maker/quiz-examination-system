@@ -37,3 +37,15 @@ S3-24-15,"View Exam Results (FR-13), BR-10","1. Đăng nhập Teacher
 2. Gõ URL /results/me/",Tài khoản Teacher,Trả về trang 403
 S3-24-16,View Exam Results (FR-13),"1. Chưa đăng nhập
 2. Gõ URL /results/me/",Không có phiên đăng nhập,Chuyển tới trang Đăng nhập
+S3-24-17,"View Exam Results (FR-13), NFR-PER-05","1. Đăng nhập Teacher có 22 đề đã phát hành
+2. Bấm menu 'Kết quả thi'
+3. Bấm 'Sau'",Teacher có 22 đề đã phát hành,"Trang 1 có 20 đề và hiện '1/2'; trang 2 có 2 đề còn lại"
+S3-24-18,"View Exam Results (FR-13), NFR-PER-05","1. Đăng nhập Teacher, mở kết quả một đề giao cho 25 sinh viên (1 bạn cuối danh sách đã nộp)
+2. Bấm 'Sau'",Đề giao cho 25 sinh viên,"Mỗi trang tối đa 20 sinh viên, xếp theo họ tên; trang 2 có 5 sinh viên, bạn đã nộp hiện đúng điểm/trạng thái, các bạn chưa làm hiện 'Chưa làm bài'"
+S3-24-19,"View Exam Results (FR-13), NFR-PER-05","1. Đăng nhập Student đã nộp 21 bài
+2. Bấm menu 'Lịch sử bài thi'
+3. Bấm 'Sau'",Student đã nộp 21 bài,"Trang 1 có 20 bài mới nhất; trang 2 có 1 bài còn lại"
+S3-24-20,View Exam Results (FR-13),"1. Teacher tạo đề 3 câu, mỗi câu 2 điểm; Student làm đúng 1 câu, sai 1, bỏ trống 1 rồi nộp
+2. Teacher mở Kết quả thi của đề
+3. Teacher đóng đề, công bố điểm
+4. Student mở Lịch sử bài thi và Xem chi tiết",Đề 3 câu x 2 điểm,"Cột 'Điểm (thang 10)' hiện '3,33 / 10', dòng nhỏ bên dưới là điểm gốc '2,00 / 6,00'; trang chi tiết của Student hiện '3,33 / 10' và 'Điểm gốc: 2,00 / 6,00'; trước khi công bố Student không thấy điểm nào"

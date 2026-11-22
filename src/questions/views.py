@@ -4,6 +4,7 @@ from django.core.paginator import Paginator
 from django.db import DatabaseError, models, transaction
 from django.db.models import Count, Exists, OuterRef
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from accounts.decorators import role_required
@@ -11,6 +12,13 @@ from accounts.models import Role
 from attempts.models import SubmissionAnswer
 from exams.models import ExamQuestion, ExamStatus
 from questions.models import Question, QuestionStatus
+
+
+STATUS_CHOICES = [
+    (QuestionStatus.DRAFT, "Nháp"),
+    (QuestionStatus.ACTIVE, "Đang dùng"),
+    (QuestionStatus.ARCHIVED, "Lưu trữ"),
+]
 
 
 @role_required(Role.TEACHER)
@@ -26,21 +34,16 @@ def question_list(request):
         # Chỉ lấy câu hỏi thuộc giảng viên hiện tại.
         questions = teacher.manage_questions()
 
-        # Mặc định không hiển thị câu hỏi đã lưu trữ.
-        questions = questions.exclude(status=QuestionStatus.ARCHIVED)
-
         # Tìm kiếm theo nội dung câu hỏi.
         if search_query:
             questions = questions.filter(content__icontains=search_query)
 
-        # Chỉ chấp nhận hai trạng thái được phép lọc.
-        if selected_status in (
-            QuestionStatus.DRAFT,
-            QuestionStatus.ACTIVE,
-        ):
+        # Mặc định không hiển thị câu hỏi đã lưu trữ; chọn lọc "Lưu trữ" thì mới thấy.
+        if selected_status in QuestionStatus.values:
             questions = questions.filter(status=selected_status)
         else:
             selected_status = ""
+            questions = questions.exclude(status=QuestionStatus.ARCHIVED)
 
         # Đếm số phương án và kiểm tra câu hỏi đã được sử dụng.
         questions = questions.annotate(
@@ -63,10 +66,7 @@ def question_list(request):
             "questions": page_obj.object_list,
             "search_query": search_query,
             "selected_status": selected_status,
-            "status_choices": [
-                (QuestionStatus.DRAFT, "Nháp"),
-                (QuestionStatus.ACTIVE, "Đang dùng"),
-            ],
+            "status_choices": STATUS_CHOICES,
         }
 
         return render(
@@ -84,10 +84,7 @@ def question_list(request):
                 "questions": [],
                 "search_query": search_query,
                 "selected_status": selected_status,
-                "status_choices": [
-                    (QuestionStatus.DRAFT, "Nháp"),
-                    (QuestionStatus.ACTIVE, "Đang dùng"),
-                ],
+                "status_choices": STATUS_CHOICES,
                 "error_message": (
                     "Không thể tải danh sách câu hỏi. "
                     "Vui lòng thử lại sau."
@@ -418,3 +415,60 @@ def question_edit(request, question_id):
         "form_data": form_data,
         "page_heading": "Chỉnh sửa câu hỏi",
     })
+
+
+def _own_question(request, question_id):
+    # Câu hỏi của giảng viên khác trả 404 như các trang sửa câu hỏi.
+    return get_object_or_404(Question, question_id=question_id, teacher=request.user)
+
+
+def _back_to_list(request):
+    """Quay lại đúng trang/bộ lọc đang xem (chỉ nhận đường dẫn của trang danh sách câu hỏi)."""
+    back = request.POST.get("next", "")
+    list_url = reverse("questions:list")
+    return redirect(back if back.startswith(list_url) else list_url)
+
+
+@role_required(Role.TEACHER)
+@require_POST
+def question_delete(request, question_id):
+    """UC Manage Questions: xóa câu hỏi chưa dùng trong đề nào, có xác nhận ở giao diện."""
+    question = _own_question(request, question_id)
+    try:
+        question.delete_unused()
+    except ValidationError as error:
+        for text in error.messages:
+            messages.error(request, text)
+    else:
+        messages.success(request, "Đã xóa câu hỏi.")
+    return _back_to_list(request)
+
+
+@role_required(Role.TEACHER)
+@require_POST
+def question_archive(request, question_id):
+    """Lưu trữ: ngừng dùng câu hỏi cho đề mới, đề cũ và kết quả cũ giữ nguyên (BR-14)."""
+    question = _own_question(request, question_id)
+    try:
+        question.archive()
+    except ValidationError as error:
+        for text in error.messages:
+            messages.error(request, text)
+    else:
+        messages.success(request, "Đã lưu trữ câu hỏi. Câu hỏi không còn được chọn vào đề mới.")
+    return _back_to_list(request)
+
+
+@role_required(Role.TEACHER)
+@require_POST
+def question_restore(request, question_id):
+    """Khôi phục câu hỏi đã lưu trữ về Nháp."""
+    question = _own_question(request, question_id)
+    try:
+        question.restore()
+    except ValidationError as error:
+        for text in error.messages:
+            messages.error(request, text)
+    else:
+        messages.success(request, "Đã khôi phục câu hỏi về Nháp. Kiểm tra lại rồi lưu để dùng.")
+    return _back_to_list(request)

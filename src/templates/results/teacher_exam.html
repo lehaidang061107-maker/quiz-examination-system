@@ -19,7 +19,7 @@
         <tr>
           <th>Sinh viên</th>
           <th>Trạng thái</th>
-          <th class="text-end">Điểm</th>
+          <th class="text-end">Điểm (thang 10)</th>
           <th class="text-center">Đúng</th>
           <th class="text-center">Sai</th>
           <th class="text-center">Bỏ trống</th>
@@ -36,7 +36,10 @@
             </td>
             <td>{% include "results/_state_badge.html" with state=row.state %}</td>
             {% if row.result %}
-              <td class="text-end fw-semibold">{{ row.result.score }} / {{ row.result.max_score }}</td>
+              <td class="text-end fw-semibold">
+                {{ row.result.score_on_10 }} / 10
+                <div class="small text-muted fw-normal">{{ row.result.score }} / {{ row.result.max_score }}</div>
+              </td>
               <td class="text-center">{{ row.result.correct_count }}</td>
               <td class="text-center">{{ row.result.wrong_count }}</td>
               <td class="text-center">{{ row.result.blank_count }}</td>
@@ -55,6 +58,7 @@
       </tbody>
     </table>
   </div>
+  {% include "partials/pagination.html" with label="Phân trang sinh viên" %}
 {% else %}
   <div class="text-center py-4 text-muted">Đề thi này chưa được giao cho sinh viên nào.</div>
 {% endif %}

@@ -140,6 +140,10 @@ Quản lý và theo dõi các câu hỏi của bạn.
                                             <span class="badge text-bg-success">
                                                 Đang dùng
                                             </span>
+                                        {% elif question.status == "ARCHIVED" %}
+                                            <span class="badge text-bg-light border">
+                                                Lưu trữ
+                                            </span>
                                         {% endif %}
                                     </td>
 
@@ -150,9 +154,14 @@ Quản lý và theo dõi các câu hỏi của bạn.
                                     <td class="text-center">
                                         {{ question.updated_at|date:"d/m/Y H:i" }}
                                     </td>
-                                    <td class="text-center">
-
-                                    {% if question.is_locked %}
+                                    <td class="text-center text-nowrap">
+                                    {% if question.status == "ARCHIVED" %}
+                                        <form method="post" action="{% url 'questions:restore' question.question_id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm">Khôi phục</button>
+                                        </form>
+                                    {% elif question.is_locked %}
                                         <form
                                             method="post"
                                             action="{% url 'questions:revision' question.question_id %}"
@@ -168,6 +177,13 @@ Quản lý và theo dõi các câu hỏi của bạn.
                                                 Tạo phiên bản mới
                                             </button>
                                         </form>
+                                        {# Câu đã dùng trong đề phát hành không xóa được (BR-14), chỉ lưu trữ. #}
+                                        <form method="post" action="{% url 'questions:archive' question.question_id %}" class="d-inline"
+                                              onsubmit="return confirm('Lưu trữ câu hỏi này? Câu hỏi sẽ không chọn được vào đề mới; các đề đã phát hành và kết quả cũ giữ nguyên.');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm">Lưu trữ</button>
+                                        </form>
                                     {% else %}
 
                                         <a href="{% url 'questions:edit' question.question_id %}"
@@ -176,6 +192,12 @@ Quản lý và theo dõi các câu hỏi của bạn.
                                             <i class="bi bi-pencil-square"></i>
                                             Sửa
                                         </a>
+                                        <form method="post" action="{% url 'questions:delete' question.question_id %}" class="d-inline"
+                                              onsubmit="return confirm('Xóa câu hỏi này? Thao tác không hoàn tác được.');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">Xóa</button>
+                                        </form>
                                     {% endif %}
                                     </td>
                                 </tr>

@@ -34,10 +34,11 @@ Mở http://127.0.0.1:8000/accounts/login/, đăng nhập bằng `student1@demo.
 
 | # | File | Đọc khi |
 | --- | --- | --- |
-| 1 | [Getting Started](docs/guides/01-getting-started.md) | Lần đầu cài; tài khoản mẫu; xem database; gặp lỗi khi chạy |
+| 1 | [Getting Started](docs/guides/01-getting-started.md) | Lần đầu cài; tài khoản mẫu; xem database; xem nhật ký `[AUDIT]`; gặp lỗi khi chạy |
 | 2 | [Git Workflow](docs/guides/02-git-workflow.md) | Nhận task Jira → branch → PR → merge |
 | 3 | [Coding Guidelines](docs/guides/03-coding-guidelines.md) | Công nghệ, MVC, cách viết một trang, sơ đồ lớp, quy tắc bắt buộc |
 | 4 | [Testing](docs/guides/04-testing.md) | Unit test, thử trên trình duyệt, viết test case CSV |
+| 5 | [Backup & Restore](docs/guides/05-backup-restore.md) | Sao lưu hằng ngày, kiểm tra phục hồi trước kỳ thi, phục hồi khi có sự cố |
 
 **Project management:**
 
@@ -45,6 +46,7 @@ Mở http://127.0.0.1:8000/accounts/login/, đăng nhập bằng `student1@demo.
 | --- | --- |
 | [Project Plan](docs/project/project-plan.md) | 4 giai đoạn, mốc M1–M4, rủi ro, sản phẩm nộp cuối |
 | [Course Requirements](docs/project/course-requirements.md) | Guidelines của môn, 7 phần tài liệu, công cụ gợi ý |
+| [Demo & Handover](docs/project/demo-and-handover.md) | Chuẩn bị và kịch bản demo theo luồng chính, danh sách bàn giao |
 | [Database Verification](docs/project/database-verification.md) | Kết quả kiểm tra database |
 
 Đặc tả (Word), sơ đồ `.drawio` và thiết kế Figma nằm trong [`docs/`](docs/).
@@ -63,12 +65,12 @@ quiz-examination-system/
 │   ├── templates/            Giao diện HTML: base.html, trang lỗi 403/404, thư mục riêng cho từng app
 │   └── static/css/           CSS chung (app.css)
 ├── docs/
-│   ├── guides/               Developer guides (4 file đánh số)
-│   ├── project/              Project plan, course requirements, verification report
+│   ├── guides/               Developer guides (5 file đánh số)
+│   ├── project/              Project plan, course requirements, kịch bản demo, verification report
 │   ├── testcases/            Test case từng task: S3-xx.csv
 │   └── ...                   Đặc tả (Word), sơ đồ (.drawio), thiết kế Figma
 ├── tests/                    Kiểm thử tích hợp và hệ thống (giai đoạn 4)
-├── scripts/                  Script hỗ trợ: gộp test case, cập nhật mục lục
+├── scripts/                  Sao lưu/phục hồi database, gộp test case, cập nhật mục lục
 ├── Dockerfile, compose.yaml  Chạy website (web), tiến trình nền (worker) và PostgreSQL (db) bằng Docker
 ├── requirements.txt          Thư viện Python
 └── .env.example              Mẫu file .env (file .env thật không đưa lên GitHub)

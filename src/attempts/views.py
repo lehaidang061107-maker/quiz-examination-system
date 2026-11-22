@@ -2,6 +2,7 @@ import json
 
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -13,6 +14,8 @@ from exams.models import Exam, ExamParticipant, ExamQuestion, ExamStatus
 
 from .models import StaleVersionError, Submission, SubmissionAnswer, SubmissionStatus
 from .services import finalize_manual_submit, sync_and_finalize_if_needed
+
+PAGE_SIZE = 20
 
 FINALIZE_MESSAGES = {
     "expired": "Đã hết thời gian làm bài. Hệ thống đã tự động chốt và nộp bài của bạn.",
@@ -33,16 +36,19 @@ def exam_list(request):
             exam__status__in=[ExamStatus.PUBLISHED, ExamStatus.CLOSED],
         )
         .select_related("exam", "exam__teacher")
-        .order_by("-exam__opens_at", "-exam__created_at")
+        .order_by("-exam__opens_at", "-exam__created_at", "-exam_id")
     )
+    # NFR-PER-05: phân trang, mỗi trang 20 đề; chỉ tải lượt thi của các đề trong trang.
+    page_obj = Paginator(participants, PAGE_SIZE).get_page(request.GET.get("page"))
+    page_exam_ids = [p.exam_id for p in page_obj.object_list]
 
     submissions = {
         sub.exam_id: sub
-        for sub in Submission.objects.filter(student=request.user)
+        for sub in Submission.objects.filter(student=request.user, exam_id__in=page_exam_ids)
     }
 
     exam_items = []
-    for p in participants:
+    for p in page_obj.object_list:
         exam = p.exam
         sub = submissions.get(exam.pk)
         cannot_reason = exam.cannot_start_reason(request.user) if sub is None else None
@@ -63,6 +69,7 @@ def exam_list(request):
         "attempts/exam_list.html",
         {
             "exam_items": exam_items,
+            "page_obj": page_obj,
         },
     )
 
@@ -145,6 +152,8 @@ def take_exam(request, submission_id):
             "submission": submission,
             "exam": submission.exam,
             "question_items": question_items,
+            # UC Take Exam bước 4 / UC Submit Exam bước 2: tiến độ số câu đã trả lời.
+            "answered_count": sum(1 for item in question_items if item["selected_option_id"]),
             "has_deadline": has_deadline,
             "remaining_seconds": remaining_seconds,
         },
