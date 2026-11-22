@@ -339,13 +339,17 @@ class Teacher(User):
                 participants.append(participant)
         return participants
 
-    def view_results(self, exam_id):
-        """viewResults(id): kết quả các bài của đề mình phụ trách (Teacher xem kể cả chưa công bố)."""
+    def view_results(self, exam_id, student_ids=None):
+        """viewResults(id): kết quả các bài của đề mình phụ trách (Teacher xem kể cả chưa công bố).
+        student_ids: chỉ lấy kết quả của các sinh viên này (trang kết quả phân trang)."""
         from results.models import Result
 
         exam = self.manage_exam(exam_id)
+        results = Result.objects.filter(submission__exam=exam)
+        if student_ids is not None:
+            results = results.filter(submission__student_id__in=student_ids)
         return list(
-            Result.objects.filter(submission__exam=exam)
+            results
             .select_related("submission__student")
             .annotate(
                 answered_total=Count(
