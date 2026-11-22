@@ -112,6 +112,32 @@ def exam_detail(request, exam_id):
 
 
 @role_required(Role.TEACHER)
+@require_POST
+def exam_duplicate(request, exam_id):
+    """S3-33: nhân bản đề (mọi trạng thái) thành đề nháp mới để sửa tiếp (BR-14)."""
+    exam = request.user.as_role().manage_exam(exam_id)
+    copy, skipped = exam.duplicate()
+    text = f"Đã tạo đề nháp '{copy.title}' với {copy.exam_questions.count()} câu hỏi."
+    if skipped:
+        text += f" Bỏ qua {skipped} câu đã lưu trữ."
+    messages.success(request, text)
+    return redirect("exams:detail", exam_id=copy.pk)
+
+
+@role_required(Role.TEACHER)
+def exam_preview(request, exam_id):
+    """S3-33: giảng viên xem đề giống sinh viên thấy khi làm bài. Không tạo lượt làm bài, không lưu gì;
+    không đưa cờ đáp án đúng ra trang (giống màn làm bài, NFR-SEC-04)."""
+    exam = request.user.as_role().manage_exam(exam_id)
+    items = []
+    for item in exam.exam_questions.select_related("question").order_by("position"):
+        options = [{"content": o.content} for o in item.question.options.order_by("display_order")]
+        items.append({"position": item.position, "points": item.points, "content": item.question.content,
+                      "options": options})
+    return render(request, "exams/preview.html", {"exam": exam, "items": items})
+
+
+@role_required(Role.TEACHER)
 def exam_edit(request, exam_id):
     """S3-11: sửa thông tin đề, chỉ khi đề còn DRAFT (BR-14, BR-17)."""
     exam = request.user.as_role().manage_exam(exam_id)

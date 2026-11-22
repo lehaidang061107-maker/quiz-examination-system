@@ -39,6 +39,12 @@
         <button type="submit" class="btn btn-sm btn-outline-dark">Lưu trữ</button>
       </form>
     {% endif %}
+    <a href="{% url 'exams:preview' exam.exam_id %}" class="btn btn-sm btn-outline-primary">Xem trước</a>
+    <form method="post" action="{% url 'exams:duplicate' exam.exam_id %}" class="m-0"
+          data-confirm="Nhân bản đề này thành một đề nháp mới? Lịch thi, phân công và bài làm không được chép." data-confirm-ok="Nhân bản">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-sm btn-outline-primary">Nhân bản</button>
+    </form>
     <a href="{% url 'exams:participants' exam.exam_id %}" class="btn btn-sm btn-outline-primary">Phân công sinh viên</a>
     <a href="{% url 'exams:list' %}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
   </div>
