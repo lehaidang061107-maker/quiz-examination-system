@@ -1,0 +1,38 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-12-01,Create Exam (FR-06),"1. Đăng nhập Teacher
+2. Mở chi tiết đề Nháp
+3. Bấm 'Chọn câu hỏi'","Teacher có 3 câu 'Đang dùng', 1 câu 'Nháp'; Teacher khác có 2 câu",Mục 'Ngân hàng câu hỏi (đang dùng)' chỉ hiện 3 câu 'Đang dùng' của Teacher; không có câu Nháp và câu của Teacher khác
+S3-12-02,Create Exam (FR-06),"1. Ở trang 'Chọn câu hỏi' tích chọn 2 câu
+2. Nhập điểm mỗi câu
+3. Bấm 'Thêm vào đề'","Điểm mỗi câu: 2,5","Hiện 'Đã thêm 2 câu hỏi vào đề.'; bảng 'Câu hỏi trong đề' có câu 1, câu 2; tiêu đề ghi '2 câu · tổng 5,00 điểm'"
+S3-12-03,Create Exam (FR-06),"1. Ở trang 'Chọn câu hỏi' không tích câu nào
+2. Bấm 'Thêm vào đề'",Điểm mỗi câu: 1,Hiện 'Vui lòng chọn ít nhất 1 câu hỏi.'; đề không đổi
+S3-12-04,Create Exam (FR-06),"1. Tích chọn 1 câu
+2. Nhập điểm bằng 0
+3. Bấm 'Thêm vào đề'",Điểm mỗi câu: 0,Hiện 'Điểm phải lớn hơn 0.'; không thêm câu nào
+S3-12-05,Create Exam (FR-06),"1. Trong bảng 'Câu hỏi trong đề' bấm ↑ ở câu 3
+2. Bấm 'Bỏ' ở câu 1","Đề có 3 câu: Câu một, Câu hai, Câu ba","Sau bước 1 thứ tự là Câu một, Câu ba, Câu hai; sau bước 2 hiện 'Đã bỏ câu hỏi khỏi đề.', còn 2 câu đánh số 1, 2"
+S3-12-06,Create Exam (FR-06),"1. Sửa ô Điểm của từng câu
+2. Bấm 'Lưu điểm'","Câu 1: 3
+Câu 2: 0,5","Hiện 'Đã lưu điểm các câu hỏi.'; tổng điểm hiện 3,50"
+S3-12-07,Create Exam (FR-06),"1. Sửa ô Điểm câu 2 thành số âm
+2. Bấm 'Lưu điểm'","Câu 1: 4
+Câu 2: -1",Hiện 'Câu 2: Điểm phải lớn hơn 0.'; điểm cả hai câu giữ nguyên như cũ
+S3-12-08,"Manage Exams (FR-07), BR-17","1. Mở chi tiết đề Nháp đã có câu hỏi hợp lệ
+2. Bấm 'Phát hành'
+3. Bấm OK ở hộp xác nhận","Đề có 1 câu 'Đang dùng', điểm 2; giờ đóng ở tương lai","Hiện 'Đã phát hành đề thi.'; trạng thái đổi thành 'Đã phát hành'; mất các nút 'Sửa thông tin', 'Chọn câu hỏi', 'Phát hành'"
+S3-12-09,"Manage Exams (FR-07), BR-17","1. Mở chi tiết đề Nháp chưa có câu hỏi
+2. Bấm 'Phát hành' và OK",Đề chưa có câu hỏi,Hiện 'Chưa thể phát hành đề:' và 'Đề cần ít nhất 1 câu hỏi.'; đề vẫn là 'Nháp'
+S3-12-10,"Manage Exams (FR-07), BR-17","1. Mở chi tiết đề Nháp có giờ đóng đã qua
+2. Bấm 'Phát hành' và OK",Đề có 1 câu hợp lệ; Thời gian đóng: hôm qua,Hiện 'Thời gian đóng đã qua.'; đề vẫn là 'Nháp'
+S3-12-11,"Manage Exams (FR-07), BR-17","1. Thêm câu A vào đề Nháp
+2. Vào Ngân hàng câu hỏi lưu trữ câu A
+3. Quay lại đề bấm 'Phát hành' và OK",Câu A đã chuyển sang 'Lưu trữ',"Hiện 'Câu 1 chưa sẵn sàng (cần ACTIVE, đủ phương án và 1 đáp án đúng).'; đề vẫn là 'Nháp'"
+S3-12-12,"Manage Exams (FR-07), BR-14","1. Đăng nhập Teacher
+2. Gõ thẳng đường dẫn /exams/<mã đề đã phát hành>/questions/",Đề ở trạng thái 'Đã phát hành',"Quay về trang chi tiết đề, hiện 'Đề đã phát hành, không thể sửa nội dung.'"
+S3-12-13,"Manage Exams (FR-07), NFR-SEC-09","1. Đăng nhập Teacher B
+2. Gõ thẳng đường dẫn /exams/<mã đề của Teacher A>/questions/",Đề nháp thuộc Teacher A,Hiện trang 403; đề của Teacher A không đổi
+S3-12-14,Create Exam (FR-06),"1. Đăng nhập Teacher, mở đề nháp chỉ có 1 câu hỏi
+2. Bấm 'Chọn câu hỏi'
+3. Sửa điểm câu 1 thành 2,5
+4. Nhấn phím Enter trong ô điểm","Đề nháp có 1 câu; điểm mới 2,5","Hiện 'Đã lưu điểm các câu hỏi.'; điểm câu 1 là 2.5; câu hỏi vẫn còn trong đề (không bị bỏ hay đổi thứ tự)"

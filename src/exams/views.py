@@ -9,9 +9,11 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count, Q
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from accounts.decorators import role_required
 from accounts.models import Role
+from questions.models import QuestionStatus
 
 from .forms import ExamForm
 from .models import Exam, ExamStatus
@@ -112,8 +114,119 @@ def exam_edit(request, exam_id):
     return render(request, "exams/form.html", {"form": form, "exam": exam})
 
 
+@role_required(Role.TEACHER)
+def exam_questions(request, exam_id):
+    """S3-12: chọn câu hỏi ACTIVE của mình vào đề nháp, sắp xếp thứ tự, nhập điểm từng câu."""
+    exam = request.user.as_role().manage_exam(exam_id)
+    if exam.status != ExamStatus.DRAFT:
+        messages.error(request, "Đề đã phát hành, không thể sửa nội dung.")
+        return redirect("exams:detail", exam_id=exam.pk)
+
+    if request.method == "POST":
+        try:
+            with transaction.atomic():
+                exam = _lock_exam(exam)
+                exam.check_draft()  # tab khác có thể vừa phát hành đề
+                text = _handle_question_action(request, exam)
+        except ValidationError as error:
+            for message in error.messages:
+                messages.error(request, message)
+        else:
+            if text:
+                messages.success(request, text)
+        return redirect(request.get_full_path())
+
+    search = request.GET.get("q", "").strip()
+    bank = (
+        request.user.as_role().manage_questions()
+        .filter(status=QuestionStatus.ACTIVE)
+        .exclude(exam_questions__exam=exam)
+        .annotate(option_count=Count("options"))
+    )
+    if search:
+        bank = bank.filter(content__icontains=search)
+    page_obj = Paginator(bank, 10).get_page(request.GET.get("page"))
+    context = _detail_context(exam)
+    context.update({"page_obj": page_obj, "bank": page_obj.object_list, "search": search})
+    return render(request, "exams/questions.html", context)
+
+
+def _handle_question_action(request, exam):
+    """Mỗi nút gửi action dạng "add", "save_points", "remove:<id>", "up:<id>", "down:<id>"."""
+    action, _, target = request.POST.get("action", "").partition(":")
+    if action == "add":
+        ids = request.POST.getlist("question_ids")
+        if not ids:
+            raise ValidationError("Vui lòng chọn ít nhất 1 câu hỏi.")
+        for question_id in ids:
+            exam.add_question(_int(question_id), _points(request.POST.get("points")))
+        return f"Đã thêm {len(ids)} câu hỏi vào đề."
+    if action == "save_points":
+        for item in exam.exam_questions.order_by("position"):
+            value = request.POST.get(f"points_{item.question_id}")
+            if value is None:
+                continue
+            try:
+                item.set_points(_points(value))
+            except ValidationError as error:
+                raise ValidationError(f"Câu {item.position}: {error.messages[0]}")
+        return "Đã lưu điểm các câu hỏi."
+    if action == "remove":
+        exam.remove_question(_int(target))
+        return "Đã bỏ câu hỏi khỏi đề."
+    if action in ("up", "down"):
+        item = exam.exam_questions.filter(question_id=_int(target)).first()
+        if item is None:
+            raise ValidationError("Câu hỏi không có trong đề.")
+        last = exam.exam_questions.count()
+        new_position = item.position - 1 if action == "up" else item.position + 1
+        if 1 <= new_position <= last:
+            item.set_position(new_position)
+        return None
+    raise ValidationError("Thao tác không hợp lệ.")
+
+
+def _points(value):
+    """Cho phép gõ dấu phẩy thập phân kiểu Việt Nam (2,5)."""
+    value = (value or "").strip().replace(",", ".")
+    if not value:
+        raise ValidationError("Vui lòng nhập điểm.")
+    return value
+
+
+def _int(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        raise ValidationError("Câu hỏi không hợp lệ.")
+
+
+@role_required(Role.TEACHER)
+@require_POST
+def exam_publish(request, exam_id):
+    """S3-12: phát hành đề DRAFT -> PUBLISHED; chưa đủ điều kiện thì báo từng mục cần sửa (BR-17)."""
+    exam = request.user.as_role().manage_exam(exam_id)
+    try:
+        with transaction.atomic():
+            exam = _lock_exam(exam)  # chờ thao tác sửa câu hỏi/điểm đang chạy xong rồi mới kiểm tra
+            exam.publish()
+    except ValidationError as error:
+        messages.error(request, "Chưa thể phát hành đề:")
+        for text in error.messages:
+            messages.error(request, text)
+    else:
+        messages.success(request, "Đã phát hành đề thi.")
+    return redirect("exams:detail", exam_id=exam.pk)
+
+
 def _detail_context(exam):
-    return {"exam": exam, "is_draft": exam.status == ExamStatus.DRAFT}
+    items = list(exam.exam_questions.select_related("question").order_by("position"))
+    return {
+        "exam": exam,
+        "is_draft": exam.status == ExamStatus.DRAFT,
+        "items": items,
+        "total_points": sum((item.points for item in items), 0),
+    }
 
 
 def _attach_errors(form, error):

@@ -92,6 +92,19 @@ class Exam(models.Model):
             last = self.exam_questions.aggregate(m=models.Max("position"))["m"] or 0
             return ExamQuestion.objects.create(exam=self, question=question, position=last + 1, points=points)
 
+    def remove_question(self, question_id):
+        """Bỏ câu hỏi khỏi đề nháp; các câu phía sau dồn lên để thứ tự liền nhau (1, 2, 3...)."""
+        self.check_draft()
+        with transaction.atomic():
+            item = self.exam_questions.select_for_update().filter(question_id=question_id).first()
+            if item is None:
+                raise ValidationError("Câu hỏi không có trong đề.")
+            removed = item.position
+            ExamQuestion.objects.filter(exam_id=self.pk, question_id=question_id).delete()
+            # Dời từng câu theo thứ tự tăng dần để không trùng vị trí (uq_exam_questions_position).
+            for other in self.exam_questions.filter(position__gt=removed).order_by("position"):
+                ExamQuestion.objects.filter(pk=other.pk).update(position=other.position - 1)
+
     def publish(self):
         """publish(): DRAFT -> PUBLISHED khi đủ điều kiện (BR-17). Sai thì báo rõ mục cần sửa."""
         from questions.models import QuestionStatus
@@ -167,6 +180,9 @@ class Exam(models.Model):
             raise ValidationError("Đề đã phát hành, không thể sửa nội dung.")
 
 
+MAX_POINTS = 1000  # chặn số quá lớn làm tràn cột numeric(12, 2)
+
+
 def _positive_points(value):
     try:
         points = Decimal(str(value))
@@ -174,6 +190,8 @@ def _positive_points(value):
         raise ValidationError("Điểm phải là số.")
     if not points.is_finite() or points <= 0:
         raise ValidationError("Điểm phải lớn hơn 0.")
+    if points > MAX_POINTS:
+        raise ValidationError(f"Điểm mỗi câu tối đa {MAX_POINTS}.")
     return points
 
 
