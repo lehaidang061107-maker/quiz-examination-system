@@ -1,5 +1,5 @@
 """Kết quả theo sơ đồ lớp: Result (FR-11, FR-12, FR-13, UC Automatic Grading, View Exam Results)."""
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import models
 from django.db.models import F, Q
@@ -72,6 +72,14 @@ class Result(models.Model):
         if cached is not None:
             return cached
         return self.submission.answers.filter(selected_option__isnull=False).count()
+
+    @property
+    def score_on_10(self):
+        """Điểm quy đổi thang 10 chỉ để hiển thị thêm, làm tròn 2 chữ số (6,67).
+        Điểm lưu trong database vẫn là tổng điểm câu đúng (score/max_score), không đổi."""
+        if not self.max_score:
+            return Decimal("0.00")
+        return (self.score * 10 / self.max_score).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
     @property
     def wrong_count(self):

@@ -45,3 +45,7 @@ S3-24-18,"View Exam Results (FR-13), NFR-PER-05","1. Đăng nhập Teacher, mở
 S3-24-19,"View Exam Results (FR-13), NFR-PER-05","1. Đăng nhập Student đã nộp 21 bài
 2. Bấm menu 'Lịch sử bài thi'
 3. Bấm 'Sau'",Student đã nộp 21 bài,"Trang 1 có 20 bài mới nhất; trang 2 có 1 bài còn lại"
+S3-24-20,View Exam Results (FR-13),"1. Teacher tạo đề 3 câu, mỗi câu 2 điểm; Student làm đúng 1 câu, sai 1, bỏ trống 1 rồi nộp
+2. Teacher mở Kết quả thi của đề
+3. Teacher đóng đề, công bố điểm
+4. Student mở Lịch sử bài thi và Xem chi tiết",Đề 3 câu x 2 điểm,"Cột 'Điểm (thang 10)' hiện '3,33 / 10', dòng nhỏ bên dưới là điểm gốc '2,00 / 6,00'; trang chi tiết của Student hiện '3,33 / 10' và 'Điểm gốc: 2,00 / 6,00'; trước khi công bố Student không thấy điểm nào"

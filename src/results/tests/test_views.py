@@ -240,3 +240,37 @@ class ResultPaginationTests(TestCase):
         self.assertEqual(len(first.context["rows"]), 20)
         second = self.client.get(reverse("results:student_list"), {"page": 2})
         self.assertEqual(len(second.context["rows"]), 1)
+
+
+class ScoreOnTenTests(ResultViewsBase):
+    """Hiện thêm điểm quy đổi thang 10; điểm gốc trong database giữ nguyên."""
+
+    def test_quy_doi_va_lam_tron(self):
+        from decimal import Decimal
+
+        from results.models import Result
+
+        cases = [("2", "6", "3.33"), ("4", "6", "6.67"), ("6", "6", "10.00"), ("0", "6", "0.00"), ("7.5", "10", "7.50")]
+        for score, max_score, expected in cases:
+            with self.subTest(score=score, max_score=max_score):
+                result = Result(score=Decimal(score), max_score=Decimal(max_score))
+                self.assertEqual(result.score_on_10, Decimal(expected))
+        self.assertEqual(Result(score=Decimal("0"), max_score=Decimal("0")).score_on_10, Decimal("0.00"))
+
+    def test_teacher_va_student_thay_diem_thang_10_kem_diem_goc(self):
+        self.client.force_login(self.teacher)
+        response = self.client.get(reverse("results:teacher_exam", args=[self.exam.pk]))
+        self.assertContains(response, "3,33 / 10")
+        self.assertContains(response, "2,00 / 6,00")
+        self.exam.close()
+        self.exam.publish_results()
+        self.client.force_login(self.student)
+        detail = self.client.get(reverse("results:student_detail", args=[self.exam.pk]))
+        self.assertContains(detail, "3,33 / 10")
+        self.assertContains(detail, "Điểm gốc: 2,00 / 6,00")
+        self.assertContains(self.client.get(reverse("results:student_list")), "3,33 / 10")
+
+    def test_chua_cong_bo_khong_lo_diem_thang_10(self):
+        self.client.force_login(self.student)
+        self.assertNotContains(self.client.get(reverse("results:student_detail", args=[self.exam.pk])), "3,33")
+        self.assertNotContains(self.client.get(reverse("results:student_list")), "3,33")

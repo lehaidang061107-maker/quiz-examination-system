@@ -13,7 +13,7 @@
           <th>Tên bài thi</th>
           <th>Nộp lúc</th>
           <th>Trạng thái</th>
-          <th class="text-end">Điểm</th>
+          <th class="text-end">Điểm (thang 10)</th>
           <th class="text-end">Thao tác</th>
         </tr>
       </thead>
@@ -24,7 +24,10 @@
             <td class="small">{{ row.submission.submitted_at|date:"d/m/Y H:i" }}</td>
             <td>{% include "results/_state_badge.html" with state=row.state %}</td>
             <td class="text-end fw-semibold">
-              {% if row.result %}{{ row.result.score }} / {{ row.result.max_score }}{% else %}<span class="text-muted">—</span>{% endif %}
+              {% if row.result %}
+                {{ row.result.score_on_10 }} / 10
+                <div class="small text-muted fw-normal">{{ row.result.score }} / {{ row.result.max_score }}</div>
+              {% else %}<span class="text-muted">—</span>{% endif %}
             </td>
             <td class="text-end">
               <a href="{% url 'results:student_detail' row.exam.pk %}" class="btn btn-sm btn-outline-primary">Xem chi tiết</a>
