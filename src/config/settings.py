@@ -1,5 +1,6 @@
 """Cấu hình Django. Mọi giá trị bí mật và thông tin kết nối đọc từ file .env ở thư mục gốc dự án."""
 import os
+import sys
 from pathlib import Path
 
 from django.contrib.messages import constants as message_constants
@@ -121,15 +122,21 @@ LOGOUT_REDIRECT_URL = LOGIN_URL
 # messages.error(...) hiển thị bằng class Bootstrap "alert-danger".
 MESSAGE_TAGS = {message_constants.ERROR: "danger"}
 
-# Nhật ký thao tác quan trọng của giảng viên (đóng đề, lưu trữ, công bố điểm) để truy vết:
-# in ra console, khi chạy Docker xem bằng `docker compose logs web`.
+# Nhật ký thao tác quan trọng (NFR-MAI-03, NFR-SEC-10): đăng nhập/đăng xuất, thay đổi tài khoản (accounts.audit),
+# nộp bài (attempts.audit), đóng đề/lưu trữ/công bố điểm (exams.audit).
+# In ra console, khi chạy Docker xem bằng `docker compose logs web`.
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {"audit": {"format": "{asctime} [AUDIT] {message}", "style": "{"}},
-    "handlers": {"audit_console": {"class": "logging.StreamHandler", "formatter": "audit"}},
+    # Khi chạy `manage.py test` không in nhật ký ra màn hình cho đỡ rối (test vẫn kiểm tra bằng assertLogs).
+    "handlers": {"audit_console": {
+        "class": "logging.NullHandler" if sys.argv[1:2] == ["test"] else "logging.StreamHandler",
+        "formatter": "audit",
+    }},
     "loggers": {
         "exams.audit": {"handlers": ["audit_console"], "level": "INFO", "propagate": False},
         "attempts.audit": {"handlers": ["audit_console"], "level": "INFO", "propagate": False},
+        "accounts.audit": {"handlers": ["audit_console"], "level": "INFO", "propagate": False},
     },
 }

@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 
 from .decorators import role_required
 from .forms import AdminUserCreateForm, AdminUserUpdateForm, StudentRegisterForm
-from .models import Admin, Role, User, UserStatus
+from .models import Admin, Role, User, UserStatus, audit_log
 from .services import revoke_user_sessions
 
 
@@ -67,12 +67,14 @@ def register_view(request):
 
             try:
                 with transaction.atomic():
-                    User.objects.create_user(
+                    user = User.objects.create_user(
                         email=email,
                         password=password,
                         full_name=full_name,
                         role=Role.STUDENT,
                     )
+                audit_log.info("đăng ký tài khoản Student | user_id=%s (%s) | ip=%s",
+                               user.pk, user.email, request.META.get("REMOTE_ADDR", "-"))
             except IntegrityError:
                 # Hai người đăng ký cùng email cùng lúc: ràng buộc uq_users_email chặn người đến sau.
                 form.add_error("email", "Email này đã được sử dụng. Vui lòng chọn email khác.")
