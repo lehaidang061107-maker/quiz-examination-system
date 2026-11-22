@@ -1,0 +1,15 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-34-01,Thống kê kết quả theo đề,"1. Đăng nhập Teacher, mở Kết quả thi
+2. Bấm 'Xem kết quả' ở '[Demo S3-21] Đề đã công bố'","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","Đầu trang có ô Bài đã chấm 2/2, Điểm trung bình 6,67, Cao nhất / thấp nhất 10,00 / 3,33, Đạt 50% · 1 bài; chỉ tính bài đã chấm"
+S3-34-02,Thống kê kết quả theo đề,"1. Làm tiếp S3-34-01
+2. Xem khung 'Phân bố điểm' và 'Tỷ lệ đúng từng câu'","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","Phân bố: 1 bài ở 2–4, 1 bài ở 8–10 (10 điểm tính vào khoảng cuối); bảng từng câu ghi % đúng, số đúng, sai, bỏ trống; câu dưới 50% có thanh màu đỏ"
+S3-34-03,Thống kê kết quả theo đề,1. Mở kết quả một đề đã phát hành nhưng chưa có bài nộp,"Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","Hiện 'Chưa có bài nào được chấm nên chưa có thống kê.', bảng sinh viên vẫn hiện bình thường"
+S3-34-04,Xuất bảng điểm CSV,"1. Ở trang kết quả một đề bấm 'Tải bảng điểm (CSV)'
+2. Mở file bằng Excel","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","Tải về ket-qua-de-<mã>.csv; Excel hiện đúng tiếng Việt; mỗi sinh viên được giao một dòng: họ tên, email, trạng thái, điểm, điểm tối đa, điểm thang 10, số câu đúng/sai/bỏ trống, nộp lúc, thời gian làm; sinh viên chưa làm ghi 'Chưa làm bài'"
+S3-34-05,Phân quyền (NFR-SEC-02),"1. Đăng nhập teacher2 hoặc Student
+2. Gõ /results/teacher/exam/<mã đề của teacher@demo>/csv/","Email: teacher2@demo.example / student1@demo.example
+Mật khẩu: Kiemthu2026","Trang 403, không tải được file"

@@ -1,0 +1,18 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-33-01,Nhân bản đề (BR-14),"1. Mở chi tiết một đề đã phát hành có phân công và bài làm
+2. Bấm 'Nhân bản', bấm Nhân bản trong hộp xác nhận","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","Mở đề mới trạng thái Nháp tên '<tên cũ> (bản sao)', cùng mô tả, thời lượng, câu hỏi, thứ tự, điểm; lịch thi để trống, 0 sinh viên được giao, chưa có bài làm; đề gốc giữ nguyên"
+S3-33-02,Nhân bản đề (BR-14),"1. Lưu trữ một câu hỏi đang có trong đề
+2. Nhân bản đề đó","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","Đề mới không có câu đã lưu trữ, các câu còn lại dồn thứ tự 1, 2, ...; thông báo 'Bỏ qua 1 câu đã lưu trữ.'"
+S3-33-03,Nhân bản đề,"1. Ở Quản lý kỳ thi bấm 'Nhân bản' ở một dòng đề
+2. Bấm Hủy trong hộp xác nhận
+3. Bấm 'Nhân bản' lại, bấm Nhân bản","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026",Bước 2 không tạo đề; bước 3 tạo đề nháp mới và mở trang chi tiết của nó
+S3-33-04,Xem trước đề (FR-06),"1. Mở chi tiết một đề nháp có câu hỏi
+2. Bấm 'Xem trước'
+3. Chọn thử vài phương án","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","Hiện các câu theo thứ tự với điểm và phương án giống màn làm bài, không đánh dấu đáp án đúng; chọn thử không lưu, không tạo lượt làm bài"
+S3-33-05,Phân quyền (NFR-SEC-02),"1. Đăng nhập teacher2 hoặc Student
+2. Gõ /exams/<mã đề của teacher@demo>/preview/ và gửi POST nhân bản","Email: teacher2@demo.example / student1@demo.example
+Mật khẩu: Kiemthu2026","Trang 403, không tạo đề mới"

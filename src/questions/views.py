@@ -34,6 +34,20 @@ def question_list(request):
         # Chỉ lấy câu hỏi thuộc giảng viên hiện tại.
         questions = teacher.manage_questions()
 
+        # Ô số đầu trang (màn hình 07 Figma): tổng quan cả ngân hàng, không đổi theo bộ lọc.
+        counts = dict(questions.order_by().values_list("status").annotate(n=Count("question_id")))
+        # Câu có trong ít nhất một đề đã phát hành (dù còn nằm trong đề nháp khác) — BR-14.
+        used = questions.filter(
+            Exists(ExamQuestion.objects.filter(question_id=OuterRef("question_id")).exclude(
+                exam__status=ExamStatus.DRAFT))
+        ).count()
+        stats = [
+            ("Tổng câu hỏi", counts.get(QuestionStatus.ACTIVE, 0) + counts.get(QuestionStatus.DRAFT, 0)),
+            ("Đang dùng", counts.get(QuestionStatus.ACTIVE, 0)),
+            ("Nháp", counts.get(QuestionStatus.DRAFT, 0)),
+            ("Đã dùng trong đề phát hành", used),
+        ]
+
         # Tìm kiếm theo nội dung câu hỏi.
         if search_query:
             questions = questions.filter(content__icontains=search_query)
@@ -67,6 +81,7 @@ def question_list(request):
             "search_query": search_query,
             "selected_status": selected_status,
             "status_choices": STATUS_CHOICES,
+            "stats": stats,
         }
 
         return render(
@@ -472,3 +487,92 @@ def question_restore(request, question_id):
     else:
         messages.success(request, "Đã khôi phục câu hỏi về Nháp. Kiểm tra lại rồi lưu để dùng.")
     return _back_to_list(request)
+
+
+IMPORT_SESSION_KEY = "question_import"
+
+
+def _import_target_exam(request, teacher):
+    """Đề nháp sẽ nhận các câu vừa nhập (khi mở từ trang chọn câu hỏi của đề), hoặc None."""
+    exam_id = request.POST.get("exam") or request.GET.get("exam")
+    if not exam_id:
+        return None
+    try:
+        exam = teacher.manage_exam(int(exam_id))  # đề của người khác: PermissionDenied -> 403
+    except (TypeError, ValueError):
+        return None
+    return exam if exam.status == ExamStatus.DRAFT else None
+
+
+@role_required(Role.TEACHER)
+def question_import(request):
+    """S3-32: nhập câu hỏi từ Excel. Bước 1 tải file lên và xem trước, bước 2 xác nhận nhập."""
+    from questions import importer
+
+    teacher = request.user.as_role()
+    exam = _import_target_exam(request, teacher)
+    context = {"exam": exam, "max_rows": importer.MAX_ROWS, "default_points": "1"}
+
+    if request.method == "POST" and request.POST.get("step") == "confirm":
+        data = request.session.get(IMPORT_SESSION_KEY)
+        if not data or not data.get("rows"):
+            messages.error(request, "Phiên nhập đã hết hoặc không còn câu hợp lệ. Hãy tải file lên lại.")
+            return redirect(request.get_full_path())
+        add_to_exam = exam is not None and request.POST.get("add_to_exam") == "1"
+        try:
+            with transaction.atomic():
+                created = teacher.import_questions(data["rows"])
+                if add_to_exam:
+                    points = (request.POST.get("points") or "").strip().replace(",", ".")
+                    for question in created:
+                        exam.add_question(question.pk, points)
+        except ValidationError as error:
+            for message in error.messages:
+                messages.error(request, message)
+            context.update(data.get("preview", {}))
+            return render(request, "questions/import.html", context)
+        request.session.pop(IMPORT_SESSION_KEY, None)
+        if add_to_exam:
+            messages.success(request, f"Đã nhập {len(created)} câu hỏi và thêm vào đề '{exam.title}'.")
+            return redirect("exams:questions", exam_id=exam.pk)
+        messages.success(request, f"Đã nhập {len(created)} câu hỏi vào ngân hàng.")
+        return redirect("questions:list")
+
+    if request.method == "POST":
+        upload = request.FILES.get("file")
+        if upload is None:
+            context["file_error"] = "Vui lòng chọn file Excel."
+            return render(request, "questions/import.html", context)
+        try:
+            rows = importer.read_workbook(upload)
+        except ValidationError as error:
+            context["file_error"] = error.messages[0]
+            return render(request, "questions/import.html", context)
+        valid = [row for row in rows if row.valid]
+        preview = {
+            "file_name": upload.name,
+            "rows": [
+                {"row": r.row, "content": r.content, "option_count": len(r.options),
+                 "correct": r.correct_letter, "errors": r.errors}
+                for r in rows
+            ],
+            "valid_count": len(valid),
+            "error_count": len(rows) - len(valid),
+        }
+        request.session[IMPORT_SESSION_KEY] = {"rows": [r.as_dict() for r in valid], "preview": preview}
+        context.update(preview)
+    return render(request, "questions/import.html", context)
+
+
+@role_required(Role.TEACHER)
+def question_import_template(request):
+    """Tải file Excel mẫu để soạn câu hỏi."""
+    from django.http import HttpResponse
+
+    from questions.importer import build_template
+
+    response = HttpResponse(
+        build_template(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = 'attachment; filename="mau-cau-hoi.xlsx"'
+    return response

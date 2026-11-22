@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Chi tiết tài khoản{% endblock %}
+{% block page_title %}{{ target_user.full_name }}{% endblock %}
+{% block page_subtitle %}{{ target_user.email }}{% endblock %}
+
+{% block page_actions %}
+  <div class="d-flex flex-wrap gap-1">
+    {% if target_user.status != "DELETED" %}
+      <a href="{% url 'accounts:admin_user_update' target_user.pk %}" class="btn btn-sm btn-outline-primary">Sửa</a>
+      {% if target_user.pk != user.pk %}
+        <a href="{% url 'accounts:admin_user_reset_password' target_user.pk %}" class="btn btn-sm btn-outline-secondary">Đặt lại mật khẩu</a>
+      {% endif %}
+    {% endif %}
+    {% if target_user.status == "ACTIVE" and target_user.pk != user.pk %}
+      <a href="{% url 'accounts:admin_user_lock' target_user.pk %}" class="btn btn-sm btn-outline-warning">Khóa</a>
+    {% elif target_user.status == "LOCKED" %}
+      <a href="{% url 'accounts:admin_user_unlock' target_user.pk %}" class="btn btn-sm btn-outline-success">Mở khóa</a>
+    {% endif %}
+    {% if target_user.status != "DELETED" and target_user.pk != user.pk %}
+      <a href="{% url 'accounts:admin_user_delete' target_user.pk %}" class="btn btn-sm btn-outline-danger">Xóa</a>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block content %}
+{% if target_user.status == "DELETED" %}
+  <div class="alert alert-secondary">Tài khoản đã ngừng sử dụng. Thông tin được giữ lại để tra cứu lịch sử thi, không thể sửa.</div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-md-7">
+    <div class="qes-card p-3 h-100">
+      <h2 class="h6 fw-bold mb-3">Thông tin tài khoản</h2>
+      <table class="table table-sm mb-0">
+        <tbody>
+          <tr><th class="text-muted fw-normal" style="width: 45%">Mã tài khoản</th><td>{{ target_user.pk }}</td></tr>
+          <tr><th class="text-muted fw-normal">Họ và tên</th><td>{{ target_user.full_name }}</td></tr>
+          <tr><th class="text-muted fw-normal">Email</th><td>{{ target_user.email }}</td></tr>
+          <tr><th class="text-muted fw-normal">Vai trò</th><td><span class="badge text-bg-info">{{ target_user.get_role_display }}</span></td></tr>
+          <tr>
+            <th class="text-muted fw-normal">Trạng thái</th>
+            <td>
+              {% if target_user.status == "ACTIVE" %}<span class="badge text-bg-success">{{ target_user.get_status_display }}</span>
+              {% else %}<span class="badge text-bg-secondary">{{ target_user.get_status_display }}</span>{% endif %}
+            </td>
+          </tr>
+          <tr>
+            <th class="text-muted fw-normal">Khóa tạm do nhập sai mật khẩu</th>
+            <td>
+              {% if temporarily_locked %}Đến {{ target_user.locked_until|date:"H:i d/m/Y" }}
+              {% else %}Không{% endif %}
+              <span class="text-muted small">({{ target_user.failed_login_count }} lần sai liên tiếp)</span>
+            </td>
+          </tr>
+          <tr><th class="text-muted fw-normal">Đăng nhập gần nhất</th><td>{{ target_user.last_login|date:"H:i d/m/Y"|default:"Chưa đăng nhập" }}</td></tr>
+          <tr><th class="text-muted fw-normal">Ngày tạo</th><td>{{ target_user.created_at|date:"H:i d/m/Y" }}</td></tr>
+          <tr><th class="text-muted fw-normal">Cập nhật lần cuối</th><td>{{ target_user.updated_at|date:"H:i d/m/Y" }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if activity %}
+    <div class="col-md-5">
+      <div class="qes-card p-3 h-100">
+        <h2 class="h6 fw-bold mb-3">Hoạt động</h2>
+        <table class="table table-sm mb-0">
+          <tbody>
+            {% for label, value in activity %}
+              <tr><th class="text-muted fw-normal">{{ label }}</th><td class="fw-semibold">{{ value }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<div class="mt-3">
+  <a href="{% url 'accounts:admin_user_list' %}" class="btn btn-outline-secondary btn-sm">Quay lại danh sách</a>
+</div>
+{% endblock %}

@@ -66,3 +66,14 @@ S3-04-14,"Login (FR-02), NFR-SEC-10","1. Đăng nhập đúng một tài khoản
 2. Đăng xuất
 3. Nhập sai mật khẩu 5 lần liên tiếp
 4. Chạy docker compose logs web | grep AUDIT",Tài khoản Teacher đang hoạt động,"Có dòng 'đăng nhập | user_id=... | ip=...' và 'đăng xuất | ...'; 5 dòng 'đăng nhập thất bại' ghi 'sai mật khẩu lần 1'… và dòng cuối có 'khóa tạm 15 phút'; không có mật khẩu trong log"
+S3-04-15,Manage User Accounts (FR-04),"1. Đăng nhập Admin, vào 'Quản lý tài khoản'
+2. Bấm vào họ tên (hoặc nút 'Xem') của teacher@demo.example
+3. Xem các ô thông tin và hoạt động","Tài khoản: admin@demo.example / Kiemthu2026
+Đối tượng: teacher@demo.example","Mở trang chi tiết: mã, họ tên, email, vai trò, trạng thái, khóa tạm do nhập sai, đăng nhập gần nhất, ngày tạo; ô Hoạt động có 'Câu hỏi đã tạo', 'Đề thi đã tạo' đúng số liệu; có nút Sửa, Khóa, Xóa"
+S3-04-16,Manage User Accounts (FR-04),"1. Đăng nhập Admin
+2. Xóa (ngừng sử dụng) một tài khoản Student
+3. Mở trang chi tiết tài khoản đó
+4. Gõ thẳng đường dẫn /accounts/admin/users/<mã>/edit/",Một tài khoản Student đang hoạt động,"Trang chi tiết báo 'Tài khoản đã ngừng sử dụng…', không có nút Sửa/Khóa/Xóa; danh sách không có nút 'Sửa' ở dòng đó; bước 4 quay về trang chi tiết với thông báo 'Tài khoản đã ngừng sử dụng nên không thể sửa.', dữ liệu không đổi"
+S3-04-17,"Manage User Accounts (FR-04), BR-22","1. Đăng nhập Student, bắt đầu làm một đề đang mở và chọn vài đáp án
+2. Ở trình duyệt khác đăng nhập Admin, xóa tài khoản Student đó
+3. Chạy docker compose logs web | grep AUDIT",Student đang có bài IN_PROGRESS,"Bài đang làm được nộp bằng đáp án đã lưu; dòng [AUDIT] 'nộp bài' ghi 'tự nộp (tài khoản ngừng sử dụng)' (khóa tài khoản thì ghi 'tự nộp (tài khoản bị khóa)'); phiên của Student bị hủy"

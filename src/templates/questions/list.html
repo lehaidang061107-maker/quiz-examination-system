@@ -19,6 +19,18 @@ Quản lý và theo dõi các câu hỏi của bạn.
 
     {% else %}
 
+        <!-- Ô số tổng quan (màn hình 07 Figma) -->
+        <div class="row g-3 qes-stats mb-3">
+            {% for label, value in stats %}
+                <div class="col-6 col-md-3">
+                    <div class="qes-card qes-stat p-3 h-100">
+                        <div class="qes-subtitle small">{{ label }}</div>
+                        <div class="fs-4 fw-bold">{{ value }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
         <!-- Thanh tìm kiếm và lọc -->
         <div class="qes-card p-3 mb-3">
             <form method="get" action="{% url 'questions:list' %}" id="question-filter-form">
@@ -98,6 +110,7 @@ Quản lý và theo dõi các câu hỏi của bạn.
                         {{ page_obj.paginator.count }} câu hỏi
                     </span>
 
+                    <a href="{% url 'questions:import' %}" class="btn btn-outline-primary">Nhập từ Excel</a>
                     <a href="{% url 'questions:create' %}" class="btn btn-primary">
                         <i class="bi bi-plus-lg me-1"></i>
                         Tạo câu hỏi
@@ -179,7 +192,7 @@ Quản lý và theo dõi các câu hỏi của bạn.
                                         </form>
                                         {# Câu đã dùng trong đề phát hành không xóa được (BR-14), chỉ lưu trữ. #}
                                         <form method="post" action="{% url 'questions:archive' question.question_id %}" class="d-inline"
-                                              onsubmit="return confirm('Lưu trữ câu hỏi này? Câu hỏi sẽ không chọn được vào đề mới; các đề đã phát hành và kết quả cũ giữ nguyên.');">
+                                              data-confirm="Lưu trữ câu hỏi này? Câu hỏi sẽ không chọn được vào đề mới; các đề đã phát hành và kết quả cũ giữ nguyên." data-confirm-ok="Lưu trữ">
                                             {% csrf_token %}
                                             <input type="hidden" name="next" value="{{ request.get_full_path }}">
                                             <button type="submit" class="btn btn-outline-secondary btn-sm">Lưu trữ</button>
@@ -193,7 +206,7 @@ Quản lý và theo dõi các câu hỏi của bạn.
                                             Sửa
                                         </a>
                                         <form method="post" action="{% url 'questions:delete' question.question_id %}" class="d-inline"
-                                              onsubmit="return confirm('Xóa câu hỏi này? Thao tác không hoàn tác được.');">
+                                              data-confirm="Xóa câu hỏi này? Thao tác không hoàn tác được." data-confirm-ok="Xóa" data-confirm-danger>
                                             {% csrf_token %}
                                             <input type="hidden" name="next" value="{{ request.get_full_path }}">
                                             <button type="submit" class="btn btn-outline-danger btn-sm">Xóa</button>

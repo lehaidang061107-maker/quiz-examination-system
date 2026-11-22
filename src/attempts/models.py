@@ -18,6 +18,7 @@ AUTO_SUBMIT_REASONS = {
     "exam_closed": "đề đã đóng",
     "revoked": "bị thu hồi quyền",
     "account_locked": "tài khoản bị khóa",
+    "account_deleted": "tài khoản ngừng sử dụng",
 }
 
 

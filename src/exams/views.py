@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count, Q
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -47,10 +48,22 @@ def _page_query(request):
 
 @role_required(Role.TEACHER)
 def exam_list(request):
-    """S3-11: danh sách đề thuộc giảng viên đang đăng nhập, lọc theo trạng thái."""
+    """S3-11: danh sách đề thuộc giảng viên đang đăng nhập, lọc theo trạng thái và tên đề.
+
+    Ba ô số ở đầu trang như màn hình 09 Figma: tổng số đề, đang mở, đã kết thúc (đóng hoặc lưu trữ).
+    """
     teacher = request.user.as_role()
     selected_status = request.GET.get("status", "").strip()
+    search = request.GET.get("q", "").strip()
     exams = teacher.exams.all()
+    counts = dict(exams.order_by().values_list("status").annotate(n=Count("exam_id")))
+    stats = [
+        ("Tổng kỳ thi", sum(counts.values())),
+        ("Đang mở", counts.get(ExamStatus.PUBLISHED, 0)),
+        ("Đã kết thúc", counts.get(ExamStatus.CLOSED, 0) + counts.get(ExamStatus.ARCHIVED, 0)),
+    ]
+    if search:
+        exams = exams.filter(title__icontains=search)
     if selected_status in ExamStatus.values:
         exams = exams.filter(status=selected_status)
     else:
@@ -69,6 +82,8 @@ def exam_list(request):
             "page_query": _page_query(request),
             "selected_status": selected_status,
             "status_choices": STATUS_FILTERS,
+            "search": search,
+            "stats": stats,
         },
     )
 
@@ -94,6 +109,32 @@ def exam_detail(request, exam_id):
     """S3-11: xem thông tin một đề của mình."""
     exam = request.user.as_role().manage_exam(exam_id)
     return render(request, "exams/detail.html", _detail_context(exam))
+
+
+@role_required(Role.TEACHER)
+@require_POST
+def exam_duplicate(request, exam_id):
+    """S3-33: nhân bản đề (mọi trạng thái) thành đề nháp mới để sửa tiếp (BR-14)."""
+    exam = request.user.as_role().manage_exam(exam_id)
+    copy, skipped = exam.duplicate()
+    text = f"Đã tạo đề nháp '{copy.title}' với {copy.exam_questions.count()} câu hỏi."
+    if skipped:
+        text += f" Bỏ qua {skipped} câu đã lưu trữ."
+    messages.success(request, text)
+    return redirect("exams:detail", exam_id=copy.pk)
+
+
+@role_required(Role.TEACHER)
+def exam_preview(request, exam_id):
+    """S3-33: giảng viên xem đề giống sinh viên thấy khi làm bài. Không tạo lượt làm bài, không lưu gì;
+    không đưa cờ đáp án đúng ra trang (giống màn làm bài, NFR-SEC-04)."""
+    exam = request.user.as_role().manage_exam(exam_id)
+    items = []
+    for item in exam.exam_questions.select_related("question").order_by("position"):
+        options = [{"content": o.content} for o in item.question.options.order_by("display_order")]
+        items.append({"position": item.position, "points": item.points, "content": item.question.content,
+                      "options": options})
+    return render(request, "exams/preview.html", {"exam": exam, "items": items})
 
 
 @role_required(Role.TEACHER)
@@ -143,18 +184,25 @@ def exam_questions(request, exam_id):
         return redirect(request.get_full_path())
 
     search = request.GET.get("q", "").strip()
-    bank = (
-        request.user.as_role().manage_questions()
-        .filter(status=QuestionStatus.ACTIVE)
-        .exclude(exam_questions__exam=exam)
-        .annotate(option_count=Count("options"))
-    )
+    bank = _bank_for(request.user.as_role(), exam, search).annotate(option_count=Count("options"))
+    page_obj = Paginator(bank, BANK_PAGE_SIZE).get_page(request.GET.get("page"))
+    context = _detail_context(exam)
+    context.update({
+        "page_obj": page_obj, "bank": page_obj.object_list, "search": search, "bank_total": page_obj.paginator.count,
+        "import_url": reverse("questions:import") + f"?exam={exam.pk}",  # S3-32: nhập Excel rồi thêm luôn vào đề
+    })
+    return render(request, "exams/questions.html", context)
+
+
+BANK_PAGE_SIZE = 20
+
+
+def _bank_for(teacher, exam, search=""):
+    """Câu hỏi ACTIVE của giảng viên chưa có trong đề, lọc theo nội dung nếu có."""
+    bank = teacher.manage_questions().filter(status=QuestionStatus.ACTIVE).exclude(exam_questions__exam=exam)
     if search:
         bank = bank.filter(content__icontains=search)
-    page_obj = Paginator(bank, 10).get_page(request.GET.get("page"))
-    context = _detail_context(exam)
-    context.update({"page_obj": page_obj, "bank": page_obj.object_list, "search": search})
-    return render(request, "exams/questions.html", context)
+    return bank
 
 
 def _handle_question_action(request, exam):
@@ -167,6 +215,22 @@ def _handle_question_action(request, exam):
         for question_id in ids:
             exam.add_question(_int(question_id), _points(request.POST.get("points")))
         return f"Đã thêm {len(ids)} câu hỏi vào đề."
+    if action == "add_all":
+        # Thêm một lần mọi câu khớp tìm kiếm (không phải tích từng ô qua nhiều trang).
+        points = _points(request.POST.get("points"))
+        ids = list(_bank_for(request.user.as_role(), exam, request.POST.get("q", "").strip())
+                   .order_by("question_id").values_list("question_id", flat=True))
+        if not ids:
+            raise ValidationError("Không còn câu hỏi nào để thêm.")
+        for question_id in ids:
+            exam.add_question(question_id, points)
+        return f"Đã thêm {len(ids)} câu hỏi vào đề."
+    if action == "set_all_points":
+        points = _points(request.POST.get("all_points"))
+        items = list(exam.exam_questions.order_by("position"))
+        for item in items:
+            item.set_points(points)
+        return f"Đã đặt {len(items)} câu cùng điểm."
     if action == "save_points":
         for item in exam.exam_questions.order_by("position"):
             value = request.POST.get(f"points_{item.question_id}")

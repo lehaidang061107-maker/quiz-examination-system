@@ -5,3 +5,20 @@ S3-17-03,Take Exam - chuyển câu (FR-09),"1. Trong phòng thi, chọn đáp á
 2. Xem bảng Danh sách câu hỏi.",Tài khoản Student được giao đề,Ô số 1 đổi sang màu đã trả lời.
 S3-17-04,"Take Exam - tự nộp khi hết giờ (FR-09, FR-10, BR-21)","1. Bắt đầu làm bài.
 2. Chờ đến khi đồng hồ về 00:00.",Tài khoản Student được giao đề,Hệ thống tự nộp bài với các đáp án đã lưu và chuyển về trang Bài thi.
+S3-17-05,Giao diện làm bài (màn hình 12 Figma),"1. Đăng nhập Student, mở bài đang làm
+2. Cuộn xuống cuối trang","Email: student1@demo.example
+Mật khẩu: Kiemthu2026","Khung bên phải hiện đồng hồ đỏ, số câu đã trả lời, lưới số câu và nút 'Nộp bài thi'; khung vẫn nằm trong màn hình khi cuộn (NFR-USA-02)"
+S3-17-06,Giao diện làm bài,"1. Mở bài đang làm (mặc định chế độ Từng câu)
+2. Bấm 'Câu tiếp', bấm ô số 3 trong lưới
+3. Bấm 'Tất cả câu'","Email: student1@demo.example
+Mật khẩu: Kiemthu2026","Bước 2 mỗi lần chỉ hiện một câu, ô số của câu đang xem có viền đậm, 'Câu trước' mờ ở câu 1 và 'Câu tiếp' mờ ở câu cuối; bước 3 hiện tất cả câu, bấm ô số thì cuộn tới câu đó; lần mở sau giữ chế độ đã chọn"
+S3-17-07,Nộp bài (NFR-USA-04),"1. Trả lời 2/3 câu
+2. Bấm 'Nộp bài thi'
+3. Bấm Hủy, rồi bấm 'Nộp bài thi' lại và bấm 'Nộp bài'","Email: student1@demo.example
+Mật khẩu: Kiemthu2026","Hộp xác nhận giữa màn hình ghi 'Bạn đã trả lời 2/3 câu, còn 1 câu chưa trả lời (câu 3).'; Hủy thì vẫn làm bài tiếp; Nộp bài thì về Danh sách bài thi với thông báo nộp thành công"
+S3-17-08,Giao diện làm bài (NFR-USA-02),"1. Bật khung 390 × 844 (F12)
+2. Mở bài đang làm
+3. Bấm 'Danh sách câu'","Email: student1@demo.example
+Mật khẩu: Kiemthu2026","Đồng hồ, số câu và nút 'Nộp bài thi' nằm trên đầu nội dung; lưới số câu ẩn, bấm 'Danh sách câu' thì hiện ra; không có thanh cuộn ngang"
+S3-17-09,Đồng hồ làm bài (FR-09),"1. Bắt đầu một đề thời lượng 5 phút
+2. Quan sát đồng hồ",Đề thời lượng 5 phút,Đồng hồ đếm lùi dạng mm:ss (từ 1 giờ trở lên dạng hh:mm:ss); còn dưới 5 phút thì nhấp nháy

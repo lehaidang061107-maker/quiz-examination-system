@@ -53,3 +53,48 @@ body { background: var(--qes-page); min-height: 100vh; }
 /* Trang không đăng nhập (Đăng nhập, Đăng ký) */
 .qes-auth { background: #eef4fc; }
 .qes-auth .qes-brand { color: #1a5794; font-weight: 700; }
+
+/* ---------- S3-28 bổ sung: bảng, nhãn trạng thái, nút theo Figma ---------- */
+/* Tiêu đề bảng nền xanh nhạt, không xuống dòng (màn hình 03–11 Figma) */
+.table > thead th { background: #eef4fc; color: var(--qes-text); font-size: .8rem; font-weight: 600;
+  white-space: nowrap; border-bottom: 0; }
+.table > tbody td { border-color: #eef2f7; }
+/* Chữ trên nút không bị gãy làm hai dòng ("Đã hoàn thành", "Xem kết quả") */
+.btn { white-space: nowrap; }
+
+/* Nhãn trạng thái dạng viên thuốc nền nhạt, chữ màu — áp cho mọi .badge có sẵn trong các trang */
+.badge { border-radius: 999px; padding: .3em .7em; font-weight: 600; }
+.badge.text-bg-success, .badge.bg-success { background: #e6f5ed !important; color: #16834e !important; }
+.badge.text-bg-secondary, .badge.bg-secondary { background: #eef1f5 !important; color: #5b6b80 !important; }
+.badge.text-bg-warning, .badge.bg-warning { background: #fdf1e1 !important; color: #b8690e !important; }
+.badge.text-bg-info, .badge.text-bg-primary, .badge.bg-primary, .badge.bg-info { background: #e8f0fb !important; color: #1f5aa6 !important; }
+.badge.text-bg-danger, .badge.bg-danger { background: #fdecec !important; color: #c0392b !important; }
+.badge.text-bg-dark { background: #e9ebef !important; color: #3d4756 !important; }
+.badge.text-bg-light { background: #fff !important; color: var(--qes-muted) !important; }
+
+/* Ô số thứ 4 (Đề chờ công bố điểm) */
+.qes-stats > :nth-child(4) .qes-stat { border-left-color: #7b5cd6; }
+.qes-sidebar .qes-role { text-transform: uppercase; }
+/* Thanh trên không xuống dòng trên điện thoại (NFR-USA-02) */
+.qes-topbar { flex-wrap: nowrap; }
+.qes-topbar .navbar-brand { font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.qes-topbar > div { min-width: 0; flex-shrink: 1; }
+.qes-topbar > div:last-child { flex-shrink: 0; }
+@media (max-width: 400px) { .qes-topbar .navbar-brand { font-size: .95rem; } }
+/* Cột tên trong bảng không bị bóp hẹp; bảng cuộn ngang trong khung */
+.qes-title-col { min-width: 180px; }
+
+/* ---------- S3-17: màn làm bài (màn hình 12 Figma) ---------- */
+#qes-confirm-text { white-space: pre-line; }
+.qes-timer { color: #d64545; font-size: 1.8rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.qes-timer-warning { animation: qes-blink 1s step-start infinite; }
+@keyframes qes-blink { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .qes-timer-warning { animation: none; } }
+.qes-qgrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.qes-qgrid .btn { padding: .25rem 0; }
+.qes-qgrid .qes-current { outline: 2px solid var(--qes-text); outline-offset: 1px; }
+.qes-exam-panel { position: sticky; top: 1rem; z-index: 5; }
+@media (max-width: 991.98px) {
+  .qes-exam-panel { top: 0; box-shadow: 0 4px 12px rgba(16, 41, 68, .12); }
+  .qes-timer { font-size: 1.4rem; }
+}
