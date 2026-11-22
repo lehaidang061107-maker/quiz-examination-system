@@ -7,6 +7,7 @@
 - [Environment Variables (`.env`)](#environment-variables-env)
 - [Option A: Run with Docker](#option-a-run-with-docker)
 - [Option B: Local Development](#option-b-local-development)
+- [Audit Logs](#audit-logs)
 - [Demo Accounts & Seed Data](#demo-accounts--seed-data)
 - [Database Client (Beekeeper / DBeaver)](#database-client-beekeeper--dbeaver)
 - [Troubleshooting](#troubleshooting)
@@ -48,6 +49,7 @@ Mở http://127.0.0.1:8000/accounts/login/ và đăng nhập bằng [tài khoả
 | --- | --- |
 | Xem log website | `docker compose logs -f web` |
 | Xem log tiến trình nền (tự nộp, chấm lại) | `docker compose logs -f worker` |
+| Xem nhật ký thao tác (đăng nhập, tài khoản, nộp bài, đề thi) | Xem [Audit Logs](#audit-logs) |
 | Sửa code xong, chạy bản mới | `docker compose up -d --build --wait` |
 | Chạy lệnh `manage.py` khác | Thêm `docker compose exec web` trước `python manage.py ...` |
 | Tắt (giữ dữ liệu) | `docker compose stop` |
@@ -84,6 +86,32 @@ trong `src` (Ctrl+C để dừng). Chạy bằng Docker thì service `worker` đ
 Mở http://127.0.0.1:8000/accounts/login/. Đang chạy Option A thì tắt website và worker Docker trước:
 `docker compose stop web worker` (để worker trong Docker không chạy code cũ trên cùng database).
 Tắt database khi xong việc: `docker compose stop db` (dữ liệu vẫn giữ).
+
+## Audit Logs
+
+Hệ thống ghi nhật ký các thao tác quan trọng (NFR-MAI-03, NFR-SEC-10). Mỗi dòng bắt đầu bằng `[AUDIT]`, có giờ máy
+chủ, người làm (`user_id`/`admin_id`), đối tượng và kết quả. **Không ghi mật khẩu, cookie phiên hay đáp án.**
+
+| Nhóm (logger) | Ghi khi | Ví dụ |
+| --- | --- | --- |
+| `accounts.audit` | Đăng nhập (thành công / thất bại kèm lý do), đăng xuất, đăng ký Student; Admin tạo, sửa, khóa, mở khóa, xóa tài khoản | `đăng nhập thất bại \| email=... \| sai mật khẩu lần 2 \| ip=...` |
+| `attempts.audit` | Mỗi lần nộp bài: nộp tay, hoặc tự nộp kèm lý do (hết giờ, đề đã đóng, bị thu hồi quyền, tài khoản bị khóa) | `nộp bài \| submission_id=... \| tự nộp (hết giờ) \| submitted_at=...` |
+| `exams.audit` | Giảng viên đóng đề, lưu trữ đề, công bố điểm; hệ thống tự đóng đề khi hết lịch | `công bố điểm \| user_id=... \| exam_id=... \| 30 bài` |
+
+Nhật ký in ra màn hình của tiến trình đang chạy. Thao tác trên website nằm ở service `web`; tự nộp bài và tự đóng
+đề do worker làm nằm ở service `worker`:
+
+```bash
+docker compose logs web worker | grep AUDIT                      # toàn bộ nhật ký
+docker compose logs web | grep "AUDIT] đăng nhập thất bại"       # chỉ đăng nhập sai
+docker compose logs -f web worker | grep --line-buffered AUDIT   # xem trực tiếp
+```
+
+Chạy Option B thì nhật ký hiện ngay trong terminal đang chạy `runserver` / `run_worker`. Khi chạy `manage.py test`
+nhật ký không in ra (test vẫn kiểm tra bằng `assertLogs`).
+
+Nhật ký chỉ nằm trong log của container: container bị tạo lại (`docker compose down`, hoặc `up --build` sau khi sửa
+code) là mất. Cần giữ lâu thì lưu ra file trước, ví dụ `docker compose logs --no-color web worker | grep AUDIT > audit-$(date +%F).log`.
 
 ## Demo Accounts & Seed Data
 
