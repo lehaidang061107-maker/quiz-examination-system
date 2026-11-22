@@ -46,6 +46,6 @@ def navigation(request):
     ]
     return {
         "nav_items": items,
-        "nav_role": user.role,
+        "nav_role": user.get_role_display(),  # tiếng Việt (NFR-USA-05): Giảng viên, Sinh viên...
         "logout_url": url_or_none("accounts:logout"),  # S3-03
     }

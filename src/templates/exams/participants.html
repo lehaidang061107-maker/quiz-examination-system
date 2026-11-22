@@ -65,7 +65,7 @@
               <td class="text-end">
                 {% if can_change and row.assigned %}
                   <button type="submit" name="action" value="revoke:{{ row.student.pk }}" class="btn btn-sm btn-outline-danger"
-                          onclick="return confirm('Thu hồi quyền dự thi của {{ row.student.full_name|escapejs }}?{% if row.submission.status == "IN_PROGRESS" %} Sinh viên đang làm bài: bài sẽ được nộp bằng đáp án đã lưu.{% endif %}');">
+                          data-confirm="Thu hồi quyền dự thi của {{ row.student.full_name }}?{% if row.submission.status == "IN_PROGRESS" %} Sinh viên đang làm bài: bài sẽ được nộp bằng đáp án đã lưu.{% endif %}" data-confirm-ok="Thu hồi" data-confirm-danger>
                     Thu hồi
                   </button>
                 {% endif %}

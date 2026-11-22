@@ -41,7 +41,7 @@
                 <button type="submit" name="action" value="down:{{ item.question_id }}" class="btn btn-sm btn-outline-secondary"
                         {% if forloop.last %}disabled{% endif %} aria-label="Đưa câu {{ item.position }} xuống">↓</button>
                 <button type="submit" name="action" value="remove:{{ item.question_id }}" class="btn btn-sm btn-outline-danger"
-                        onclick="return confirm('Bỏ câu {{ item.position }} khỏi đề? Các câu phía sau sẽ dồn lên.');">Bỏ</button>
+                        data-confirm="Bỏ câu {{ item.position }} khỏi đề? Các câu phía sau sẽ dồn lên." data-confirm-ok="Bỏ khỏi đề" data-confirm-danger>Bỏ</button>
               </td>
             </tr>
           {% endfor %}

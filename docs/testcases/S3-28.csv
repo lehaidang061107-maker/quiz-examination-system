@@ -21,4 +21,20 @@ S3-28-07,Giao diện tương thích (NFR-USA-02),"1. Đăng nhập bằng tài k
 2. Bật chế độ thiết bị di động của Chrome (F12, khung 390 × 844)
 3. Bấm nút ☰ ở thanh trên","Email: teacher@demo.example
 Mật khẩu: Kiemthu2026
-Khung nhìn: 390 × 844","Menu trái ẩn, hiện nút ☰; bấm ☰ thì menu trượt ra từ bên trái; 3 thẻ số liệu xếp dọc, không bị tràn ngang"
+Khung nhìn: 390 × 844","Menu trái ẩn, hiện nút ☰; bấm ☰ thì menu trượt ra từ bên trái; các thẻ số liệu xếp 2 cột, bảng bên dưới cuộn ngang trong khung, không bị tràn ngang"
+S3-28-08,Trang chủ theo vai trò (màn hình 04 Figma),"1. Đăng nhập bằng tài khoản Teacher
+2. Xem Trang chủ","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026","4 ô số: Ngân hàng câu hỏi, Kỳ thi đang mở, Bài thi đã nộp, Đề chờ công bố điểm; bảng 'Kỳ thi gần đây' tối đa 5 đề mới nhất của chính giảng viên (số câu, thời lượng, lịch thi, đã nộp/được giao, trạng thái); nút '+ Tạo kỳ thi' mở trang tạo đề"
+S3-28-09,Trang chủ theo vai trò (màn hình 03 Figma),"1. Đăng nhập bằng tài khoản Admin
+2. Xem Trang chủ","Email: admin@demo.example
+Mật khẩu: Kiemthu2026","Bảng 'Danh sách tài khoản mới' gồm 5 tài khoản tạo gần nhất (họ tên, email, vai trò, trạng thái, ngày tạo); nút '+ Thêm tài khoản' mở trang tạo tài khoản"
+S3-28-10,Trang chủ theo vai trò,"1. Đăng nhập bằng tài khoản Student được giao đề đang mở, chưa làm
+2. Xem Trang chủ
+3. Bấm 'Bắt đầu làm bài', rồi bấm Hủy trong hộp xác nhận","Email: student3@demo.example
+Mật khẩu: Kiemthu2026","Bảng 'Bài thi cần làm' có đề đó kèm tên giảng viên và nút 'Bắt đầu làm bài'; bấm nút hiện hộp xác nhận giữa màn hình; bấm Hủy thì không tạo lượt làm bài, trang giữ nguyên. Đề đã nộp không còn trong bảng"
+S3-28-11,Hộp xác nhận thao tác quan trọng (NFR-USA-04),"1. Đăng nhập Teacher, tạo một đề nháp
+2. Ở trang chi tiết đề bấm 'Xóa đề'
+3. Bấm Hủy
+4. Bấm 'Xóa đề' lần nữa, bấm Xóa (nút đỏ)","Email: teacher@demo.example
+Mật khẩu: Kiemthu2026
+Tên đề: Đề thử hộp xác nhận","Hộp xác nhận hiện nội dung cảnh báo, nút Xóa màu đỏ; bấm Hủy thì đề còn nguyên; bấm Xóa thì đề bị xóa, về trang Quản lý kỳ thi với thông báo xanh"

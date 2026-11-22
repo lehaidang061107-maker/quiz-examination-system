@@ -4,9 +4,9 @@
 {% block page_subtitle %}Chào mừng, {{ user.full_name }}{% endblock %}
 
 {% block content %}
-<div class="row g-3 qes-stats">
+<div class="row g-3 qes-stats mb-4">
   {% for label, value in stats %}
-    <div class="col-12 col-md-4">
+    <div class="col-6 col-md">
       <div class="qes-card qes-stat p-3 h-100">
         <div class="qes-subtitle small">{{ label }}</div>
         <div class="fs-3 fw-bold">{{ value }}</div>
@@ -14,4 +14,99 @@
     </div>
   {% endfor %}
 </div>
+
+{% if recent_exams is not None %}
+  {# Màn hình 04 Figma: Bài thi gần đây #}
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="h6 fw-bold m-0">Kỳ thi gần đây</h2>
+    <a href="{% url 'exams:create' %}" class="btn btn-primary btn-sm">+ Tạo kỳ thi</a>
+  </div>
+  {% if recent_exams %}
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead><tr><th>Tên kỳ thi</th><th class="text-center">Số câu</th><th>Thời lượng</th><th>Lịch thi</th>
+          <th class="text-center">Đã nộp</th><th>Trạng thái</th></tr></thead>
+        <tbody>
+          {% for exam in recent_exams %}
+            <tr>
+              <td class="qes-title-col"><a href="{% url 'exams:detail' exam.exam_id %}" class="text-decoration-none fw-semibold">{{ exam.title }}</a></td>
+              <td class="text-center">{{ exam.question_total }}</td>
+              <td class="text-nowrap">{% if exam.duration_minutes %}{{ exam.duration_minutes }} phút{% else %}—{% endif %}</td>
+              <td class="small">{% include "partials/schedule.html" with opens=exam.opens_at closes=exam.closes_at %}</td>
+              <td class="text-center">{% if exam.participant_total %}{{ exam.submitted_total }}/{{ exam.participant_total }}{% else %}—{% endif %}</td>
+              <td>{% include "exams/_status_badge.html" with status=exam.status %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-muted py-3">Chưa có kỳ thi nào. Bấm "Tạo kỳ thi" để bắt đầu.</div>
+  {% endif %}
+
+{% elif recent_users is not None %}
+  {# Màn hình 03 Figma: Danh sách tài khoản mới #}
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="h6 fw-bold m-0">Danh sách tài khoản mới</h2>
+    <a href="{% url 'accounts:admin_user_create' %}" class="btn btn-primary btn-sm">+ Thêm tài khoản</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Họ và tên</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Ngày tạo</th></tr></thead>
+      <tbody>
+        {% for account in recent_users %}
+          <tr>
+            <td class="fw-semibold qes-title-col">{{ account.full_name }}</td>
+            <td>{{ account.email }}</td>
+            <td><span class="badge text-bg-info">{{ account.get_role_display }}</span></td>
+            <td>{% if account.status == "ACTIVE" %}<span class="badge text-bg-success">{{ account.get_status_display }}</span>
+              {% else %}<span class="badge text-bg-secondary">{{ account.get_status_display }}</span>{% endif %}</td>
+            <td class="text-nowrap">{{ account.created_at|date:"d/m/Y" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+{% elif todo_exams is not None %}
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="h6 fw-bold m-0">Bài thi cần làm</h2>
+    <a href="{% url 'attempts:exam_list' %}" class="small text-decoration-none">Xem tất cả bài thi</a>
+  </div>
+  {% if todo_exams %}
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead><tr><th>Tên bài thi</th><th>Giảng viên</th><th>Thời lượng</th><th>Lịch thi</th><th>Trạng thái</th><th class="text-end">Thao tác</th></tr></thead>
+        <tbody>
+          {% for item in todo_exams %}
+            <tr>
+              <td class="fw-semibold qes-title-col">{{ item.exam.title }}</td>
+              <td>{{ item.exam.teacher.full_name }}</td>
+              <td class="text-nowrap">{% if item.exam.duration_minutes %}{{ item.exam.duration_minutes }} phút{% else %}Không giới hạn{% endif %}</td>
+              <td class="small">{% include "partials/schedule.html" with opens=item.exam.opens_at closes=item.exam.closes_at %}</td>
+              <td>
+                {% if item.in_progress %}<span class="badge text-bg-warning">Đang làm bài</span>
+                {% elif item.reason %}<span class="badge text-bg-secondary">{{ item.reason }}</span>
+                {% else %}<span class="badge text-bg-primary">Sẵn sàng thi</span>{% endif %}
+              </td>
+              <td class="text-end">
+                {% if item.in_progress %}
+                  <a href="{% url 'attempts:take_exam' item.submission.pk %}" class="btn btn-sm btn-warning">Tiếp tục làm bài</a>
+                {% elif not item.reason %}
+                  <form method="post" action="{% url 'attempts:start_exam' item.exam.pk %}" class="d-inline"
+                        data-confirm="Bắt đầu làm bài thi này? Đồng hồ sẽ tính giờ ngay lập tức." data-confirm-ok="Bắt đầu">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-primary">Bắt đầu làm bài</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-muted py-3">Bạn không còn bài thi nào cần làm.</div>
+  {% endif %}
+{% endif %}
 {% endblock %}

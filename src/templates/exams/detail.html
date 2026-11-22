@@ -9,32 +9,32 @@
       <a href="{% url 'exams:edit' exam.exam_id %}" class="btn btn-sm btn-outline-primary">Sửa thông tin</a>
       <a href="{% url 'exams:questions' exam.exam_id %}" class="btn btn-sm btn-outline-primary">Chọn câu hỏi</a>
       <form method="post" action="{% url 'exams:publish' exam.exam_id %}" class="m-0"
-            onsubmit="return confirm('Phát hành đề? Sau khi phát hành sẽ không sửa được câu hỏi, thứ tự và điểm.');">
+            data-confirm="Phát hành đề? Sau khi phát hành sẽ không sửa được câu hỏi, thứ tự và điểm." data-confirm-ok="Phát hành">
         {% csrf_token %}
         <button type="submit" class="btn btn-sm btn-primary">Phát hành</button>
       </form>
       <form method="post" action="{% url 'exams:delete' exam.exam_id %}" class="m-0"
-            onsubmit="return confirm('Xóa đề nháp này? Câu hỏi đã chọn và danh sách phân công của đề cũng bị xóa (câu hỏi trong ngân hàng vẫn giữ). Thao tác không hoàn tác được.');">
+            data-confirm="Xóa đề nháp này? Câu hỏi đã chọn và danh sách phân công của đề cũng bị xóa (câu hỏi trong ngân hàng vẫn giữ). Thao tác không hoàn tác được." data-confirm-ok="Xóa" data-confirm-danger>
         {% csrf_token %}
         <button type="submit" class="btn btn-sm btn-outline-danger">Xóa đề</button>
       </form>
     {% endif %}
     {% if exam.status == "PUBLISHED" %}
       <form method="post" action="{% url 'exams:close' exam.exam_id %}" class="m-0"
-            onsubmit="return confirm('Đóng đề? Bài đang làm sẽ được nộp bằng đáp án đã lưu và không mở lại được đề.');">
+            data-confirm="Đóng đề? Bài đang làm sẽ được nộp bằng đáp án đã lưu và không mở lại được đề." data-confirm-ok="Đóng đề" data-confirm-danger>
         {% csrf_token %}
         <button type="submit" class="btn btn-sm btn-warning">Đóng đề</button>
       </form>
     {% elif exam.status == "CLOSED" %}
       {% if not exam.results_published %}
         <form method="post" action="{% url 'exams:publish_results' exam.exam_id %}" class="m-0"
-              onsubmit="return confirm('Công bố điểm cho sinh viên? Chưa có thao tác thu hồi công bố.');">
+              data-confirm="Công bố điểm cho sinh viên? Chưa có thao tác thu hồi công bố." data-confirm-ok="Công bố">
           {% csrf_token %}
           <button type="submit" class="btn btn-sm btn-primary">Công bố điểm</button>
         </form>
       {% endif %}
       <form method="post" action="{% url 'exams:archive' exam.exam_id %}" class="m-0"
-            onsubmit="return confirm('Lưu trữ đề thi?');">
+            data-confirm="Lưu trữ đề thi?" data-confirm-ok="Lưu trữ">
         {% csrf_token %}
         <button type="submit" class="btn btn-sm btn-outline-dark">Lưu trữ</button>
       </form>
