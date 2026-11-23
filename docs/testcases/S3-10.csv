@@ -1,0 +1,18 @@
+﻿Test Case ID,Function,Test Steps,Input Data,Expected Result
+S3-10-01,Đồng thời 500 Student (NFR-PER-01),"1. Chạy reset.sh 500 để tạo dữ liệu
+2. Bật web-load bằng gunicorn (8 tiến trình x 4 luồng)
+3. Chạy run_load.py --users 500 --ramp 60 --duration 120
+4. Đọc tỷ lệ lỗi từng thao tác trong file kết quả","Đề 50 câu, mỗi câu 4 lựa chọn
+500 sinh viên đăng nhập, làm bài, lưu đáp án mỗi 10 giây
+Đợt nộp 500 bài trong 10 giây","Cả 500 sinh viên hoàn tất luồng, không lỗi 5xx, không báo 'too many clients'; tỷ lệ lỗi hệ thống dưới 1%"
+S3-10-02,Thời gian phản hồi (NFR-PER-02),"1. Làm như S3-10-01
+2. Xem p95 của đăng nhập, xem danh sách, lấy câu hỏi, lưu đáp án",Như S3-10-01,Ít nhất 95% thao tác hoàn tất trong 3 giây (p95 <= 3 giây)
+S3-10-03,Thời gian chấm (NFR-PER-03),"1. Làm như S3-10-01 đến hết đợt nộp
+2. Chạy grading.sql trên database quiz_load",500 bài nộp trong cửa sổ 10 giây,"500 bài ở trạng thái GRADED, mỗi bài có đúng một Result; ít nhất 95% bài chấm xong trong 5 giây"
+S3-10-04,Truy vấn không N+1,"1. Đăng nhập một Student, mở danh sách bài thi và trang làm bài đề 50 câu
+2. Đếm số truy vấn bằng CaptureQueriesContext","Đề 50 câu, mỗi câu 4 lựa chọn","Số truy vấn mỗi trang là hằng số nhỏ (danh sách khoảng 10, làm bài đề 50 câu khoảng 11, dưới 15), không tăng theo số câu hỏi"
+S3-10-05,Trần số kết nối database,"1. Chạy S3-10-01 với runserver (CONN_MAX_AGE=0), ghi số lỗi
+2. Chạy lại với gunicorn và DB_CONN_MAX_AGE=60
+3. So sánh",PostgreSQL mặc định max_connections=100,"Với runserver có lỗi 'sorry, too many clients already'; với gunicorn không còn lỗi này"
+S3-10-06,Phân trang danh sách (NFR-PER-05),"1. Với 500 sinh viên, đăng nhập Admin mở Quản lý tài khoản
+2. Mở trang 2",500 tài khoản,Mỗi trang chỉ hiện một phần danh sách và có điều hướng sang trang khác

@@ -1,0 +1,99 @@
+{
+  "args": {
+    "base": "http://127.0.0.1:8100",
+    "users": 500,
+    "exam": 1,
+    "ramp": 60.0,
+    "duration": 120.0,
+    "save_interval": 10,
+    "submit_window": 10,
+    "out": "docs/loadtest/sau-500-ramp60.json"
+  },
+  "wall_seconds": 190.0,
+  "ops": {
+    "login_page": {
+      "count": 500,
+      "errors": 0,
+      "error_rate_pct": 0.0,
+      "p50_s": 0.003,
+      "p95_s": 0.026,
+      "max_s": 0.246,
+      "within_3s_pct": 100.0,
+      "statuses": {
+        "200": 500
+      }
+    },
+    "login": {
+      "count": 500,
+      "errors": 0,
+      "error_rate_pct": 0.0,
+      "p50_s": 0.204,
+      "p95_s": 0.441,
+      "max_s": 0.733,
+      "within_3s_pct": 100.0,
+      "statuses": {
+        "302": 500
+      }
+    },
+    "exam_list": {
+      "count": 500,
+      "errors": 0,
+      "error_rate_pct": 0.0,
+      "p50_s": 0.01,
+      "p95_s": 0.032,
+      "max_s": 0.173,
+      "within_3s_pct": 100.0,
+      "statuses": {
+        "200": 500
+      }
+    },
+    "start_exam": {
+      "count": 500,
+      "errors": 0,
+      "error_rate_pct": 0.0,
+      "p50_s": 0.01,
+      "p95_s": 0.035,
+      "max_s": 0.436,
+      "within_3s_pct": 100.0,
+      "statuses": {
+        "302": 500
+      }
+    },
+    "take_exam": {
+      "count": 500,
+      "errors": 0,
+      "error_rate_pct": 0.0,
+      "p50_s": 0.024,
+      "p95_s": 0.076,
+      "max_s": 0.197,
+      "within_3s_pct": 100.0,
+      "statuses": {
+        "200": 500
+      }
+    },
+    "save_answer": {
+      "count": 7246,
+      "errors": 0,
+      "error_rate_pct": 0.0,
+      "p50_s": 0.01,
+      "p95_s": 0.022,
+      "max_s": 0.42,
+      "within_3s_pct": 100.0,
+      "statuses": {
+        "200": 7246
+      }
+    },
+    "submit": {
+      "count": 500,
+      "errors": 0,
+      "error_rate_pct": 0.0,
+      "p50_s": 0.013,
+      "p95_s": 0.117,
+      "max_s": 0.432,
+      "within_3s_pct": 100.0,
+      "statuses": {
+        "302": 500
+      }
+    }
+  }
+}
