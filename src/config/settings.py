@@ -79,6 +79,8 @@ DATABASES = {
         "PASSWORD": env("POSTGRES_PASSWORD"),
         "HOST": os.getenv("POSTGRES_HOST", "localhost"),
         "PORT": os.getenv("POSTGRES_PORT", "55433"),
+        # S3-10: giữ kết nối database giữa các yêu cầu (giây) để khỏi mở lại mỗi lần; 0 = đóng ngay như trước.
+        "CONN_MAX_AGE": int(os.getenv("DB_CONN_MAX_AGE", "0")),
     }
 }
 
