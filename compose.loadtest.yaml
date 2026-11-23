@@ -1,0 +1,37 @@
+# S3-10: website phụ dùng riêng cho đo tải, nối vào database `quiz_load` (không đụng dữ liệu demo).
+# Chạy: docker compose -f compose.yaml -f compose.loadtest.yaml up -d --build --wait web-load
+# LOAD_SERVER=runserver (mặc định, như bản demo) hoặc gunicorn (nhiều tiến trình, số kết nối database có trần).
+services:
+  web-load:
+    build: .
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: quiz_load
+      ALLOWED_HOSTS: "*"
+      LOAD_SERVER: "${LOAD_SERVER:-runserver}"
+      GUNICORN_WORKERS: "${GUNICORN_WORKERS:-4}"
+      GUNICORN_THREADS: "${GUNICORN_THREADS:-8}"
+      DB_CONN_MAX_AGE: "${LOAD_CONN_MAX_AGE:-0}"
+    command:
+      - sh
+      - -c
+      - |
+        python manage.py migrate --noinput
+        if [ "$$LOAD_SERVER" = gunicorn ]; then
+          exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 \
+            --workers "$$GUNICORN_WORKERS" --threads "$$GUNICORN_THREADS" --timeout 120
+        fi
+        exec python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "127.0.0.1:8100:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/')"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s

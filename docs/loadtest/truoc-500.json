@@ -1,0 +1,107 @@
+{
+  "args": {
+    "base": "http://127.0.0.1:8100",
+    "users": 500,
+    "exam": 1,
+    "ramp": 30.0,
+    "duration": 120.0,
+    "save_interval": 10,
+    "submit_window": 10,
+    "out": "docs/loadtest/truoc-500.json"
+  },
+  "wall_seconds": 160.0,
+  "ops": {
+    "login_page": {
+      "count": 500,
+      "errors": 0,
+      "error_rate_pct": 0.0,
+      "p50_s": 2.808,
+      "p95_s": 19.283,
+      "max_s": 54.952,
+      "within_3s_pct": 51.2,
+      "statuses": {
+        "200": 500
+      }
+    },
+    "login": {
+      "count": 500,
+      "errors": 260,
+      "error_rate_pct": 52.0,
+      "p50_s": 5.17,
+      "p95_s": 15.297,
+      "max_s": 36.144,
+      "within_3s_pct": 36.6,
+      "statuses": {
+        "302": 240,
+        "-1": 1,
+        "500": 259
+      }
+    },
+    "exam_list": {
+      "count": 240,
+      "errors": 53,
+      "error_rate_pct": 22.08,
+      "p50_s": 2.14,
+      "p95_s": 30.183,
+      "max_s": 37.958,
+      "within_3s_pct": 60.0,
+      "statuses": {
+        "200": 187,
+        "500": 53
+      }
+    },
+    "start_exam": {
+      "count": 240,
+      "errors": 83,
+      "error_rate_pct": 34.58,
+      "p50_s": 2.295,
+      "p95_s": 28.409,
+      "max_s": 56.997,
+      "within_3s_pct": 55.0,
+      "statuses": {
+        "302": 157,
+        "-1": 3,
+        "500": 80
+      }
+    },
+    "take_exam": {
+      "count": 157,
+      "errors": 25,
+      "error_rate_pct": 15.92,
+      "p50_s": 22.818,
+      "p95_s": 39.139,
+      "max_s": 41.126,
+      "within_3s_pct": 19.11,
+      "statuses": {
+        "200": 132,
+        "500": 25
+      }
+    },
+    "save_answer": {
+      "count": 1344,
+      "errors": 34,
+      "error_rate_pct": 2.53,
+      "p50_s": 0.02,
+      "p95_s": 0.077,
+      "max_s": 31.877,
+      "within_3s_pct": 97.32,
+      "statuses": {
+        "200": 1310,
+        "-1": 1,
+        "500": 33
+      }
+    },
+    "submit": {
+      "count": 132,
+      "errors": 0,
+      "error_rate_pct": 0.0,
+      "p50_s": 0.023,
+      "p95_s": 0.036,
+      "max_s": 0.044,
+      "within_3s_pct": 100.0,
+      "statuses": {
+        "302": 132
+      }
+    }
+  }
+}
