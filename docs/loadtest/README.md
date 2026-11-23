@@ -15,6 +15,21 @@
 | Đo | thời gian phía máy khách, từ lúc gửi đến lúc nhận đủ phản hồi (cao hơn thời gian xử lý của máy chủ) |
 | Chấm điểm | tính bằng SQL: `results.graded_at - submissions.submitted_at` |
 
+## Công cụ đã dùng
+
+| Việc | Công cụ | Ở đâu |
+| --- | --- | --- |
+| Tạo tải (sinh viên ảo) | Script Python tự viết, chỉ dùng thư viện chuẩn (`urllib`, `threading`, `http.cookiejar`), mỗi sinh viên là một luồng với cookie và CSRF riêng. Không dùng JMeter hay Locust. | `scripts/loadtest/run_load.py` |
+| Tạo dữ liệu | Django shell (`manage.py shell`), tạo đề 50 câu và 500 tài khoản | `scripts/loadtest/seed.py` |
+| Dựng lại dữ liệu mỗi lượt | Shell script + `psql` trong container | `scripts/loadtest/reset.sh` |
+| Đo thời gian chấm | Truy vấn SQL trên PostgreSQL bằng `psql` | `scripts/loadtest/grading.sql` |
+| Đếm truy vấn (N+1) | `CaptureQueriesContext` và `Client` của Django | chạy bằng `manage.py shell`, không lưu file |
+| Tìm nguyên nhân lỗi | `docker compose logs` và `show max_connections` của PostgreSQL | |
+| Máy chủ web thử | `runserver` (trước), gunicorn 23.0.0 (sau) | `compose.loadtest.yaml` |
+| Môi trường | Docker Compose, PostgreSQL 17, Python 3.12 (trong container) | |
+
+Phần trăm p50/p95 do script tự tính từ thời gian từng yêu cầu; p95 lấy phần tử thứ 95% của danh sách đã sắp xếp.
+
 ## Kết quả
 
 | Lần | Máy chủ | Tăng tải | Lỗi | p95 đăng nhập | p95 danh sách | p95 lấy câu hỏi | p95 lưu đáp án | Chấm ≤ 5 giây |
