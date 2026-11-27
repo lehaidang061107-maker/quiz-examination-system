@@ -54,7 +54,18 @@ Mở http://127.0.0.1:8000/accounts/login/ và đăng nhập bằng [tài khoả
 | Chạy bộ kiểm tra | `docker compose exec web python manage.py test` (cuối kết quả có `OK` là đạt) |
 | Chạy lệnh `manage.py` khác | Thêm `docker compose exec web` trước `python manage.py ...` |
 | Sao lưu / phục hồi database | `scripts/backup_db.sh`, `scripts/restore_db.sh` (xem [05-backup-restore.md](05-backup-restore.md)) |
-| Tắt (giữ dữ liệu) | `docker compose stop` |
+| Tạm tắt, mai dùng tiếp (giữ dữ liệu) | `docker compose stop`, bật lại bằng `docker compose start` |
+| Đổi `.env` hoặc `compose.yaml` | `docker compose down` rồi `docker compose up -d --wait` (container cũ giữ cấu hình cũ) |
+| Dọn container, vẫn giữ dữ liệu | `docker compose down` |
+| Xóa cả dữ liệu | `docker compose down -v` (mất toàn bộ dữ liệu database) |
+| Xóa luôn image đã build | `docker compose down -v --rmi local` |
+
+`stop` giống tắt máy: container còn, bật lại rất nhanh. `down` xóa container và network nhưng giữ volume
+(dữ liệu) và image. Chỉ thêm `-v` mới xóa dữ liệu. Tắt hoặc gỡ Docker Desktop mà không chạy `down` thì
+container và volume vẫn nằm trên máy.
+
+Sau khi khởi động hoặc `restart`, web ở trạng thái `starting` khoảng 5 đến 10 giây (đang chạy `migrate`) rồi mới
+thành `healthy`, đó là bình thường. `up -d --wait` tự chờ tới khi xong.
 
 Website trong Docker chạy bằng `runserver`, chỉ dùng cho máy cá nhân và buổi demo.
 
@@ -168,7 +179,9 @@ Bảng bắt đầu bằng `django_` hoặc `auth_` là của hệ thống, khô
 | --- | --- |
 | Không tìm thấy `python` | Chạy lại `source .venv/bin/activate` |
 | Không kết nối được database | Mở Docker Desktop, chạy `docker compose up -d --wait db` |
-| `password authentication failed` | Sai `POSTGRES_PASSWORD` trong `.env` |
+| `password authentication failed` | Sai `POSTGRES_PASSWORD` trong `.env`. Nếu vừa đổi mật khẩu sau khi database đã tạo: Postgres chỉ nhận mật khẩu lần đầu tạo volume, hãy `docker compose down -v` rồi `up -d --build --wait` (mất dữ liệu) hoặc đổi lại mật khẩu cũ |
+| `Chưa đặt SECRET_KEY trong file .env`, web thoát ngay | `.env` copy từ `.env.example` còn trống `SECRET_KEY` và `DEMO_PASSWORD`. Điền rồi **lưu file**, chạy lại `docker compose up -d --build --wait` |
+| `web-1` báo `Error dependency web failed to start` | Xem nguyên nhân bằng `docker compose logs web --tail 40` |
 | `DEMO_PASSWORD chưa hợp lệ` | Đặt `DEMO_PASSWORD` ít nhất 8 ký tự, có cả chữ và số |
 | `Demo đã tồn tại` | Bình thường, dữ liệu mẫu đã có sẵn |
 | `port is already allocated` | Cổng đang bận: đổi `POSTGRES_PORT` hoặc `WEB_PORT` trong `.env` (ví dụ `WEB_PORT=8001`) |
